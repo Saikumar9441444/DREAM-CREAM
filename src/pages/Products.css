@@ -3,25 +3,6 @@
   padding-bottom: 6rem;
 }
 
-.page-header {
-  margin-bottom: 3rem;
-}
-
-.page-title {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.page-subtitle {
-  font-size: 1.2rem;
-  color: var(--color-text-muted);
-  max-width: 600px;
-  margin: 0 auto;
-}
 
 .filters-container {
   display: flex;
@@ -29,7 +10,7 @@
   align-items: center;
   padding: 1rem 2rem;
   border-radius: var(--border-radius-pill);
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
   gap: 1rem;
 }

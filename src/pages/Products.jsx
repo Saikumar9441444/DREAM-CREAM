@@ -51,23 +51,24 @@ export default function Products() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="container" style={{ paddingTop: '100px' }}>
-        <header className="page-header text-center mb-8">
+      <div className="container" style={{ paddingTop: '70px' }}>
+        <header className="section-header mb-8">
           <motion.h1 
-            className="page-title text-4xl font-bold mb-4"
+            className="section-title"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
             Our Flavors
           </motion.h1>
           <motion.p 
-            className="page-subtitle text-lg text-gray-600"
+            className="section-subtitle"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
             Handcrafted daily with the finest ingredients. Which one will be your new favorite?
           </motion.p>
+          <div className="section-header-accent"></div>
         </header>
 
         <motion.div 

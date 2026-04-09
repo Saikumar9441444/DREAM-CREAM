@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { products } from '../data/products';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCards } from 'swiper/modules';
+import { AnimatePresence } from 'framer-motion';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
@@ -15,6 +16,7 @@ import './Home.css';
 
 export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
   const { scrollY } = useScroll();
   const backgroundY = useTransform(scrollY, [0, 1000], ['0%', '25%']);
 
@@ -41,6 +43,41 @@ export default function Home() {
     hidden: { opacity: 0, y: 30 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 50 } }
   };
+
+  const testimonials = [
+    { 
+      name: "Sarah Jenkins", 
+      role: "Food Blogger", 
+      text: "Literally the best ice cream I've ever had. The Madagascar Vanilla is life-changing. It's not just dessert; it's an event.", 
+      rating: 5
+    },
+    { 
+      name: "Marcus T.", 
+      role: "Local Guide", 
+      text: "A cinematic experience in every scoop. The aesthetic of the shop matches the quality of the desserts. The attention to detail is mind-blowing.", 
+      rating: 5
+    },
+    { 
+      name: "Elena R.", 
+      role: "Dessert Critic", 
+      text: "Their Thick Shakes redefine indulgence. Perfectly balanced, ridiculously rich, and surprisingly light in texture.", 
+      rating: 5
+    },
+    { 
+      name: "David Kim", 
+      role: "Regular Customer", 
+      text: "I drive 45 minutes just for their seasonal specials. The variety and creativity they bring to traditional flavors is unmatched.", 
+      rating: 5
+    }
+  ];
+
+  const nextTestimonial = () => setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
+  const prevTestimonial = () => setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+
+  useEffect(() => {
+    const timer = setInterval(nextTestimonial, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <motion.div 
@@ -134,7 +171,7 @@ export default function Home() {
         { title: "Premium Milkshakes", subtitle: "Smooth, cold, and hand-spun to perfection.", items: topMilkshakes },
         { title: "Decadent Thick Shakes", subtitle: "Dense, rich, and ridiculously indulgent.", items: topThickShakes }
       ].map((section, idx) => (
-        <section className="featured-section container" key={idx} style={{ paddingTop: idx === 0 ? '6rem' : '2rem' }}>
+        <section className="featured-section container" key={idx} style={{ paddingTop: idx === 0 ? '2rem' : '0.5rem' }}>
           <motion.div 
             className="section-header text-center"
             initial={{ opacity: 0, y: 20 }}
@@ -144,6 +181,7 @@ export default function Home() {
           >
             <h2 className="section-title">{section.title}</h2>
             <p className="section-subtitle">{section.subtitle}</p>
+            <div className="section-header-accent"></div>
           </motion.div>
           
           <motion.div 
@@ -201,34 +239,55 @@ export default function Home() {
         >
           <h2 className="section-title">The Sweet Talk</h2>
           <p className="section-subtitle">What the critics are saying</p>
+          <div className="section-header-accent"></div>
         </motion.div>
 
-        <div className="testimonials-container">
-          <Swiper
-            effect={'cards'}
-            grabCursor={true}
-            modules={[EffectCards, Autoplay]}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
-            className="testimonials-swiper"
-          >
-            {[
-              { name: "Sarah Jenkins", role: "Food Blogger", text: "Literally the best ice cream I've ever had. The Madagascar Vanilla is life-changing.", rating: 5 },
-              { name: "Marcus T.", role: "Local Guide", text: "A cinematic experience in every scoop. The aesthetic of the shop matches the quality of the desserts.", rating: 5 },
-              { name: "Elena R.", role: "Dessert Critic", text: "Their Thick Shakes redefine indulgence. Perfectly balanced, ridiculously rich.", rating: 5 },
-              { name: "David Kim", role: "Regular Customer", text: "I drive 45 minutes just for their seasonal specials. 10/10 recommend.", rating: 5 }
-            ].map((testimonial, idx) => (
-              <SwiperSlide key={idx} className="testimonial-card glass-panel">
-                <div className="stars mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => <Star key={i} size={20} fill="var(--color-accent)" color="var(--color-accent)" />)}
+        <div className="testimonials-spotlight-wrapper">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={activeTestimonial}
+              className="testimonial-spotlight-card glass-panel"
+              initial={{ opacity: 0, x: 50, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -50, scale: 0.95 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <div className="quote-icon">"</div>
+              <p className="testimonial-text">
+                {testimonials[activeTestimonial].text}
+              </p>
+              
+              <div className="testimonial-footer">
+                <div className="author-info">
+                  <div className="stars">
+                    {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
+                      <Star key={i} size={16} fill="var(--color-accent)" color="var(--color-accent)" />
+                    ))}
+                  </div>
+                  <h4 className="author-name">{testimonials[activeTestimonial].name}</h4>
+                  <p className="author-role">{testimonials[activeTestimonial].role}</p>
                 </div>
-                <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author mt-6">
-                  <h4 className="author-name">{testimonial.name}</h4>
-                  <p className="author-role">{testimonial.role}</p>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="testimonial-controls">
+            <button className="control-btn prev" onClick={prevTestimonial} aria-label="Previous testimonial">
+              <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
+            </button>
+            <div className="testimonial-dots">
+              {testimonials.map((_, i) => (
+                <button 
+                  key={i} 
+                  className={`dot ${activeTestimonial === i ? 'active' : ''}`}
+                  onClick={() => setActiveTestimonial(i)}
+                />
+              ))}
+            </div>
+            <button className="control-btn next" onClick={nextTestimonial} aria-label="Next testimonial">
+              <ChevronRight size={24} />
+            </button>
+          </div>
         </div>
       </section>
 

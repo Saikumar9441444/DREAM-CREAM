@@ -124,7 +124,7 @@
   overflow: hidden;
   background: var(--color-primary);
   color: white;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
   display: flex;
   white-space: nowrap;
 }
@@ -242,12 +242,6 @@
   width: 100%;
 }
 
-.visit-title {
-  font-size: 3rem;
-  margin-bottom: 4rem;
-  color: #fff;
-  font-weight: 800;
-}
 
 .visit-info-grid {
   display: grid;

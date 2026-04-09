@@ -91,7 +91,10 @@ export default function About() {
       <section className="visit-us-cinematic" style={{ backgroundImage: `url('/visit_us_bg.png')` }}>
         <div className="visit-overlay"></div>
         <div className="container visit-content">
-          <h2 className="visit-title text-center">Your Table is Ready</h2>
+          <div className="section-header mb-12">
+            <h2 className="section-title" style={{ color: 'white', background: 'none', WebkitTextFillColor: 'white' }}>Your Table is Ready</h2>
+            <div className="section-header-accent" style={{ background: 'var(--color-accent)', opacity: 1 }}></div>
+          </div>
           <div className="visit-info-grid">
             <div className="visit-card">
               <MapPin size={40} className="visit-icon" />
