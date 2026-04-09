@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Star, Heart, ArrowRight } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
@@ -9,10 +9,12 @@ import { Autoplay, EffectCards } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
+import heroGif from '../components/videos/creamdream-ezgif.com-video-to-gif-converter.gif';
 import FallingElements from '../components/FallingElements';
 import './Home.css';
 
 export default function Home() {
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const { scrollY } = useScroll();
   const backgroundY = useTransform(scrollY, [0, 1000], ['0%', '25%']);
 
@@ -49,12 +51,22 @@ export default function Home() {
     >
       {/* Cinematic Hero Section */}
       <section className="hero-section">
-        {/* Fullscreen Background Media */}
+        {/* Fullscreen Background Media - Smart Hybrid Loading */}
         <div className="hero-fullscreen-bg">
+          {/* Layer 1: Instant Static Placeholder */}
           <motion.img 
             src={heroBg} 
+            alt="Cream Dream Background" 
+            className="hero-bg-media placeholder-layer" 
+            style={{ y: backgroundY, scale: 1.1 }}
+          />
+          
+          {/* Layer 2: Cinematic Video (GIF) - Fades in when loaded */}
+          <motion.img 
+            src={heroGif} 
             alt="Cream Dream Experience" 
-            className="hero-bg-media" 
+            className={`hero-bg-media video-layer ${videoLoaded ? 'loaded' : ''}`}
+            onLoad={() => setVideoLoaded(true)}
             style={{ y: backgroundY, scale: 1.1 }}
           />
           <div className="hero-bg-overlay"></div>
