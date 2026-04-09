@@ -1,0 +1,22 @@
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 0; /* Let hero take full screen without gap, will handle navbar overlap in sections */
+  animation: fadeIn 0.4s ease-out;
+}
+
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--color-primary);
+  transform-origin: 0%;
+  z-index: 10000;
+}

@@ -1,0 +1,45 @@
+/* Custom Cursor Styles */
+body {
+  cursor: none; /* Hide default cursor */
+}
+
+a, button, input, textarea {
+  cursor: none !important;
+}
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid rgba(255, 123, 156, 0.8);
+}
+
+.cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background-color: var(--color-primary);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10000;
+  transition: width 0.2s, height 0.2s;
+}
+
+/* Fallback for disabled JS or touch devices */
+@media (hover: none) and (pointer: coarse) {
+  body {
+    cursor: auto;
+  }
+  .custom-cursor, .cursor-dot {
+    display: none;
+  }
+  a, button, input, textarea {
+    cursor: pointer !important;
+  }
+}

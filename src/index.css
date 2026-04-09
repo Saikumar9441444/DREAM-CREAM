@@ -1,0 +1,230 @@
+:root {
+  /* Brand Colors - Cream Dream Light Mode */
+  --color-primary: #FF7B9C; /* Vibrant Strawberry Pink */
+  --color-primary-light: #FF9EBB;
+  --color-secondary: #48D1CC; /* Mint Green */
+  --color-background: #FFFDF9; /* Very Light Vanilla Cream */
+  --color-surface: #FFFFFF;
+  --color-text-main: #2C1E16; /* Deep Chocolate Brown */
+  --color-text-muted: #6B5D55;
+  --color-accent: #FFC043; /* Cone Gold */
+  
+  /* Typography */
+  --font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  
+  /* Layout */
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-pill: 999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 4px 6px rgba(44, 30, 22, 0.05);
+  --shadow-md: 0 10px 20px rgba(44, 30, 22, 0.08);
+  --shadow-lg: 0 20px 40px rgba(44, 30, 22, 0.12);
+  --shadow-glass: 0 8px 32px 0 rgba(255, 123, 156, 0.1);
+  
+  /* Transitions */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 123, 156, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(72, 209, 204, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 192, 67, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.5em;
+  color: var(--color-text-main);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-light);
+}
+
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-glass);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: white;
+  padding: 12px 28px;
+  border-radius: var(--border-radius-pill);
+  font-weight: 600;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 15px rgba(255, 123, 156, 0.3);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 123, 156, 0.5);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Base Component Styles for Cards and Grids (used in Home & Products) */
+.flavors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+.flavor-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius-lg);
+  padding: 1.2rem;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.flavor-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 0 20px rgba(255, 123, 156, 0.3), 0 15px 35px rgba(255, 123, 156, 0.15);
+  border-color: rgba(255, 123, 156, 0.5);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.flavor-image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%);
+}
+
+.flavor-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* ensures the whole ice cream is visible */
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  mix-blend-mode: multiply; /* removes solid white background from generated images */
+}
+
+.flavor-card:hover .flavor-img {
+  transform: scale(1.1) translateY(-10px);
+}
+
+.flavor-tag {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-pill);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+.favorite-icon-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  z-index: 2;
+}
+
+.favorite-icon-btn:hover {
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+
+.flavor-info h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.flavor-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.flavor-rating span {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-left: 0.5rem;
+}
