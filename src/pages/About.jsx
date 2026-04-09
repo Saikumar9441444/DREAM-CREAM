@@ -71,7 +71,7 @@ export default function About() {
       {/* Founder's Vision Section */}
       <section className="founder-section">
         <div className="founder-image-wrapper">
-          <img src="/founder_vision.png" alt="Antique Churner" className="founder-img" />
+          <img src="/founder_vision.png" alt="Antique Churner" className="founder-img" loading="lazy" />
         </div>
         <div className="founder-text-wrapper">
           <div className="quote-mark">"</div>

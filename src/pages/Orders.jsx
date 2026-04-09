@@ -117,15 +117,15 @@ export default function Orders() {
             <div className="cart-totals">
               <div className="total-row">
                 <span>Subtotal</span>
-                <span>₹${cartTotalPrice.toFixed(2)}</span>
+                <span>₹{cartTotalPrice.toFixed(2)}</span>
               </div>
               <div className="total-row">
                 <span>Tax (8%)</span>
-                <span>₹${taxAmount.toFixed(2)}</span>
+                <span>₹{taxAmount.toFixed(2)}</span>
               </div>
               <div className="total-row grand-total">
                 <span>Total</span>
-                <span>₹${finalTotal.toFixed(2)}</span>
+                <span>₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function Orders() {
               </div>
 
               <button type="submit" className="btn-primary submit-btn">
-                Confirm Order - ₹${finalTotal.toFixed(2)} <Send size={18} />
+                Confirm Order - ₹{finalTotal.toFixed(2)} <Send size={18} />
               </button>
             </form>
           </div>
