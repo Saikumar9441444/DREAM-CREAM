@@ -6,11 +6,11 @@ export default function Preloader({ onComplete }) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Hide the loader after 4 seconds
+    // Hide the loader after a shorter, smoother delay
     const timer = setTimeout(() => {
       setIsVisible(false);
       if (onComplete) setTimeout(onComplete, 1000); // Wait for exit animation
-    }, 4000);
+    }, 1800);
     return () => clearTimeout(timer);
   }, [onComplete]);
 

@@ -8,7 +8,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCards } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
-import heroGif from '../components/videos/creamdream-ezgif.com-video-to-gif-converter.gif';
+import heroBg from '../assets/hero_bg.png';
 import FallingElements from '../components/FallingElements';
 import './Home.css';
 
@@ -52,7 +52,7 @@ export default function Home() {
         {/* Fullscreen Background Media */}
         <div className="hero-fullscreen-bg">
           <motion.img 
-            src={heroGif} 
+            src={heroBg} 
             alt="Cream Dream Experience" 
             className="hero-bg-media" 
             style={{ y: backgroundY, scale: 1.1 }}

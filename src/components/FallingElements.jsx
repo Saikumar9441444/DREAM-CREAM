@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import './FallingElements.css';
 
 export default function FallingElements() {
+  const isMobile = window.innerWidth < 768;
   const elements = [
     { id: 1, src: '/cherry.png', left: '5%', delay: 0, duration: 15, size: '60px' },
     { id: 2, src: '/mixed_nuts.png', left: '15%', delay: 4, duration: 18, size: '80px' },
@@ -11,7 +12,7 @@ export default function FallingElements() {
     { id: 5, src: '/scoop.png', left: '92%', delay: 6, duration: 19, size: '100px' },
     { id: 6, src: '/mixed_nuts.png', left: '80%', delay: 10, duration: 20, size: '70px' },
     { id: 7, src: '/cherry.png', left: '95%', delay: 12, duration: 14, size: '65px' }
-  ];
+  ].filter((_, idx) => !isMobile || idx % 2 === 0); // Only keep half the elements on mobile
 
   return (
     <div className="falling-elements-container">
