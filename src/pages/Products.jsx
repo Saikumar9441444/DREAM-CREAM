@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Heart, Star, Check } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,12 +10,21 @@ import './Home.css'; // Reuse card styles
 const API_URL = 'http://localhost:5000/api/products';
 
 export default function Products() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  
   const [filter, setFilter] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [addedItems, setAddedItems] = useState({});
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+
+  // Sync state if URL search param changes
+  useEffect(() => {
+    const q = searchParams.get('search') || '';
+    setSearchQuery(q);
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -101,7 +111,10 @@ export default function Products() {
               type="text" 
               placeholder="Search flavors..." 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSearchParams({ search: e.target.value });
+              }}
             />
           </div>
           <div className="category-filters">

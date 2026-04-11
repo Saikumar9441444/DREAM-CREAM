@@ -41,7 +41,7 @@ const products = [
   { name: 'Peach Cobbler Sorbet', category: 'Sorbet', rating: 4.6, price: '₹332', image: '/cashew_caramel.png', hue: -25 },
   { name: 'Grapefruit Campari', category: 'Sorbet', rating: 4.7, price: '₹332', image: '/sorbet.png', hue: 30 },
 
-  // SPECIALTY (10)
+  // SPECIALTY (15)
   { name: 'Lavender Honey', category: 'Specialty', rating: 4.9, price: '₹498', image: '/specialty.png', hue: 0 },
   { name: 'Salted Caramel Truffle', category: 'Specialty', rating: 5.0, price: '₹498', image: '/cashew_caramel.png', hue: 20 },
   { name: 'Bourbon Pecan Pie', category: 'Specialty', rating: 4.8, price: '₹498', image: '/butter_pecan.png', hue: 10 },
@@ -51,7 +51,26 @@ const products = [
   { name: 'Black Sesame', category: 'Specialty', rating: 4.8, price: '₹498', image: '/rocky_road.png', hue: -180 },
   { name: 'Matcha White Chocolate', category: 'Specialty', rating: 4.7, price: '₹498', image: '/coconut_matcha.png', hue: -20 },
   { name: 'Balsamic Strawberry', category: 'Specialty', rating: 4.5, price: '₹498', image: '/strawberry_dream.png', hue: -20 },
-  { name: 'Tiramisu Gelato', category: 'Specialty', rating: 4.9, price: '₹498', image: '/coffee_caramel.png', hue: 15 }
+  { name: 'Tiramisu Gelato', category: 'Specialty', rating: 4.9, price: '₹498', image: '/coffee_caramel.png', hue: 15 },
+  { name: 'Gold Leaf Saffron Sundae', category: 'Specialty', rating: 5.0, price: '₹750', image: '/specialty.png', hue: -40 },
+  { name: 'Dragonfruit Lychee', category: 'Specialty', rating: 4.8, price: '₹550', image: '/vegan.png', hue: 280 },
+  { name: 'Blueberry Cheesecake Scoop', category: 'Specialty', rating: 4.9, price: '₹500', image: '/strawberry_dream.png', hue: -120 },
+  { name: 'Hazelnut Praline', category: 'Specialty', rating: 4.7, price: '₹500', image: '/cashew_caramel.png', hue: 0 },
+  { name: 'Avocado Honey Magic', category: 'Specialty', rating: 4.6, price: '₹550', image: '/mint_choc_chip.png', hue: 30 },
+
+  // MILKSHAKES (5)
+  { name: 'Classic Chocolate Shake', category: 'Milkshake', rating: 4.8, price: '₹250', image: '/milkshake.png', hue: 0 },
+  { name: 'Strawberry Blast', category: 'Milkshake', rating: 4.6, price: '₹250', image: '/milkshake.png', hue: -40 },
+  { name: 'Vanilla Bean Shake', category: 'Milkshake', rating: 4.5, price: '₹250', image: '/milkshake.png', hue: 180 },
+  { name: 'Caramel Macchiato Shake', category: 'Milkshake', rating: 4.7, price: '₹280', image: '/milkshake.png', hue: 45 },
+  { name: 'Cookies & Cream Shake', category: 'Milkshake', rating: 4.9, price: '₹280', image: '/milkshake.png', hue: -90 },
+
+  // THICK SHAKES (5)
+  { name: 'Nutella Brownie Thick Shake', category: 'Thick Shake', rating: 5.0, price: '₹350', image: '/thick_shake.png', hue: 0 },
+  { name: 'Oreo Overload', category: 'Thick Shake', rating: 4.8, price: '₹350', image: '/thick_shake.png', hue: 180 },
+  { name: 'Mango Indulgence', category: 'Thick Shake', rating: 4.7, price: '₹320', image: '/thick_shake.png', hue: 240 },
+  { name: 'Peanut Butter Fudge', category: 'Thick Shake', rating: 4.9, price: '₹350', image: '/thick_shake.png', hue: -30 },
+  { name: 'Red Velvet Thick Shake', category: 'Thick Shake', rating: 4.6, price: '₹350', image: '/thick_shake.png', hue: 300 }
 ];
 
 const seedDB = async () => {

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Star, Heart, ArrowRight } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
-import { motion, AnimatePresence } from 'framer-motion';
 import FallingElements from '../components/FallingElements';
 import { Autoplay, EffectCards } from 'swiper/modules';
 import gsap from 'gsap';
