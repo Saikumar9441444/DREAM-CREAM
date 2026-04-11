@@ -132,7 +132,7 @@ export default function Navbar({ onOpenCart }) {
             {user ? (
               <button onClick={logout} className="user-avatar-btn" title="Logout">
                 <img 
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} 
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}&topType=shortHair&facialHairType=beardLight`} 
                   alt="Profile" 
                 />
               </button>

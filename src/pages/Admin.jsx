@@ -10,10 +10,10 @@ import {
 } from 'lucide-react';
 import './Admin.css';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export default function Admin() {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout, loading: authLoading } = useAuth();
   const [activeMainTab, setActiveMainTab] = useState('inventory');
   const [inventoryFilter, setInventoryFilter] = useState('All');
   const [loading, setLoading] = useState(false);
@@ -30,27 +30,49 @@ export default function Admin() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5 });
 
-  if (!isAdmin || user?.email !== 'saikumar89515@gmail.com') {
+  // Security check - wait for auth to finish loading
+  if (authLoading) {
+    return (
+      <div className="admin-loading-container">
+        <div className="loading-spinner"></div>
+        <p>Verifying Credentials...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: '/admin' }} />;
+  }
+  
+  const currentEmail = user.email ? user.email.trim().toLowerCase() : '';
+  if (!isAdmin || currentEmail !== 'saikumar89515@gmail.com') {
     return <Navigate to="/" />;
   }
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (activeMainTab === 'inventory') {
-        const res = await fetch(`${API_BASE}/products`);
-        setProducts(await res.json());
-      } else if (activeMainTab === 'orders') {
-        const res = await fetch(`${API_BASE}/orders`);
-        setOrders(await res.json());
-      } else if (activeMainTab === 'visitors') {
-        const res = await fetch(`${API_BASE}/visitors`);
-        setVisitors(await res.json());
-      } else if (activeMainTab === 'cms') {
-        const res = await fetch(`${API_BASE}/content`);
-        setSiteContent(await res.json());
+      const endpoints = {
+        inventory: 'products',
+        orders: 'orders',
+        visitors: 'visitors',
+        cms: 'content'
+      };
+      
+      const res = await fetch(`${API_BASE}/${endpoints[activeMainTab]}`);
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        if (activeMainTab === 'inventory') setProducts(data);
+        else if (activeMainTab === 'orders') setOrders(data);
+        else if (activeMainTab === 'visitors') setVisitors(data);
+        else if (activeMainTab === 'cms') setSiteContent(data);
+      } else {
+        console.warn(`API returned non-array for ${activeMainTab}:`, data);
       }
-    } catch (err) { console.error("Data fetch error:", err); }
+    } catch (err) { 
+      console.error("Data fetch error:", err); 
+    }
     setLoading(false);
   };
 
@@ -95,11 +117,20 @@ export default function Admin() {
     } catch (err) { console.error("CMS update error:", err); }
   };
 
-  const filteredProducts = products.filter(p => {
+  // Security check - redirect to login if not admin or not logged in
+  if (!user) {
+    return <Navigate to="/login" state={{ from: '/admin' }} />;
+  }
+  
+  if (!isAdmin || user.email !== 'saikumar89515@gmail.com') {
+    return <Navigate to="/" />;
+  }
+
+  const filteredProducts = Array.isArray(products) ? products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = inventoryFilter === 'All' || p.category === inventoryFilter || (inventoryFilter === 'Ice Cream' && (p.category === 'Dairy' || p.category === 'Vegan' || p.category === 'Sorbet' || p.category === 'Specialty'));
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
 
   return (
     <motion.div className="admin-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -109,15 +140,17 @@ export default function Admin() {
         <header className="admin-header glass-panel deluxe-header">
           <div className="admin-profile">
             <div className="admin-shield-wrapper">
-              {siteContent.find(c => c.key === 'adminGender')?.value === 'female' ? (
+              {Array.isArray(siteContent) && siteContent.find(c => c.key === 'adminGender')?.value === 'female' ? (
                 <Users color="var(--color-primary)" size={32} />
               ) : (
                 <ShieldCheck color="var(--color-primary)" size={32} />
               )}
             </div>
             <div>
-              <h1 className="luxury-text">{siteContent.find(c => c.key === 'adminName')?.value || "Master Control Center"}</h1>
-              <p className="admin-badge-text">SECURE SESSION: {user.email}</p>
+              <h1 className="luxury-text">
+                {(Array.isArray(siteContent) && siteContent.find(c => c.key === 'adminName')?.value) || "Master Control Center"}
+              </h1>
+              <p className="admin-badge-text">SECURE SESSION: {user?.email}</p>
             </div>
           </div>
           <button onClick={logout} className="logout-btn-deluxe"><LogOut size={18} /> EXIT PORTAL</button>
@@ -281,7 +314,7 @@ export default function Admin() {
                          </div>
                          <div className="cms-field mt-4">
                            <label>Supportive Prop-text</label>
-                           <textarea rows="3" onBlur={e => handleUpdateContent('Hero', 'heroSubtitle', e.target.value)} placeholder="Cinematic subtitle..."></textarea>
+                           <textarea rows="3" defaultValue={siteContent.find(c => c.key === 'heroSubtitle')?.value || ""} onBlur={e => handleUpdateContent('Hero', 'heroSubtitle', e.target.value)} placeholder="Cinematic subtitle..."></textarea>
                          </div>
                        </div>
                     </div>
@@ -292,7 +325,7 @@ export default function Admin() {
                        <div className="cms-fields mt-6">
                          <div className="cms-field">
                            <label>Our Mission Paragraph</label>
-                           <textarea rows="6" onBlur={e => handleUpdateContent('About', 'storyText', e.target.value)} placeholder="Narrate the vision..."></textarea>
+                           <textarea rows="6" defaultValue={siteContent.find(c => c.key === 'storyText')?.value || ""} onBlur={e => handleUpdateContent('About', 'storyText', e.target.value)} placeholder="Narrate the vision..."></textarea>
                          </div>
                        </div>
                     </div>

@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
-      setIsAdmin(parsedUser.email === ADMIN_USER.email);
+      setIsAdmin(parsedUser.email.trim().toLowerCase() === ADMIN_USER.email);
     }
     setLoading(false);
   }, []);
@@ -49,7 +49,8 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (email === ADMIN_USER.email && password === 'admin123') {
+        const lowerEmail = email.trim().toLowerCase();
+        if (lowerEmail === ADMIN_USER.email && password === 'admin123') {
           const userObj = { ...ADMIN_USER };
           localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
           setUser(userObj);
@@ -58,7 +59,7 @@ export function AuthProvider({ children }) {
           resolve({ success: true });
         } else {
           // For now, allow other "demo" logins but they are not admins
-          const userObj = { email, displayName: email.split('@')[0], role: 'user' };
+          const userObj = { email: lowerEmail, displayName: lowerEmail.split('@')[0], role: 'user' };
           localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
           setUser(userObj);
           setIsAdmin(false);
