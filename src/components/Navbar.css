@@ -133,6 +133,59 @@
   box-shadow: 0 2px 4px rgba(44, 30, 22, 0.2);
 }
 
+.admin-pill {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: white !important;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.85rem !important;
+  display: flex !important;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(255, 123, 156, 0.3);
+  margin-right: 0.5rem;
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+}
+
+.user-profile-nav {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.user-profile-nav:hover {
+  transform: scale(1.1);
+}
+
+.nav-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  object-fit: cover;
+}
+
+.nav-auth-btn {
+  background: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary);
+  border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-auth-btn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
 @media (max-width: 768px) {
   .navbar-links {
     position: absolute;

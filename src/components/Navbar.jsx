@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Shield } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 export default function Navbar({ onOpenCart }) {
   const location = useLocation();
   const { cartTotalItems } = useCart();
+  const { user, isAdmin, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -55,6 +57,28 @@ export default function Navbar({ onOpenCart }) {
               )}
             </Link>
           ))}
+          
+          {isAdmin && (
+            <Link to="/admin" className="nav-link admin-pill">
+              <Shield size={16} className="mr-1" /> Admin
+            </Link>
+          )}
+
+          <div className="auth-section">
+            {user ? (
+              <div className="user-profile-nav" onClick={logout} title="Logout">
+                <img 
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`} 
+                  alt={user.displayName} 
+                  className="nav-avatar" 
+                />
+              </div>
+            ) : (
+              <Link to="/login" className="nav-auth-btn">
+                <User size={20} />
+              </Link>
+            )}
+          </div>
           
           <Link to="/orders" className="nav-btn ml-4">
             Order Now

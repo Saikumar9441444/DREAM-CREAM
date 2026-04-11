@@ -3,15 +3,24 @@ import { Search, Heart, Star, Check } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { products } from '../data/products';
 import './Products.css';
 import '../pages/Home.css'; // Reuse card styles
+
+const API_URL = 'http://localhost:5000/api/products';
 
 export default function Products() {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItems, setAddedItems] = useState({});
+  const [products, setProducts] = useState([]);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => setProducts(data))
+      .catch(err => console.error("Error fetching products:", err));
+  }, []);
 
   const categories = ['All', 'Dairy', 'Vegan', 'Sorbet', 'Specialty', 'Milkshake', 'Thick Shake'];
 

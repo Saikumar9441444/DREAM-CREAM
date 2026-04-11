@@ -10,7 +10,7 @@ import { AnimatePresence } from 'framer-motion';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
-import heroGif from '../components/videos/creamdream-ezgif.com-video-to-gif-converter.gif';
+import heroGif from '../components/videos/Ice_cream_scoop_202604111206-ezgif.com-optimize.gif';
 import FallingElements from '../components/FallingElements';
 import './Home.css';
 
