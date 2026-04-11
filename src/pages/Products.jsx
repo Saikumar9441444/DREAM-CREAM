@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Heart, Star, Check } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { getLocalProducts } from '../utils/localDB';
 import './Products.css';
-import '../pages/Home.css'; // Reuse card styles
+import './Home.css'; // Reuse card styles
 
 const API_URL = 'http://localhost:5000/api/products';
 
@@ -13,13 +14,17 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItems, setAddedItems] = useState({});
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error("Error fetching products:", err));
+    // Simulate a brief premium loading experience
+    const timer = setTimeout(() => {
+      const data = getLocalProducts();
+      setProducts(data);
+      setLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
   }, []);
 
   const categories = ['All', 'Dairy', 'Vegan', 'Sorbet', 'Specialty', 'Milkshake', 'Thick Shake'];
@@ -115,12 +120,24 @@ export default function Products() {
           animate="show"
         >
           <AnimatePresence mode="popLayout">
-            {filteredProducts.length > 0 ? (
+            {loading ? (
+              <motion.div 
+                className="loading-state text-center" 
+                style={{ gridColumn: '1 / -1', padding: '5rem' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="flex flex-col items-center">
+                   <div className="loader-spinner mb-4"></div>
+                   <p className="text-xl font-bold opacity-60">Preparing your flavors...</p>
+                </div>
+              </motion.div>
+            ) : filteredProducts.length > 0 ? (
               filteredProducts.map(flavor => (
                 <motion.div 
                   variants={itemVariants} 
-                  key={flavor.id}
-                  layoutId={`product-${flavor.id}`}
+                  key={flavor._id || flavor.id}
+                  layoutId={`product-${flavor._id || flavor.id}`}
                   style={{ display: 'flex' }}
                 >
                   <Tilt 
@@ -147,10 +164,10 @@ export default function Products() {
                         <span className="flavor-price font-bold text-lg">{flavor.price}</span>
                       </div>
                       <button 
-                        className={`btn-primary add-to-cart-btn mt-4 w-full flex justify-center ${addedItems[flavor.id] ? 'added' : ''}`}
+                        className={`btn-primary add-to-cart-btn mt-4 w-full flex justify-center ${addedItems[flavor._id || flavor.id] ? 'added' : ''}`}
                         onClick={() => handleAddToCart(flavor)}
                       >
-                        {addedItems[flavor.id] ? (
+                        {addedItems[flavor._id || flavor.id] ? (
                           <span style={{ display: 'flex', alignItems: 'center' }}>Added <Check size={16} className="ml-1" /></span>
                         ) : (
                           'Add to Order'

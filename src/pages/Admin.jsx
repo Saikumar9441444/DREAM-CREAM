@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit2, Save, X, LogOut, ShieldCheck, Database, LayoutDashboard, Search } from 'lucide-react';
+import { getLocalProducts, addLocalProduct, deleteLocalProduct } from '../utils/localDB';
 import './Admin.css';
 
 export default function Admin() {
@@ -24,52 +25,31 @@ export default function Admin() {
     return <Navigate to="/" />;
   }
 
-  const API_URL = 'http://localhost:5000/api/products';
-
-  // Fetch products
-  const fetchProducts = async () => {
-    try {
-      const resp = await fetch(API_URL);
-      const data = await resp.json();
-      setProducts(data);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-    }
+  // Fetch products locally
+  const fetchProducts = () => {
+    const data = getLocalProducts();
+    setProducts(data);
   };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const handleAdd = async (e) => {
+  const handleAdd = (e) => {
     e.preventDefault();
-    try {
-      const resp = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          image: '/dairy.png' // Default image
-        })
-      });
-      if (resp.ok) {
-        fetchProducts();
-        setIsAdding(false);
-        setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, hue: 0 });
-      }
-    } catch (err) {
-      console.error("Error adding product:", err);
-    }
+    addLocalProduct({
+      ...formData,
+      image: '/dairy.png' // Default image
+    });
+    fetchProducts();
+    setIsAdding(false);
+    setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, hue: 0 });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this flavor?")) return;
-    try {
-      const resp = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-      if (resp.ok) fetchProducts();
-    } catch (err) {
-      console.error("Error deleting product:", err);
-    }
+    deleteLocalProduct(id);
+    fetchProducts();
   };
 
   const filteredProducts = products.filter(p => 
@@ -92,7 +72,7 @@ export default function Admin() {
             </div>
             <div>
               <h1>Admin Dashboard</h1>
-              <p>Welcome, {user?.displayName} • Secure Session</p>
+              <p>Welcome, {user?.displayName} • Local Management</p>
             </div>
           </div>
           <button onClick={logout} className="logout-btn flex items-center">
@@ -182,7 +162,7 @@ export default function Admin() {
                 <AnimatePresence mode="popLayout">
                   {filteredProducts.map(product => (
                     <motion.tr 
-                      key={product._id || product.id}
+                      key={product.id}
                       layout
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -197,7 +177,7 @@ export default function Admin() {
                           <button className="action-btn" onClick={() => {/* TODO: Edit */}}>
                             <Edit2 size={16} />
                           </button>
-                          <button className="action-btn delete" onClick={() => handleDelete(product._id || product.id)}>
+                          <button className="action-btn delete" onClick={() => handleDelete(product.id)}>
                             <Trash2 size={16} />
                           </button>
                         </div>

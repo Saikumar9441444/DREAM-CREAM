@@ -90,11 +90,13 @@
 }
 
 .hero-title span {
-  background: linear-gradient(to right, var(--color-primary), var(--color-accent));
+  background: linear-gradient(to bottom, #d42d58, #8b4513); /* Darker Pink to Chocolate gradient */
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Soft shadow for depth */
+  position: relative;
 }
 
 .hero-subtitle {

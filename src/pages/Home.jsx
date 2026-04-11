@@ -1,35 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Star, Heart, ArrowRight } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { products } from '../data/products';
-import { Swiper, SwiperSlide } from 'swiper/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getLocalProducts } from '../utils/localDB';
+import FallingElements from '../components/FallingElements';
 import { Autoplay, EffectCards } from 'swiper/modules';
-import { AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
 import heroGif from '../components/videos/Ice_cream_scoop_202604111206-ezgif.com-optimize.gif';
-import FallingElements from '../components/FallingElements';
 import './Home.css';
+
+// Register GSAP Plugin
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const { scrollY } = useScroll();
-  const backgroundY = useTransform(scrollY, [0, 1000], ['0%', '25%']);
+  const heroRef = useRef(null);
+  const videoRef = useRef(null);
+  const titleRef = useRef(null);
 
-  const topIceCreams = products.filter(p => p.category === 'Specialty' || p.category === 'Classic').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));
-  const topMilkshakes = products.filter(p => p.category === 'Milkshake').slice(0, 3).map(p => ({ ...p, tag: 'Must Try' }));
-  const topThickShakes = products.filter(p => p.category === 'Thick Shake').slice(0, 3).map(p => ({ ...p, tag: 'Dense & Rich' }));
+  useEffect(() => {
+    // GSAP Smooth Scroll Scrubbing for Hero
+    const ctx = gsap.context(() => {
+      gsap.to(videoRef.current, {
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1.5, // High value for "smooth" feeling
+        },
+        scale: 1.3,
+        y: 150,
+        opacity: 0.3,
+        ease: 'none'
+      });
 
-  const floatingVariants = {
-    animate: {
-      y: [0, -15, 0],
-      transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-    }
-  };
+      gsap.to(titleRef.current, {
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        },
+        y: -100,
+        opacity: 0,
+        scale: 0.9,
+        ease: 'power1.out'
+      });
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, []);
 
   const staggerContainer = {
     hidden: { opacity: 0 },
@@ -71,6 +97,23 @@ export default function Home() {
     }
   ];
 
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    setProducts(getLocalProducts());
+  }, []);
+
+  const topIceCreams = products.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));
+  const topMilkshakes = products.filter(p => p.category === 'Milkshake').slice(0, 3).map(p => ({ ...p, tag: 'Must Try' }));
+  const topThickShakes = products.filter(p => p.category === 'Thick Shake').slice(0, 3).map(p => ({ ...p, tag: 'Dense & Rich' }));
+
+  const floatingVariants = {
+    animate: {
+      y: [0, -15, 0],
+      transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+    }
+  };
+
   const nextTestimonial = () => setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
   const prevTestimonial = () => setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
@@ -87,15 +130,15 @@ export default function Home() {
       exit={{ opacity: 0 }}
     >
       {/* Cinematic Hero Section */}
-      <section className="hero-section">
+      <section className="hero-section" ref={heroRef}>
         {/* Fullscreen Background Media - Smart Hybrid Loading */}
-        <div className="hero-fullscreen-bg">
+        <div className="hero-fullscreen-bg" ref={videoRef}>
           {/* Layer 1: Instant Static Placeholder */}
           <motion.img 
             src={heroBg} 
             alt="Cream Dream Background" 
             className="hero-bg-media placeholder-layer" 
-            style={{ y: backgroundY, scale: 1.1 }}
+            style={{ scale: 1.1 }}
           />
           
           {/* Layer 2: Cinematic Video (GIF) - Fades in when loaded */}
@@ -104,12 +147,12 @@ export default function Home() {
             alt="Cream Dream Experience" 
             className={`hero-bg-media video-layer ${videoLoaded ? 'loaded' : ''}`}
             onLoad={() => setVideoLoaded(true)}
-            style={{ y: backgroundY, scale: 1.1 }}
+            style={{ scale: 1.1 }}
           />
           <div className="hero-bg-overlay"></div>
         </div>
 
-        <div className="container hero-content-single">
+        <div className="container hero-content-single" ref={titleRef}>
           <motion.div 
             className="hero-text-content"
             variants={staggerContainer}

@@ -6,7 +6,12 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-const API_ROOT = 'http://localhost:5000/api/auth';
+// Static admin credentials for local-only mode
+const ADMIN_USER = {
+  email: 'saikumar89515@gmail.com',
+  displayName: 'Admin Saikumar',
+  role: 'admin'
+};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -14,7 +19,7 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check for stored token on mount
+    // Check for stored session on mount
     const storedUser = localStorage.getItem('dream_cream_user');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -25,36 +30,45 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const resp = await fetch(`${API_ROOT}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+    // In local-only mode, we simulate a network delay and check static credentials
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (email === ADMIN_USER.email && password === 'admin123') {
+          const userObj = { ...ADMIN_USER };
+          localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
+          setUser(userObj);
+          setIsAdmin(true);
+          resolve({ success: true });
+        } else {
+          resolve({ success: false, message: 'Invalid credentials. Use saikumar89515@gmail.com / admin123' });
+        }
+      }, 800);
     });
-
-    const data = await resp.json();
-    
-    if (resp.ok) {
-      localStorage.setItem('dream_cream_token', data.token);
-      localStorage.setItem('dream_cream_user', JSON.stringify(data.user));
-      setUser(data.user);
-      setIsAdmin(data.user.role === 'admin');
-      return { success: true };
-    } else {
-      return { success: false, message: data.message };
-    }
   };
 
   const logout = () => {
-    localStorage.removeItem('dream_cream_token');
     localStorage.removeItem('dream_cream_user');
     setUser(null);
     setIsAdmin(false);
+  };
+
+  const loginWithGoogle = async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const userObj = { ...ADMIN_USER, displayName: 'Google Admin' };
+        localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
+        setUser(userObj);
+        setIsAdmin(true);
+        resolve({ success: true });
+      }, 1500); // Shorter delay for Google login feel
+    });
   };
 
   const value = {
     user,
     isAdmin,
     login,
+    loginWithGoogle,
     logout,
     loading
   };
