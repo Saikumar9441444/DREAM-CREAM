@@ -1,34 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './About.css';
 
 export default function About() {
+  const [cmsContent, setCmsContent] = useState({});
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/content')
+      .then(res => res.json())
+      .then(data => {
+        const contentMap = {};
+        data.forEach(item => { contentMap[item.key] = item.value; });
+        setCmsContent(contentMap);
+      })
+      .catch(err => console.error("About CMS fetch failed:", err));
+  }, []);
+
   const storyColumns = [
-    {
-      id: '01',
-      total: '03',
-      label: 'THE SOURCE',
-      title: 'Our Ingredients',
-      desc: 'We source the richest madagascar vanilla and the deepest organic cacao for an unparalleled pure taste.',
-      img: '/ingredients_bg.png'
-    },
-    {
-      id: '02',
-      total: '03',
-      label: 'THE CRAFT',
-      title: 'The Artisans',
-      desc: 'Every morning, our team of artisans arrives to pasteurize local dairy and hand-churn small batches.',
-      img: '/craft_bg.png'
-    },
-    {
-      id: '03',
-      total: '03',
-      label: 'THE MAGIC',
-      title: 'The Experience',
-      desc: 'More than just an ice cream shop, we are a gathering place where memories are made, one scoop at a time.',
-      img: '/experience_bg.png'
-    }
+    { id: '01', total: '03', label: 'THE SOURCE', title: 'Our Ingredients', desc: 'We source the richest madagascar vanilla and the deepest organic cacao for an unparalleled pure taste.', img: '/ingredients_bg.png' },
+    { id: '02', total: '03', label: 'THE CRAFT', title: 'The Artisans', desc: 'Every morning, our team of artisans arrives to pasteurize local dairy and hand-churn small batches.', img: '/craft_bg.png' },
+    { id: '03', total: '03', label: 'THE MAGIC', title: 'The Experience', desc: 'More than just an ice cream shop, we are a gathering place where memories are made, one scoop at a time.', img: '/experience_bg.png' }
   ];
 
   return (
@@ -77,9 +69,9 @@ export default function About() {
           <div className="quote-mark">"</div>
           <h2 className="founder-title">A Return to<br/>Real Craft.</h2>
           <p className="founder-desc">
-            It began with an exhausting search for ice cream that tasted like memories—not chemicals. 
+            {cmsContent.storyText || `It began with an exhausting search for ice cream that tasted like memories—not chemicals. 
             We tore up the rules of mass production and built Cream Dream on a single, unwavering promise:
-            If we wouldn't serve it to our own family, we won't serve it to you.
+            If we wouldn't serve it to our own family, we won't serve it to you.`}
           </p>
           <div className="founder-signoff">
             — The Cream Dream Family

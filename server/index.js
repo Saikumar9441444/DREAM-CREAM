@@ -2,7 +2,12 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Models
 import Product from './models/Product.js';
+import Order from './models/Order.js';
+import Visitor from './models/Visitor.js';
+import SiteContent from './models/SiteContent.js';
 
 dotenv.config();
 
@@ -20,36 +25,92 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // --- API ROUTES ---
 
-// Get all products
+// 1. PRODUCTS (FLAVORS)
 app.get('/api/products', async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-// Add a new product (Admin Only - simplified for now)
 app.post('/api/products', async (req, res) => {
   const product = new Product(req.body);
   try {
     const newProduct = await product.save();
     res.status(201).json(newProduct);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+  } catch (err) { res.status(400).json({ message: err.message }); }
 });
 
-// Delete a product
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
+  } catch (err) { res.status(400).json({ message: err.message }); }
+});
+
 app.delete('/api/products/:id', async (req, res) => {
   try {
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-    if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
-    res.json({ message: 'Product deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Deleted successfully' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// 2. ORDERS
+app.get('/api/orders', async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.post('/api/orders', async (req, res) => {
+  const order = new Order(req.body);
+  try {
+    const newOrder = await order.save();
+    res.status(201).json(newOrder);
+  } catch (err) { res.status(400).json({ message: err.message }); }
+});
+
+// 3. VISITORS (ANALYTICS)
+app.get('/api/visitors', async (req, res) => {
+  try {
+    const visitors = await Visitor.find().sort({ lastVisited: -1 });
+    res.json(visitors);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.post('/api/visitors', async (req, res) => {
+  const { email, displayName } = req.body;
+  try {
+    let visitor = await Visitor.findOne({ email });
+    if (visitor) {
+      visitor.lastVisited = new Date();
+      visitor.loginCount += 1;
+      await visitor.save();
+    } else {
+      visitor = new Visitor({ email, displayName });
+      await visitor.save();
+    }
+    res.status(200).json(visitor);
+  } catch (err) { res.status(400).json({ message: err.message }); }
+});
+
+// 4. SITE CONTENT (CMS)
+app.get('/api/content', async (req, res) => {
+  try {
+    const content = await SiteContent.find();
+    res.json(content);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.post('/api/content', async (req, res) => {
+  const { section, key, value } = req.body;
+  try {
+    const filter = { section, key };
+    const update = { value, updatedAt: new Date() };
+    const result = await SiteContent.findOneAndUpdate(filter, update, { upsert: true, new: true });
+    res.json(result);
+  } catch (err) { res.status(400).json({ message: err.message }); }
 });
 
 // Server Listen

@@ -18,10 +18,36 @@ export default function Orders() {
   const [submitted, setSubmitted] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    clearCart(); // Empty the cart upon successful order
+    
+    // Capture order data from form
+    const orderData = {
+      customerName: e.target.name.value,
+      customerEmail: e.target.email.value,
+      items: cartItems.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      total: finalTotal
+    };
+
+    try {
+      const resp = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      
+      if (resp.ok) {
+        setSubmitted(true);
+        clearCart(); 
+      }
+    } catch (err) {
+      console.error("Order submission failed:", err);
+      alert("Failed to connect to the cloud. Please ensure the server is running.");
+    }
   };
 
   const TAX_RATE = 0.08; // 8% tax

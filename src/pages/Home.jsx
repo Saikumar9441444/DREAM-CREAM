@@ -19,11 +19,29 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [products, setProducts] = useState([]);
+  const [cmsContent, setCmsContent] = useState({});
   const heroRef = useRef(null);
   const videoRef = useRef(null);
   const titleRef = useRef(null);
 
   useEffect(() => {
+    // 1. Fetch Products from Cloud
+    fetch('http://localhost:5000/api/products')
+      .then(res => res.json())
+      .then(data => setProducts(data))
+      .catch(err => console.error("Product fetch failed:", err));
+
+    // 2. Fetch CMS Content from Cloud
+    fetch('http://localhost:5000/api/content')
+      .then(res => res.json())
+      .then(data => {
+        const contentMap = {};
+        data.forEach(item => { contentMap[item.key] = item.value; });
+        setCmsContent(contentMap);
+      })
+      .catch(err => console.error("CMS fetch failed:", err));
+
     // GSAP Smooth Scroll Scrubbing for Hero
     const ctx = gsap.context(() => {
       gsap.to(videoRef.current, {
@@ -31,7 +49,7 @@ export default function Home() {
           trigger: heroRef.current,
           start: 'top top',
           end: 'bottom top',
-          scrub: 1.5, // High value for "smooth" feeling
+          scrub: 1.5,
         },
         scale: 1.3,
         y: 150,
@@ -70,57 +88,15 @@ export default function Home() {
   };
 
   const testimonials = [
-    { 
-      name: "Sarah Jenkins", 
-      role: "Food Blogger", 
-      text: "Literally the best ice cream I've ever had. The Madagascar Vanilla is life-changing. It's not just dessert; it's an event.", 
-      rating: 5
-    },
-    { 
-      name: "Marcus T.", 
-      role: "Local Guide", 
-      text: "A cinematic experience in every scoop. The aesthetic of the shop matches the quality of the desserts. The attention to detail is mind-blowing.", 
-      rating: 5
-    },
-    { 
-      name: "Elena R.", 
-      role: "Dessert Critic", 
-      text: "Their Thick Shakes redefine indulgence. Perfectly balanced, ridiculously rich, and surprisingly light in texture.", 
-      rating: 5
-    },
-    { 
-      name: "David Kim", 
-      role: "Regular Customer", 
-      text: "I drive 45 minutes just for their seasonal specials. The variety and creativity they bring to traditional flavors is unmatched.", 
-      rating: 5
-    }
+    { name: "Sarah Jenkins", role: "Food Blogger", text: "Literally the best ice cream I've ever had. The Madagascar Vanilla is life-changing. It's not just dessert; it's an event.", rating: 5 },
+    { name: "Marcus T.", role: "Local Guide", text: "A cinematic experience in every scoop. The aesthetic of the shop matches the quality of the desserts. The attention to detail is mind-blowing.", rating: 5 },
+    { name: "Elena R.", role: "Dessert Critic", text: "Their Thick Shakes redefine indulgence. Perfectly balanced, ridiculously rich, and surprisingly light in texture.", rating: 5 },
+    { name: "David Kim", role: "Regular Customer", text: "I drive 45 minutes just for their seasonal specials. The variety and creativity they bring to traditional flavors is unmatched.", rating: 5 }
   ];
-
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/products');
-        const data = await response.json();
-        setProducts(data);
-      } catch (err) {
-        console.error("Home fetch error:", err);
-      }
-    };
-    fetchProducts();
-  }, []);
 
   const topIceCreams = products.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));
   const topMilkshakes = products.filter(p => p.category === 'Milkshake').slice(0, 3).map(p => ({ ...p, tag: 'Must Try' }));
   const topThickShakes = products.filter(p => p.category === 'Thick Shake').slice(0, 3).map(p => ({ ...p, tag: 'Dense & Rich' }));
-
-  const floatingVariants = {
-    animate: {
-      y: [0, -15, 0],
-      transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-    }
-  };
 
   const nextTestimonial = () => setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
   const prevTestimonial = () => setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -137,19 +113,14 @@ export default function Home() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      {/* Cinematic Hero Section */}
       <section className="hero-section" ref={heroRef}>
-        {/* Fullscreen Background Media - Smart Hybrid Loading */}
         <div className="hero-fullscreen-bg" ref={videoRef}>
-          {/* Layer 1: Instant Static Placeholder */}
           <motion.img 
             src={heroBg} 
             alt="Cream Dream Background" 
             className="hero-bg-media placeholder-layer" 
             style={{ scale: 1.1 }}
           />
-          
-          {/* Layer 2: Cinematic Video (GIF) - Fades in when loaded */}
           <motion.img 
             src={heroGif} 
             alt="Cream Dream Experience" 
@@ -171,11 +142,10 @@ export default function Home() {
               Scooping Happiness Daily ✨
             </motion.div>
             <motion.h1 variants={childVariant} className="hero-title">
-              Experience the Magic of <span>Cream Dream</span>
+              {cmsContent.heroTitle || "Experience the Magic of Cream Dream"}
             </motion.h1>
             <motion.p variants={childVariant} className="hero-subtitle">
-              Artisanal ice cream handcrafted with love, fresh ingredients, and a sprinkle of joy. 
-              Come taste why we're the city's favorite sweet escape.
+              {cmsContent.heroSubtitle || "Artisanal ice cream handcrafted with love, fresh ingredients, and a sprinkle of joy. Come taste why we're the city's favorite sweet escape."}
             </motion.p>
             <motion.div variants={childVariant} className="hero-actions">
               <Link to="/products" className="btn-primary hero-btn">
@@ -189,34 +159,23 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Falling elements container for the body of the home page */}
       <div className="falling-elements-wrapper">
         <FallingElements />
       </div>
 
-      {/* Custom Scrolling Marquee */}
       <div className="marquee-container">
         <div className="marquee-content">
-          <span>✨ 100% Organic Ingredients</span>
-          <span className="marquee-dot">•</span>
-          <span>Handcrafted Daily</span>
-          <span className="marquee-dot">•</span>
-          <span>Award Winning Flavors</span>
-          <span className="marquee-dot">•</span>
-          <span>Taste the Magic</span>
-          <span className="marquee-dot">•</span>
-          <span>✨ 100% Organic Ingredients</span>
-          <span className="marquee-dot">•</span>
-          <span>Handcrafted Daily</span>
-          <span className="marquee-dot">•</span>
-          <span>Award Winning Flavors</span>
-          <span className="marquee-dot">•</span>
-          <span>Taste the Magic</span>
-          <span className="marquee-dot">•</span>
+          <span>✨ 100% Organic Ingredients</span> <span className="marquee-dot">•</span>
+          <span>Handcrafted Daily</span> <span className="marquee-dot">•</span>
+          <span>Award Winning Flavors</span> <span className="marquee-dot">•</span>
+          <span>Taste the Magic</span> <span className="marquee-dot">•</span>
+          <span>✨ 100% Organic Ingredients</span> <span className="marquee-dot">•</span>
+          <span>Handcrafted Daily</span> <span className="marquee-dot">•</span>
+          <span>Award Winning Flavors</span> <span className="marquee-dot">•</span>
+          <span>Taste the Magic</span> <span className="marquee-dot">•</span>
         </div>
       </div>
 
-      {/* Category Sections */}
       {[
         { title: "Artisan Ice Creams", subtitle: "Our award-winning signature scoops.", items: topIceCreams },
         { title: "Premium Milkshakes", subtitle: "Smooth, cold, and hand-spun to perfection.", items: topMilkshakes },
@@ -243,28 +202,16 @@ export default function Home() {
             viewport={{ once: true, amount: 0.2 }}
           >
             {section.items.map(flavor => (
-              <motion.div variants={childVariant} key={flavor.id}>
-                <Tilt 
-                  tiltMaxAngleX={10} 
-                  tiltMaxAngleY={10} 
-                  scale={1.02} 
-                  transitionSpeed={2000} 
-                  className="flavor-card glass-panel" 
-                >
+              <motion.div variants={childVariant} key={flavor._id || flavor.id}>
+                <Tilt tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.02} className="flavor-card glass-panel">
                   <div className="flavor-image-container">
                     <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="lazy" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} />
                     <span className="flavor-tag">{flavor.tag}</span>
-                    <button className="favorite-icon-btn" aria-label="Favorite">
-                      <Heart size={24} />
-                    </button>
+                    <button className="favorite-icon-btn"><Heart size={24} /></button>
                   </div>
                   <div className="flavor-info">
                     <h3>{flavor.name}</h3>
                     <div className="flavor-rating">
-                      <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-                      <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-                      <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-                      <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
                       <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
                       <span>(120+ Reviews)</span>
                     </div>
@@ -273,97 +220,35 @@ export default function Home() {
               </motion.div>
             ))}
           </motion.div>
-          <div className="text-center mt-4" style={{ marginTop: '3rem' }}>
-            <Link to="/products" className="btn-secondary">View More</Link>
-          </div>
         </section>
       ))}
 
-      {/* Taste Critics (Testimonials) Section */}
       <section className="testimonials-section container py-16">
-        <motion.div 
-          className="section-header text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="section-title">The Sweet Talk</h2>
-          <p className="section-subtitle">What the critics are saying</p>
-          <div className="section-header-accent"></div>
-        </motion.div>
-
+        <h2 className="section-title text-center">The Sweet Talk</h2>
         <div className="testimonials-spotlight-wrapper">
           <AnimatePresence mode="wait">
             <motion.div 
               key={activeTestimonial}
               className="testimonial-spotlight-card glass-panel"
-              initial={{ opacity: 0, x: 50, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -50, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}
             >
-              <div className="quote-icon">"</div>
-              <p className="testimonial-text">
-                {testimonials[activeTestimonial].text}
-              </p>
-              
-              <div className="testimonial-footer">
-                <div className="author-info">
-                  <div className="stars">
-                    {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
-                      <Star key={i} size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-                    ))}
-                  </div>
-                  <h4 className="author-name">{testimonials[activeTestimonial].name}</h4>
-                  <p className="author-role">{testimonials[activeTestimonial].role}</p>
-                </div>
-              </div>
+              <p className="testimonial-text">"{testimonials[activeTestimonial].text}"</p>
+              <h4 className="author-name">{testimonials[activeTestimonial].name}</h4>
             </motion.div>
           </AnimatePresence>
-
-          <div className="testimonial-controls">
-            <button className="control-btn prev" onClick={prevTestimonial} aria-label="Previous testimonial">
-              <ChevronRight size={24} style={{ transform: 'rotate(180deg)' }} />
-            </button>
-            <div className="testimonial-dots">
-              {testimonials.map((_, i) => (
-                <button 
-                  key={i} 
-                  className={`dot ${activeTestimonial === i ? 'active' : ''}`}
-                  onClick={() => setActiveTestimonial(i)}
-                />
-              ))}
-            </div>
-            <button className="control-btn next" onClick={nextTestimonial} aria-label="Next testimonial">
-              <ChevronRight size={24} />
-            </button>
-          </div>
         </div>
       </section>
 
-      {/* Join the Club Newsletter */}
       <section className="newsletter-section">
         <div className="container">
-          <motion.div 
-            className="newsletter-box glass-panel"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="newsletter-content">
-              <h2>Join the Dream Club</h2>
-              <p>Sign up to get exclusive access to secret menu drops, special events, and sweet discounts.</p>
-              <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                <input type="email" placeholder="Enter your email address..." required className="newsletter-input" />
-                <button type="submit" className="btn-primary newsletter-btn">Subscribe</button>
-              </form>
-            </div>
-            <div className="newsletter-decoration">
-              <span role="img" aria-label="ice cream">🍦</span>
-            </div>
-          </motion.div>
+          <div className="newsletter-box glass-panel">
+            <h2>Join the Dream Club</h2>
+            <p>Sign up to get exclusive access to secret menu drops.</p>
+            <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
+              <input type="email" placeholder="Your email..." required className="newsletter-input" />
+              <button type="submit" className="btn-primary">Subscribe</button>
+            </form>
+          </div>
         </div>
       </section>
     </motion.div>
