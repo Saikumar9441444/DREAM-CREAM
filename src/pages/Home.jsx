@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Star, Heart, ArrowRight } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getLocalProducts } from '../utils/localDB';
+import { motion, AnimatePresence } from 'framer-motion';
 import FallingElements from '../components/FallingElements';
 import { Autoplay, EffectCards } from 'swiper/modules';
 import gsap from 'gsap';
@@ -100,7 +100,16 @@ export default function Home() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    setProducts(getLocalProducts());
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/products');
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Home fetch error:", err);
+      }
+    };
+    fetchProducts();
   }, []);
 
   const topIceCreams = products.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));

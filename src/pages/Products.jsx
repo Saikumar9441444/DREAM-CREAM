@@ -3,7 +3,6 @@ import { Search, Heart, Star, Check } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { getLocalProducts } from '../utils/localDB';
 import './Products.css';
 import './Home.css'; // Reuse card styles
 
@@ -18,13 +17,18 @@ export default function Products() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    // Simulate a brief premium loading experience
-    const timer = setTimeout(() => {
-      const data = getLocalProducts();
-      setProducts(data);
-      setLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
   }, []);
 
   const categories = ['All', 'Dairy', 'Vegan', 'Sorbet', 'Specialty', 'Milkshake', 'Thick Shake'];

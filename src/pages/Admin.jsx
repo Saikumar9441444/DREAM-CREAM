@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit2, Save, X, LogOut, ShieldCheck, Database, LayoutDashboard, Search } from 'lucide-react';
-import { getLocalProducts, addLocalProduct, deleteLocalProduct } from '../utils/localDB';
 import './Admin.css';
+
+const API_URL = 'http://localhost:5000/api/products';
 
 export default function Admin() {
   const { user, isAdmin, logout } = useAuth();
@@ -25,31 +26,50 @@ export default function Admin() {
     return <Navigate to="/" />;
   }
 
-  // Fetch products locally
-  const fetchProducts = () => {
-    const data = getLocalProducts();
-    setProducts(data);
+  // Fetch products from Cloud API
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setProducts(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
   };
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault();
-    addLocalProduct({
-      ...formData,
-      image: '/dairy.png' // Default image
-    });
-    fetchProducts();
-    setIsAdding(false);
-    setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, hue: 0 });
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          image: '/dairy.png' // Default image
+        })
+      });
+      if (resp.ok) {
+        fetchProducts();
+        setIsAdding(false);
+        setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, hue: 0 });
+      }
+    } catch (err) {
+      console.error("Error adding product:", err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this flavor?")) return;
-    deleteLocalProduct(id);
-    fetchProducts();
+    try {
+      const resp = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      if (resp.ok) fetchProducts();
+    } catch (err) {
+      console.error("Error deleting product:", err);
+    }
   };
 
   const filteredProducts = products.filter(p => 
@@ -72,7 +92,7 @@ export default function Admin() {
             </div>
             <div>
               <h1>Admin Dashboard</h1>
-              <p>Welcome, {user?.displayName} • Local Management</p>
+              <p>Welcome, {user?.displayName} • Cloud Management</p>
             </div>
           </div>
           <button onClick={logout} className="logout-btn flex items-center">
@@ -140,7 +160,7 @@ export default function Admin() {
         <motion.div 
           className="admin-products glass-panel"
           initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-8">
@@ -162,7 +182,7 @@ export default function Admin() {
                 <AnimatePresence mode="popLayout">
                   {filteredProducts.map(product => (
                     <motion.tr 
-                      key={product.id}
+                      key={product._id || product.id}
                       layout
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -177,7 +197,7 @@ export default function Admin() {
                           <button className="action-btn" onClick={() => {/* TODO: Edit */}}>
                             <Edit2 size={16} />
                           </button>
-                          <button className="action-btn delete" onClick={() => handleDelete(product.id)}>
+                          <button className="action-btn delete" onClick={() => handleDelete(product._id || product.id)}>
                             <Trash2 size={16} />
                           </button>
                         </div>
