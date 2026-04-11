@@ -7,7 +7,9 @@ dotenv.config();
 const contents = [
   { section: 'Hero', key: 'heroTitle', value: 'Experience the Magic in Every Scoop' },
   { section: 'Hero', key: 'heroSubtitle', value: 'Artisan flavors crafted with passion, served with a smile. Your cinematic escape into the world of premium desserts.' },
-  { section: 'About', key: 'storyText', value: 'Born from a dream to create the most decadent ice cream experience on the planet. Our journey started in a small kitchen with a big vision: to blend the finest local ingredients with cinematic imagination.' }
+  { section: 'About', key: 'storyText', value: 'Born from a dream to create the most decadent ice cream experience on the planet. Our journey started in a small kitchen with a big vision: to blend the finest local ingredients with cinematic imagination.' },
+  { section: 'Profile', key: 'adminName', value: 'Master Control Center' },
+  { section: 'Profile', key: 'adminGender', value: 'male' }
 ];
 
 const seedCMS = async () => {

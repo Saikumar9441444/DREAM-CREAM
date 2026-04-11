@@ -108,9 +108,15 @@ export default function Admin() {
         {/* Cinematic Admin Header */}
         <header className="admin-header glass-panel deluxe-header">
           <div className="admin-profile">
-            <div className="admin-shield-wrapper"><ShieldCheck color="var(--color-primary)" size={32} /></div>
+            <div className="admin-shield-wrapper">
+              {siteContent.find(c => c.key === 'adminGender')?.value === 'female' ? (
+                <Users color="var(--color-primary)" size={32} />
+              ) : (
+                <ShieldCheck color="var(--color-primary)" size={32} />
+              )}
+            </div>
             <div>
-              <h1 className="luxury-text">Master Control Center</h1>
+              <h1 className="luxury-text">{siteContent.find(c => c.key === 'adminName')?.value || "Master Control Center"}</h1>
               <p className="admin-badge-text">SECURE SESSION: {user.email}</p>
             </div>
           </div>
@@ -247,6 +253,24 @@ export default function Admin() {
             {activeMainTab === 'cms' && (
               <motion.div key="cms" className="tab-pane" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                  <div className="cms-layout-deluxe">
+                    <div className="cms-card glass-panel">
+                       <div className="cms-card-icon"><ShieldCheck size={24}/></div>
+                       <h3>Admin Profile Configuration</h3>
+                       <div className="cms-fields mt-6">
+                         <div className="cms-field">
+                           <label>Admin Display Name</label>
+                           <input defaultValue={siteContent.find(c => c.key === 'adminName')?.value || "Master Control Center"} onBlur={e => handleUpdateContent('Profile', 'adminName', e.target.value)} />
+                         </div>
+                         <div className="cms-field mt-4">
+                           <label>Identity / Gender Icon</label>
+                           <select defaultValue={siteContent.find(c => c.key === 'adminGender')?.value || "male"} onChange={e => handleUpdateContent('Profile', 'adminGender', e.target.value)}>
+                             <option value="male">Male (Professional Shield)</option>
+                             <option value="female">Female (Active Social)</option>
+                           </select>
+                         </div>
+                       </div>
+                    </div>
+
                     <div className="cms-card glass-panel">
                        <div className="cms-card-icon"><IceCream size={24}/></div>
                        <h3>Home Hero Architecture</h3>
