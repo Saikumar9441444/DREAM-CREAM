@@ -24,9 +24,16 @@ export function AuthProvider({ children }) {
     // Check for stored session on mount
     const storedUser = localStorage.getItem('dream_cream_user');
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setIsAdmin(parsedUser.email.trim().toLowerCase() === ADMIN_USER.email);
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.email) {
+          setUser(parsedUser);
+          setIsAdmin(parsedUser.email.trim().toLowerCase() === ADMIN_USER.email);
+        }
+      } catch (err) {
+        console.error("Corrupted session cleared:", err);
+        localStorage.removeItem('dream_cream_user');
+      }
     }
     setLoading(false);
   }, []);
@@ -66,7 +73,7 @@ export function AuthProvider({ children }) {
           trackVisit(userObj);
           resolve({ success: true });
         }
-      }, 800);
+      }, 100);
     });
   };
 
@@ -85,7 +92,7 @@ export function AuthProvider({ children }) {
         setIsAdmin(true);
         trackVisit(userObj);
         resolve({ success: true });
-      }, 1500);
+      }, 100);
     });
   };
 

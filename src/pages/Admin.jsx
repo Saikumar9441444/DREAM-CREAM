@@ -140,11 +140,7 @@ export default function Admin() {
         <header className="admin-header glass-panel deluxe-header">
           <div className="admin-profile">
             <div className="admin-shield-wrapper">
-              {Array.isArray(siteContent) && siteContent.find(c => c.key === 'adminGender')?.value === 'female' ? (
-                <Users color="var(--color-primary)" size={32} />
-              ) : (
-                <ShieldCheck color="var(--color-primary)" size={32} />
-              )}
+               <ShieldCheck color="var(--color-primary)" size={32} />
             </div>
             <div>
               <h1 className="luxury-text">
@@ -295,11 +291,8 @@ export default function Admin() {
                            <input defaultValue={siteContent.find(c => c.key === 'adminName')?.value || "Master Control Center"} onBlur={e => handleUpdateContent('Profile', 'adminName', e.target.value)} />
                          </div>
                          <div className="cms-field mt-4">
-                           <label>Identity / Gender Icon</label>
-                           <select defaultValue={siteContent.find(c => c.key === 'adminGender')?.value || "male"} onChange={e => handleUpdateContent('Profile', 'adminGender', e.target.value)}>
-                             <option value="male">Male (Professional Shield)</option>
-                             <option value="female">Female (Active Social)</option>
-                           </select>
+                           <label>Identity Status</label>
+                           <input value="Verified Male Admin" disabled className="opacity-50" />
                          </div>
                        </div>
                     </div>

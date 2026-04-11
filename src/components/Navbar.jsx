@@ -131,14 +131,18 @@ export default function Navbar({ onOpenCart }) {
           <div className="auth-group">
             {user ? (
               <button onClick={logout} className="user-avatar-btn" title="Logout">
-                <img 
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}&topType=shortHair&facialHairType=beardLight`} 
-                  alt="Profile" 
-                />
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-check">
+                  <path d="M2 21a8 8 0 0 1 13.292-6" />
+                  <circle cx="10" cy="8" r="5" />
+                  <path d="m16 19 2 2 4-4" />
+                </svg>
               </button>
             ) : (
-              <Link to="/login" className="action-btn">
-                <User size={20} />
+              <Link to="/login" className="action-btn" title="Login / Register">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
               </Link>
             )}
           </div>
