@@ -233,7 +233,16 @@
     flex: 1;
     justify-content: flex-end;
     gap: 20px !important;
-    padding-right: 0.5rem;
+    padding-right: 0.25rem;
+  }
+
+  .navbar-brand {
+    flex: 0 0 auto !important;
+    gap: 8px !important;
+  }
+
+  .brand-name {
+    font-size: 1rem !important;
   }
 
   .cart-trigger {

@@ -269,24 +269,24 @@ button {
   z-index: 2;
 }
 
-.favorite-icon-btn {
+.favorite-icon-btn, .favorite-btn {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: var(--color-surface);
+  top: 0.75rem;
+  right: 0.75rem;
+  background: white;
   color: var(--color-text-muted);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-fast);
-  z-index: 2;
+  z-index: 5;
 }
 
-.favorite-icon-btn:hover {
+.favorite-icon-btn:hover, .favorite-btn:hover {
   color: var(--color-primary);
   transform: scale(1.1);
 }
@@ -362,4 +362,25 @@ button {
 /* Base card transition refinement */
 .flavor-card {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* Lenis Smooth Scroll Optimization */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }

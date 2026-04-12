@@ -583,14 +583,6 @@
   }
 }
 
-@media (max-width: 900px) {
-  .admin-main-nav { grid-template-cols: repeat(2, 1fr); }
-}
-
-@media (max-width: 600px) {
-  .admin-main-nav { grid-template-cols: 1fr; }
-}
-
 /* Loading Portal */
 .admin-loading-container {
   min-height: 80vh;

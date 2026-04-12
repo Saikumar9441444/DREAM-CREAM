@@ -9,6 +9,7 @@ import Cursor from './components/Cursor';
 import Preloader from './components/Preloader';
 import ErrorBoundary from './components/ErrorBoundary';
 import AmbientBackground from './components/AmbientBackground';
+import SmoothScroll from './components/SmoothScroll';
 import './App.css';
 
 // Lazy load pages for better performance
@@ -42,8 +43,9 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <div className="app-layout">
-          <AmbientBackground />
-          <Cursor />
+          <SmoothScroll>
+            <AmbientBackground />
+            <Cursor />
           {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
           
           {/* Scroll Progress Bar */}
@@ -72,7 +74,8 @@ function App() {
           </main>
           
           <Footer />
-        </div>
+        </SmoothScroll>
+      </div>
       </AuthProvider>
     </ErrorBoundary>
   );
