@@ -202,7 +202,7 @@ export default function Products() {
                         src={flavor.image} 
                         alt={flavor.name} 
                         className="flavor-img" 
-                        loading="lazy" /* CRITICAL FOR MOBILE PERFORMANCE */
+                        loading="eager" /* PERFECT PRE-LOAD FOR PRESENTATION */
                         style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} 
                       />
                       {flavor.category === 'Specialty' && (

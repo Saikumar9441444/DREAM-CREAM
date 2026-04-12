@@ -254,9 +254,9 @@ export default function Home() {
                   className={`flavor-card glass-panel ${getCategoryInteraction(flavor.category).className}`}
                 >
                   <div className="flavor-image-container">
-                    <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="lazy" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} />
+                    <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="eager" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} />
                     <span className="flavor-tag">{flavor.tag}</span>
-                    <button className="favorite-icon-btn"><Heart size={24} /></button>
+                    <button className="favorite-btn"><Heart size={20} /></button>
                   </div>
                   <div className="flavor-info">
                     <h3>{flavor.name}</h3>

@@ -1,17 +1,55 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Preloader.css';
+import { STATIC_PRODUCTS } from '../data/staticProducts';
 
 export default function Preloader({ onComplete }) {
   const [isVisible, setIsVisible] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Hide the loader after a shorter, smoother delay
-    const timer = setTimeout(() => {
+    // 1. Identify all critical assets
+    const imagesToLoad = [
+      '/logo.png',
+      '/assets/hero_bg.png', 
+      '/videos/hero_scoop.gif', // Only if we want to wait for the big one on desktop
+      ...new Set(STATIC_PRODUCTS.map(p => p.image)) // All flavor visuals
+    ];
+
+    let loadedCount = 0;
+    const totalAssets = imagesToLoad.length;
+
+    if (totalAssets === 0) {
       setIsVisible(false);
-      if (onComplete) setTimeout(onComplete, 1000); // Wait for exit animation
-    }, 1800);
-    return () => clearTimeout(timer);
+      if (onComplete) onComplete();
+      return;
+    }
+
+    const loadAsset = (src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          loadedCount++;
+          setProgress((loadedCount / totalAssets) * 100);
+          resolve();
+        };
+        img.onerror = () => {
+          loadedCount++; // Count as "done" even if fail to avoid hanging
+          setProgress((loadedCount / totalAssets) * 100);
+          resolve();
+        };
+      });
+    };
+
+    // 2. Load everything in parallel
+    Promise.all(imagesToLoad.map(loadAsset)).then(() => {
+      // Small buffer for smoothness
+      setTimeout(() => {
+        setIsVisible(false);
+        if (onComplete) setTimeout(onComplete, 800);
+      }, 500);
+    });
   }, [onComplete]);
 
   return (
@@ -42,8 +80,8 @@ export default function Preloader({ onComplete }) {
             <motion.div 
               className="preloader-bar"
               initial={{ width: "0%" }}
-              animate={{ width: "100%" }}
-              transition={{ delay: 0.8, duration: 1.5, ease: "easeInOut" }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             />
           </div>
         </motion.div>
