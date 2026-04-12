@@ -232,7 +232,17 @@
   .navbar-actions {
     flex: 1;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 20px !important;
+    padding-right: 0.5rem;
+  }
+
+  .cart-trigger {
+    order: 1; /* Ensure cart comes before hamburger */
+  }
+
+  .menu-toggle {
+    order: 2;
+    margin-left: 0 !important;
   }
 
   .mobile-drawer {
