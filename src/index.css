@@ -53,6 +53,14 @@ body {
     radial-gradient(at 100% 100%, rgba(255, 192, 67, 0.08) 0px, transparent 50%);
   background-attachment: fixed;
   min-height: 100vh;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  position: relative !important;
+}
+
+html {
+  overflow-x: hidden !important;
+  width: 100% !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -140,7 +148,7 @@ button {
 }
 
 .section-title {
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
   font-weight: 900;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
@@ -175,6 +183,14 @@ button {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2.5rem;
   margin-top: 2rem;
+}
+
+@media (max-width: 600px) {
+  .flavors-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.8rem !important;
+    padding: 0 5px !important;
+  }
 }
 
 .flavor-card {

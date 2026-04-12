@@ -84,14 +84,11 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = async () => {
+    // SECURITY: Disabling the automatic admin bypass for Google login.
+    // In a real app, this would integrate with Firebase/Google OAuth.
     return new Promise((resolve) => {
       setTimeout(() => {
-        const userObj = { ...ADMIN_USER, displayName: 'Saikumar (Google Admin)' };
-        localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
-        setUser(userObj);
-        setIsAdmin(true);
-        trackVisit(userObj);
-        resolve({ success: true });
+        resolve({ success: false, message: "Google Login is disabled for this secure presentation." });
       }, 100);
     });
   };
