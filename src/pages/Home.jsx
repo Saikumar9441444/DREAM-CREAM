@@ -12,7 +12,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
-import heroGif from '../components/videos/Ice_cream_scoop_202604111206-ezgif.com-optimize.gif';
+import heroBg from '../assets/hero_bg.png';
 import { ENDPOINTS } from '../api/config';
 import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Home.css';
@@ -143,7 +143,7 @@ export default function Home() {
             style={{ scale: 1.1 }}
           />
           <motion.img 
-            src={heroGif} 
+            src="/videos/hero_scoop.gif" 
             alt="Cream Dream Experience" 
             className={`hero-bg-media video-layer ${videoLoaded ? 'loaded' : ''}`}
             onLoad={() => setVideoLoaded(true)}
