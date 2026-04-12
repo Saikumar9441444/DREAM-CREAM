@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { getCategoryInteraction } from '../utils/animations';
 import { ENDPOINTS } from '../api/config';
+import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Products.css';
 
 export default function Products() {
@@ -34,11 +35,11 @@ export default function Products() {
         const response = await fetch(ENDPOINTS.PRODUCTS);
         if (!response.ok) throw new Error(`Server responded with ${response.status}`);
         const data = await response.json();
-        setProducts(Array.isArray(data) ? data : []);
+        setProducts(Array.isArray(data) && data.length > 0 ? data : STATIC_PRODUCTS);
       } catch (err) {
-        console.error("Fetch error:", err);
-        setError(err.message);
-        setProducts([]); // Defensive fallback
+        console.error("Fetch error, using static fallback:", err);
+        // We don't set a hard error here anymore because we have fallbacks
+        setProducts(STATIC_PRODUCTS);
       } finally {
         setLoading(false);
       }

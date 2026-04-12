@@ -14,6 +14,7 @@ import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
 import heroGif from '../components/videos/Ice_cream_scoop_202604111206-ezgif.com-optimize.gif';
 import { ENDPOINTS } from '../api/config';
+import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Home.css';
 
 // Register GSAP Plugin
@@ -36,11 +37,11 @@ export default function Home() {
         if (!res.ok) throw new Error();
         return res.json();
       })
-      .then(data => setProducts(Array.isArray(data) ? data : []))
+      .then(data => setProducts(Array.isArray(data) && data.length > 0 ? data : STATIC_PRODUCTS))
       .catch(err => {
-        console.error("Product fetch failed:", err);
-        setError(true);
-        setProducts([]); 
+        console.error("Product fetch failed, using static fallback:", err);
+        setError(false); // No need for hard error UI
+        setProducts(STATIC_PRODUCTS); 
       });
 
     // 2. Fetch CMS Content from Cloud
@@ -202,13 +203,8 @@ export default function Home() {
         </div>
       </div>
 
-      {error && (
-        <div className="container" style={{ marginTop: '2rem' }}>
-          <div className="glass-panel text-center py-6" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
-            <p className="opacity-70">✨ Some secret menu items are still freezing. Join the club to be the first to know when they drop!</p>
-          </div>
         </div>
-      )}
+      </div>
 
       {[
         { title: "Artisan Ice Creams", subtitle: "Our award-winning signature scoops.", items: topIceCreams },

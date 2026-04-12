@@ -142,6 +142,10 @@ app.post('/api/content', async (req, res) => {
 });
 
 // Server Listen
-app.listen(PORT, () => {
-  console.log(`🚀 MERN Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 MERN Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
