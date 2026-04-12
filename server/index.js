@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://dream-cream-peach.vercel.app', // Explicit Production URL
   process.env.FRONTEND_URL,
   process.env.PRODUCTION_URL
 ].filter(Boolean);
@@ -42,6 +43,15 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // --- API ROUTES ---
+
+// 0. HEALTH CHECK
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'online', 
+    timestamp: new Date(),
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
 
 // 1. PRODUCTS (FLAVORS)
 app.get('/api/products', async (req, res) => {

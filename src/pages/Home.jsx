@@ -24,6 +24,7 @@ export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [products, setProducts] = useState([]);
   const [cmsContent, setCmsContent] = useState({});
+  const [error, setError] = useState(false);
   const heroRef = useRef(null);
   const videoRef = useRef(null);
   const titleRef = useRef(null);
@@ -31,16 +32,23 @@ export default function Home() {
   useEffect(() => {
     // 1. Fetch Products from Cloud
     fetch(ENDPOINTS.PRODUCTS)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then(data => setProducts(Array.isArray(data) ? data : []))
       .catch(err => {
         console.error("Product fetch failed:", err);
-        setProducts([]); // Fallback to empty array
+        setError(true);
+        setProducts([]); 
       });
 
     // 2. Fetch CMS Content from Cloud
     fetch(ENDPOINTS.CONTENT)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then(data => {
         const contentMap = {};
         if (Array.isArray(data)) {
@@ -193,6 +201,14 @@ export default function Home() {
           <span>Taste the Magic</span> <span className="marquee-dot">•</span>
         </div>
       </div>
+
+      {error && (
+        <div className="container" style={{ marginTop: '2rem' }}>
+          <div className="glass-panel text-center py-6" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
+            <p className="opacity-70">✨ Some secret menu items are still freezing. Join the club to be the first to know when they drop!</p>
+          </div>
+        </div>
+      )}
 
       {[
         { title: "Artisan Ice Creams", subtitle: "Our award-winning signature scoops.", items: topIceCreams },

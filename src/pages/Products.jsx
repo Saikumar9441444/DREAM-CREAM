@@ -17,6 +17,7 @@ export default function Products() {
   const [addedItems, setAddedItems] = useState({});
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
   // Sync state if URL search param changes
@@ -28,11 +29,15 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const response = await fetch(ENDPOINTS.PRODUCTS);
+        if (!response.ok) throw new Error(`Server responded with ${response.status}`);
         const data = await response.json();
         setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Fetch error:", err);
+        setError(err.message);
         setProducts([]); // Defensive fallback
       } finally {
         setLoading(false);
@@ -147,6 +152,27 @@ export default function Products() {
                 <div className="flex flex-col items-center">
                    <div className="loader-spinner mb-4"></div>
                    <p className="text-xl font-bold opacity-60">Preparing your flavors...</p>
+                </div>
+              </motion.div>
+            ) : error ? (
+              <motion.div 
+                className="error-state text-center glass-panel" 
+                style={{ gridColumn: '1 / -1', padding: '4rem', border: '1px solid rgba(255,107,107,0.3)' }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <div className="flex flex-col items-center">
+                   <h2 className="text-3xl font-bold mb-4" style={{ color: 'var(--color-accent)' }}>🍨 The Shop is Chilling Out...</h2>
+                   <p className="text-lg opacity-80 max-w-md mx-auto mb-6">
+                     We're having a slight melt-down connecting to our flavor vault. This is usually due to a temporary connection issue.
+                   </p>
+                   <button 
+                     onClick={() => window.location.reload()} 
+                     className="btn-primary"
+                     style={{ padding: '0.8rem 2rem' }}
+                   >
+                     Try Refreshing
+                   </button>
                 </div>
               </motion.div>
             ) : filteredProducts.length > 0 ? (
