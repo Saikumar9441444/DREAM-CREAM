@@ -154,8 +154,7 @@ export default function Home() {
           <motion.img 
             src="/videos/hero_scoop.gif" 
             alt="Cream Dream Experience" 
-            className={`hero-bg-media video-layer ${videoLoaded ? 'loaded' : ''}`}
-            onLoad={() => setVideoLoaded(true)}
+            className="hero-bg-media video-layer loaded" // FORCE LOADED CLASS
             style={{ scale: 1.1 }}
           />
           <div className="hero-bg-overlay"></div>
