@@ -13,7 +13,8 @@
 /* Home Page Initial State (Over dark video) */
 .style-transparent-light {
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .style-transparent-light .brand-name {

@@ -47,14 +47,37 @@
   text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+.preloader-progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
 .preloader-bar {
-  width: 0%;
+  width: 100%;
   height: 6px;
   border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.preloader-bar .motion-bar {
+  height: 100%;
   background: #ffffff;
-  margin-top: 1rem;
-  max-width: 250px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.preloader-percentage {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 0.5rem;
 }
 
 @keyframes floatPreloader {

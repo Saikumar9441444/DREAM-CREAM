@@ -77,12 +77,21 @@ export default function Preloader({ onComplete }) {
             >
               Cream Dream
             </motion.h2>
-            <motion.div 
-              className="preloader-bar"
-              initial={{ width: "0%" }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            />
+            <div className="preloader-progress-container">
+              <motion.div 
+                className="preloader-bar"
+                initial={{ width: "0%" }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              />
+              <motion.span 
+                className="preloader-percentage"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                {progress < 100 ? `Chilling your experience... ${Math.round(progress)}%` : "Ready to serve!"}
+              </motion.span>
+            </div>
           </div>
         </motion.div>
       )}
