@@ -9,6 +9,7 @@ import {
   Layers, IceCream, Coffee, Star, MessageSquare, Phone, Copy
 } from 'lucide-react';
 import { ENDPOINTS } from '../api/config';
+import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Admin.css';
 
 // Remove local API_BASE
@@ -63,7 +64,7 @@ export default function Admin() {
       const res = await fetch(endpointMap[activeMainTab]);
       const data = await res.json();
       
-      const safeData = Array.isArray(data) ? data : [];
+      const safeData = Array.isArray(data) && data.length > 0 ? data : (activeMainTab === 'inventory' ? STATIC_PRODUCTS : []);
       
       if (activeMainTab === 'inventory') setProducts(safeData);
       else if (activeMainTab === 'orders') setOrders(safeData);
