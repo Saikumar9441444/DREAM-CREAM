@@ -29,19 +29,22 @@ export default function Products() {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      // 1. Instantly show backup data so the page is NEVER empty
+      setProducts(STATIC_PRODUCTS);
+      setLoading(false);
+
       try {
-        setLoading(true);
-        setError(null);
+        // 2. Silently fetch from database in the background
         const response = await fetch(ENDPOINTS.PRODUCTS);
-        if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-        const data = await response.json();
-        setProducts(Array.isArray(data) && data.length > 0 ? data : STATIC_PRODUCTS);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setProducts(data); // Upgrade to real data if it works
+          }
+        }
       } catch (err) {
-        console.error("Fetch error, using static fallback:", err);
-        // We don't set a hard error here anymore because we have fallbacks
-        setProducts(STATIC_PRODUCTS);
-      } finally {
-        setLoading(false);
+        // Silently fail, we already have static products visible
+        console.log("Using backup flavors...");
       }
     };
     fetchProducts();

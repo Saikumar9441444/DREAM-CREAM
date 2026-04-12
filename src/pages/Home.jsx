@@ -33,19 +33,20 @@ export default function Home() {
   useEffect(() => {
     // 1. Fetch Products from Cloud
     const fetchProducts = async () => {
+      // 1. Show backup catalogs instantly (0ms wait)
+      setProducts(STATIC_PRODUCTS);
+      setLoading(false);
+
       try {
         const res = await fetch(ENDPOINTS.PRODUCTS);
         if (res.ok) {
           const data = await res.json();
-          setProducts(Array.isArray(data) && data.length > 0 ? data : STATIC_PRODUCTS);
-        } else {
-          setProducts(STATIC_PRODUCTS);
+          if (Array.isArray(data) && data.length > 0) {
+            setProducts(data); // Upgrade if database is available
+          }
         }
       } catch (err) {
-        console.error("Home fetch error:", err);
-        setProducts(STATIC_PRODUCTS);
-      } finally {
-        setLoading(false);
+        console.log("Using backup flavors on Home page...");
       }
     };
 
