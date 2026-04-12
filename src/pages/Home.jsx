@@ -12,7 +12,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
-import heroBg from '../assets/hero_bg.png';
 import { ENDPOINTS } from '../api/config';
 import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Home.css';
@@ -203,8 +202,6 @@ export default function Home() {
         </div>
       </div>
 
-        </div>
-      </div>
 
       {[
         { title: "Artisan Ice Creams", subtitle: "Our award-winning signature scoops.", items: topIceCreams },
