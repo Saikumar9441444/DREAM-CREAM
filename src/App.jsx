@@ -28,12 +28,12 @@ function App() {
   // Dynamic Page Title Management
   React.useEffect(() => {
     const routeTitles = {
-      '/': 'Dream Cream | Artisanal Gourmet Ice Cream',
-      '/products': 'Our Flavors | Dream Cream',
-      '/about': 'Our Story | Dream Cream',
-      '/orders': 'Checkout | Dream Cream',
-      '/admin': 'Admin Terminal | Dream Cream',
-      '/login': 'Login | Dream Cream'
+      '/': 'Cream Dream',
+      '/products': 'Cream Dream',
+      '/about': 'Cream Dream',
+      '/orders': 'Cream Dream',
+      '/admin': 'Cream Dream',
+      '/login': 'Cream Dream'
     };
     document.title = routeTitles[location.pathname] || 'Dream Cream';
   }, [location.pathname]);
