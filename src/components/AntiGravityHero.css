@@ -1,0 +1,32 @@
+.anti-gravity-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+  perspective: 1200px; /* Enhanced 3D depth */
+}
+
+.anti-gravity-item {
+  will-change: transform, opacity;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.anti-gravity-item img {
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter 0.3s ease;
+}
+
+/* Optional: Slight blur on background items for Depth of Field */
+.anti-gravity-item:nth-child(even) img {
+  filter: drop-shadow(0 15px 25px rgba(0,0,0,0.1)) blur(1px);
+}
+
+@media (max-width: 768px) {
+  .anti-gravity-container {
+    display: none; /* Conserve mobile resources */
+  }
+}

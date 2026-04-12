@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import CartSidebar from './components/CartSidebar';
 import Cursor from './components/Cursor';
 import Preloader from './components/Preloader';
+import ErrorBoundary from './components/ErrorBoundary';
 import AmbientBackground from './components/AmbientBackground';
 import './App.css';
 
@@ -24,41 +25,56 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  return (
-    <AuthProvider>
-      <div className="app-layout">
-        <AmbientBackground />
-        <Cursor />
-        {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
-        
-        {/* Scroll Progress Bar */}
-        <motion.div
-          className="scroll-progress-bar"
-          style={{ scaleX: scrollYProgress }}
-        />
-        
-        <Navbar onOpenCart={() => setIsCartOpen(true)} />
-        
-        <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+  // Dynamic Page Title Management
+  React.useEffect(() => {
+    const routeTitles = {
+      '/': 'Dream Cream | Artisanal Gourmet Ice Cream',
+      '/products': 'Our Flavors | Dream Cream',
+      '/about': 'Our Story | Dream Cream',
+      '/orders': 'Checkout | Dream Cream',
+      '/admin': 'Admin Terminal | Dream Cream',
+      '/login': 'Login | Dream Cream'
+    };
+    document.title = routeTitles[location.pathname] || 'Dream Cream';
+  }, [location.pathname]);
 
-        <main className="main-content">
-          <AnimatePresence mode="wait">
-            <Suspense fallback={<div className="loading-fallback"></div>}>
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/login" element={<Login />} />
-              </Routes>
-            </Suspense>
-          </AnimatePresence>
-        </main>
-        
-        <Footer />
-      </div>
-    </AuthProvider>
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <div className="app-layout">
+          <AmbientBackground />
+          <Cursor />
+          {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
+          
+          {/* Scroll Progress Bar */}
+          <motion.div
+            className="scroll-progress-bar"
+            style={{ scaleX: scrollYProgress }}
+          />
+          
+          <Navbar onOpenCart={() => setIsCartOpen(true)} />
+          
+          <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+          <main className="main-content">
+            <AnimatePresence mode="wait">
+              <Suspense fallback={<div className="loading-fallback"></div>}>
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/login" element={<Login />} />
+                </Routes>
+              </Suspense>
+            </AnimatePresence>
+          </main>
+          
+          <Footer />
+        </div>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -4,6 +4,8 @@ import { ChevronRight, Star, Heart, ArrowRight } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import FallingElements from '../components/FallingElements';
+import AntiGravityHero from '../components/AntiGravityHero';
+import { getCategoryInteraction } from '../utils/animations';
 import { Autoplay, EffectCards } from 'swiper/modules';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,6 +13,7 @@ import 'swiper/css';
 import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
 import heroGif from '../components/videos/Ice_cream_scoop_202604111206-ezgif.com-optimize.gif';
+import { ENDPOINTS } from '../api/config';
 import './Home.css';
 
 // Register GSAP Plugin
@@ -27,20 +30,28 @@ export default function Home() {
 
   useEffect(() => {
     // 1. Fetch Products from Cloud
-    fetch('http://localhost:5000/api/products')
+    fetch(ENDPOINTS.PRODUCTS)
       .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error("Product fetch failed:", err));
+      .then(data => setProducts(Array.isArray(data) ? data : []))
+      .catch(err => {
+        console.error("Product fetch failed:", err);
+        setProducts([]); // Fallback to empty array
+      });
 
     // 2. Fetch CMS Content from Cloud
-    fetch('http://localhost:5000/api/content')
+    fetch(ENDPOINTS.CONTENT)
       .then(res => res.json())
       .then(data => {
         const contentMap = {};
-        data.forEach(item => { contentMap[item.key] = item.value; });
+        if (Array.isArray(data)) {
+          data.forEach(item => { contentMap[item.key] = item.value; });
+        }
         setCmsContent(contentMap);
       })
-      .catch(err => console.error("CMS fetch failed:", err));
+      .catch(err => {
+        console.error("CMS fetch failed:", err);
+        setCmsContent({});
+      });
 
     // GSAP Smooth Scroll Scrubbing for Hero
     const ctx = gsap.context(() => {
@@ -94,9 +105,10 @@ export default function Home() {
     { name: "David Kim", role: "Regular Customer", text: "I drive 45 minutes just for their seasonal specials. The variety and creativity they bring to traditional flavors is unmatched.", rating: 5 }
   ];
 
-  const topIceCreams = products.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));
-  const topMilkshakes = products.filter(p => p.category === 'Milkshake').slice(0, 3).map(p => ({ ...p, tag: 'Must Try' }));
-  const topThickShakes = products.filter(p => p.category === 'Thick Shake').slice(0, 3).map(p => ({ ...p, tag: 'Dense & Rich' }));
+  const safeProducts = Array.isArray(products) ? products : [];
+  const topIceCreams = safeProducts.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));
+  const topMilkshakes = safeProducts.filter(p => p.category === 'Milkshake').slice(0, 3).map(p => ({ ...p, tag: 'Must Try' }));
+  const topThickShakes = safeProducts.filter(p => p.category === 'Thick Shake').slice(0, 3).map(p => ({ ...p, tag: 'Dense & Rich' }));
 
   const nextTestimonial = () => setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
   const prevTestimonial = () => setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -159,7 +171,13 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="falling-elements-wrapper">
+      {/* Hero section is now completely clean. Decorative elements begin below the fold. */}
+      <div className="anti-gravity-wrapper" style={{ position: 'absolute', top: '100vh', width: '100%', pointerEvents: 'none' }}>
+        <AntiGravityHero />
+      </div>
+
+      {/* Falling elements now only begin below the hero section */}
+      <div className="falling-elements-wrapper" style={{ top: '100vh' }}>
         <FallingElements />
       </div>
 
@@ -202,8 +220,19 @@ export default function Home() {
             viewport={{ once: true, amount: 0.2 }}
           >
             {section.items.map(flavor => (
-              <motion.div variants={childVariant} key={flavor._id || flavor.id}>
-                <Tilt tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.02} className="flavor-card glass-panel">
+              <motion.div 
+                variants={childVariant} 
+                key={flavor._id || flavor.id}
+                whileHover={getCategoryInteraction(flavor.category).whileHover}
+                whileTap={getCategoryInteraction(flavor.category).whileTap}
+              >
+                <Tilt 
+                  tiltMaxAngleX={getCategoryInteraction(flavor.category).tiltMaxAngleX} 
+                  tiltMaxAngleY={getCategoryInteraction(flavor.category).tiltMaxAngleY} 
+                  scale={getCategoryInteraction(flavor.category).scale} 
+                  transitionSpeed={getCategoryInteraction(flavor.category).transitionSpeed}
+                  className={`flavor-card glass-panel ${getCategoryInteraction(flavor.category).className}`}
+                >
                   <div className="flavor-image-container">
                     <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="lazy" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} />
                     <span className="flavor-tag">{flavor.tag}</span>

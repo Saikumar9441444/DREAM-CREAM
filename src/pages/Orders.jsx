@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Send, CheckCircle2, ChevronLeft, ChevronRight, Plus, Minus, Trash2 } from 'lucide-react';
+import { 
+  Send, CheckCircle2, ChevronLeft, ChevronRight, 
+  Plus, Minus, Trash2, Copy, MessageSquare, Phone 
+} from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { ENDPOINTS } from '../api/config';
 import './Orders.css';
 
 export default function Orders() {
@@ -16,6 +20,19 @@ export default function Orders() {
   } = useCart();
   
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [lastOrder, setLastOrder] = useState(null);
+
+  // Fallback: If cart is empty and not just submitted, redirect back to flavors
+  if (cartItems.length === 0 && !submitted) {
+    return (
+      <div className="orders-page flex flex-col items-center justify-center p-20 text-center">
+        <h2 className="text-3xl font-bold mb-4">Your Cart is Empty</h2>
+        <p className="opacity-70 mb-8">You haven't added any magic to your order yet.</p>
+        <Link to="/products" className="btn-primary">Explore Flavors</Link>
+      </div>
+    );
+  }
   const [paymentMethod, setPaymentMethod] = useState('cod');
 
   const handleSubmit = async (e) => {
@@ -25,6 +42,7 @@ export default function Orders() {
     const orderData = {
       customerName: e.target.name.value,
       customerEmail: e.target.email.value,
+      customerPhone: e.target.phone.value,
       items: cartItems.map(item => ({
         name: item.name,
         quantity: item.quantity,
@@ -33,8 +51,10 @@ export default function Orders() {
       total: finalTotal
     };
 
+    setLastOrder(orderData); // Store for WhatsApp slip
+
     try {
-      const resp = await fetch('http://localhost:5000/api/orders', {
+      const resp = await fetch(ENDPOINTS.ORDERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
@@ -59,6 +79,34 @@ export default function Orders() {
   // but let's add a fixed "₹0 Pickup" or show the fee.
   const finalTotal = cartTotalPrice + taxAmount + (cartItems.length > 0 ? 0 : 0);
 
+  const generateWhatsAppLink = (order) => {
+    if (!order) return '#';
+    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
+    const message = `🍦 *Cream Dream Order Slip* 🍦\n------------------------------\n*Customer:* ${order.customerName}\n*Total:* ₹${order.total.toFixed(2)}\n\n*Items:*\n${itemsText}\n\nThank you for choosing Cream Dream!`;
+    
+    // Clean phone number (removing non-digits)
+    const cleanPhone = order.customerPhone.replace(/\D/g, '');
+    const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    
+    return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
+  };
+
+  const generateSMSLink = (order) => {
+    if (!order) return '#';
+    // Simplified for SMS length limits
+    const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
+    const message = `Cream Dream Order: Total ₹${order.total.toFixed(2)}. Items: ${itemsText}. Thank you!`;
+    return `sms:${order.customerPhone}?body=${encodeURIComponent(message)}`;
+  };
+
+  const copySlipToClipboard = (order) => {
+    if (!order) return;
+    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
+    const text = `🍦 Cream Dream Order Slip 🍦\nCustomer: ${order.customerName}\nTotal: ₹${order.total.toFixed(2)}\nItems:\n${itemsText}`;
+    navigator.clipboard.writeText(text);
+    alert("Slip copied to clipboard!");
+  };
+
   if (submitted) {
     return (
       <div className="orders-page fade-in">
@@ -69,10 +117,42 @@ export default function Orders() {
                 <CheckCircle2 size={64} color="var(--color-primary)" />
               </div>
               <h2 className="mb-2">Order Confirmed!</h2>
-              <p>Thank you for choosing Cream Dream. We'll send an email confirmation shortly with your order details.</p>
-              <Link to="/products" onClick={() => setSubmitted(false)} className="btn-secondary mt-4">
-                Continue Shopping
-              </Link>
+              <p>Thank you for choosing Cream Dream. Your order is being prepared with love.</p>
+              
+              <div className="whatsapp-slip-section mt-6 p-4 glass-panel" style={{ background: 'rgba(72, 209, 204, 0.1)', borderRadius: '20px', border: '1px solid rgba(72, 209, 204, 0.2)' }}>
+                <p className="text-sm font-bold opacity-70 mb-3">GET YOUR ORDER SLIP ON WHATSAPP</p>
+                <a 
+                  href={generateWhatsAppLink(lastOrder)} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn-primary"
+                  style={{ background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}
+                >
+                  <Send size={18} className="mr-2" /> WhatsApp Slip
+                </a>
+                
+                <div className="flex gap-2 mt-3">
+                  <a 
+                    href={generateSMSLink(lastOrder)} 
+                    className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2"
+                    style={{ background: 'rgba(255,255,255,0.8)', color: 'var(--color-text-main)' }}
+                  >
+                    <MessageSquare size={16} /> SMS Slip
+                  </a>
+                  <button 
+                    onClick={() => copySlipToClipboard(lastOrder)} 
+                    className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2"
+                  >
+                    <Copy size={16} /> Copy Text
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 mt-8">
+                <Link to="/products" onClick={() => setSubmitted(false)} className="btn-secondary">
+                  Continue Shopping
+                </Link>
+              </div>
             </div>
           </div>
         </div>

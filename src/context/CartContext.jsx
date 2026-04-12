@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 
 const CartContext = createContext();
 
@@ -7,7 +7,20 @@ export function useCart() {
 }
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cream_dream_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Cart recovery failed:", e);
+      return [];
+    }
+  });
+
+  // Persist cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cream_dream_cart', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   // Add item to cart, or increment quantity if it already exists
   const addToCart = (product) => {

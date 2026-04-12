@@ -20,9 +20,9 @@ export default function Footer() {
           </div>
           <p>Handcrafted, artisanal ice cream made with love and magic, daily.</p>
           <div className="social-links">
-            <a href="#" aria-label="Share"><Share2 size={20} /></a>
-            <a href="#" aria-label="Mail"><Mail size={20} /></a>
-            <a href="#" aria-label="Chat"><MessageCircle size={20} /></a>
+            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="#" aria-label="Share"><Share2 size={20} /></motion.a>
+            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="#" aria-label="Mail"><Mail size={20} /></motion.a>
+            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="#" aria-label="Chat"><MessageCircle size={20} /></motion.a>
           </div>
         </div>
         

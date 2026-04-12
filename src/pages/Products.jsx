@@ -4,10 +4,9 @@ import { Search, Heart, Star, Check } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { getCategoryInteraction } from '../utils/animations';
+import { ENDPOINTS } from '../api/config';
 import './Products.css';
-import './Home.css'; // Reuse card styles
-
-const API_URL = 'http://localhost:5000/api/products';
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,11 +28,12 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(ENDPOINTS.PRODUCTS);
         const data = await response.json();
-        setProducts(data);
+        setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Fetch error:", err);
+        setProducts([]); // Defensive fallback
       } finally {
         setLoading(false);
       }
@@ -43,7 +43,7 @@ export default function Products() {
 
   const categories = ['All', 'Dairy', 'Vegan', 'Sorbet', 'Specialty', 'Milkshake', 'Thick Shake'];
 
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = (Array.isArray(products) ? products : []).filter(p => {
     const matchesCategory = filter === 'All' || p.category === filter;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -156,14 +156,18 @@ export default function Products() {
                   key={flavor._id || flavor.id}
                   layoutId={`product-${flavor._id || flavor.id}`}
                   style={{ display: 'flex' }}
+                  whileHover={getCategoryInteraction(flavor.category).whileHover}
+                  whileTap={getCategoryInteraction(flavor.category).whileTap}
                 >
                   <Tilt 
-                    tiltMaxAngleX={10} 
-                    tiltMaxAngleY={10} 
-                    scale={1.05} 
-                    transitionSpeed={2000} 
-                    className="flavor-card glass-panel w-full" 
+                    tiltMaxAngleX={getCategoryInteraction(flavor.category).tiltMaxAngleX} 
+                    tiltMaxAngleY={getCategoryInteraction(flavor.category).tiltMaxAngleY} 
+                    scale={getCategoryInteraction(flavor.category).scale} 
+                    transitionSpeed={getCategoryInteraction(flavor.category).transitionSpeed} 
+                    style={{ height: '100%', width: '100%' }} /* Ensure Tilt fills the flex item */
+                    className={`flavor-card glass-panel ${flavor.category === 'Specialty' ? 'specialty' : ''} ${getCategoryInteraction(flavor.category).className}`} 
                   >
+
                     <div className="flavor-image-container">
                       <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="lazy" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)` }} />
                       <span className="flavor-tag">{flavor.category}</span>
@@ -178,12 +182,14 @@ export default function Products() {
                           <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
                           <span>{flavor.rating}</span>
                         </div>
-                        <span className="flavor-price font-bold text-lg">{flavor.price}</span>
+                        <span className="flavor-price">{flavor.price}</span>
                       </div>
                       <button 
-                        className={`btn-primary add-to-cart-btn mt-4 w-full flex justify-center ${addedItems[flavor._id || flavor.id] ? 'added' : ''}`}
+                        className={`btn-primary add-to-cart-btn ${addedItems[flavor._id || flavor.id] ? 'added' : ''}`}
+
                         onClick={() => handleAddToCart(flavor)}
                       >
+
                         {addedItems[flavor._id || flavor.id] ? (
                           <span style={{ display: 'flex', alignItems: 'center' }}>Added <Check size={16} className="ml-1" /></span>
                         ) : (

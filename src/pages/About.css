@@ -177,10 +177,10 @@
 
 .quote-mark {
   font-size: 12rem;
-  color: rgba(212, 175, 55, 0.15); /* Faint Gold */
+  color: rgba(212, 175, 55, 0.08); /* Reduced opacity for better text contrast */
   position: absolute;
-  top: 2rem;
-  left: 3rem;
+  top: 1rem;
+  left: 2rem;
   font-family: serif;
   line-height: 1;
 }

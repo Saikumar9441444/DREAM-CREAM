@@ -7,7 +7,7 @@ export default function About() {
   const [cmsContent, setCmsContent] = useState({});
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/content')
+    fetch('/api/content')
       .then(res => res.json())
       .then(data => {
         const contentMap = {};

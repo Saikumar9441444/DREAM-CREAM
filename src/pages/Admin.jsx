@@ -6,11 +6,12 @@ import {
   Plus, Trash2, Edit2, Save, X, LogOut, ShieldCheck, 
   Database, LayoutDashboard, Search, ShoppingBag, 
   Users, Settings, CheckCircle, RefreshCcw, Filter,
-  Layers, IceCream, Coffee, Star
+  Layers, IceCream, Coffee, Star, MessageSquare, Phone, Copy
 } from 'lucide-react';
+import { ENDPOINTS } from '../api/config';
 import './Admin.css';
 
-const API_BASE = '/api';
+// Remove local API_BASE
 
 export default function Admin() {
   const { user, isAdmin, logout, loading: authLoading } = useAuth();
@@ -28,7 +29,7 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5 });
+  const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
 
   // Security check - wait for auth to finish loading
   if (authLoading) {
@@ -52,26 +53,30 @@ export default function Admin() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const endpoints = {
-        inventory: 'products',
-        orders: 'orders',
-        visitors: 'visitors',
-        cms: 'content'
+      const endpointMap = {
+        inventory: ENDPOINTS.PRODUCTS,
+        orders: ENDPOINTS.ORDERS,
+        visitors: ENDPOINTS.VISITORS,
+        cms: ENDPOINTS.CONTENT
       };
       
-      const res = await fetch(`${API_BASE}/${endpoints[activeMainTab]}`);
+      const res = await fetch(endpointMap[activeMainTab]);
       const data = await res.json();
       
-      if (Array.isArray(data)) {
-        if (activeMainTab === 'inventory') setProducts(data);
-        else if (activeMainTab === 'orders') setOrders(data);
-        else if (activeMainTab === 'visitors') setVisitors(data);
-        else if (activeMainTab === 'cms') setSiteContent(data);
-      } else {
-        console.warn(`API returned non-array for ${activeMainTab}:`, data);
-      }
+      const safeData = Array.isArray(data) ? data : [];
+      
+      if (activeMainTab === 'inventory') setProducts(safeData);
+      else if (activeMainTab === 'orders') setOrders(safeData);
+      else if (activeMainTab === 'visitors') setVisitors(safeData);
+      else if (activeMainTab === 'cms') setSiteContent(safeData);
+      
     } catch (err) { 
       console.error("Data fetch error:", err); 
+      // Ensure we don't crash by providing empty arrays on failure if they weren't initialized
+      if (activeMainTab === 'inventory') setProducts([]);
+      else if (activeMainTab === 'orders') setOrders([]);
+      else if (activeMainTab === 'visitors') setVisitors([]);
+      else if (activeMainTab === 'cms') setSiteContent([]);
     }
     setLoading(false);
   };
@@ -81,7 +86,7 @@ export default function Admin() {
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     const method = editingProduct ? 'PUT' : 'POST';
-    const url = editingProduct ? `${API_BASE}/products/${editingProduct._id}` : `${API_BASE}/products`;
+    const url = editingProduct ? `${ENDPOINTS.PRODUCTS}/${editingProduct._id}` : ENDPOINTS.PRODUCTS;
     
     try {
       const res = await fetch(url, {
@@ -93,7 +98,7 @@ export default function Admin() {
         fetchData();
         setIsAdding(false);
         setEditingProduct(null);
-        setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5 });
+        setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
       }
     } catch (err) { console.error("Product save error:", err); }
   };
@@ -101,14 +106,14 @@ export default function Admin() {
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Confirm permanent removal? This cannot be undone.")) return;
     try {
-      await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+      await fetch(`${ENDPOINTS.PRODUCTS}/${id}`, { method: 'DELETE' });
       fetchData();
     } catch (err) { console.error("Delete error:", err); }
   };
 
   const handleUpdateContent = async (section, key, value) => {
     try {
-      await fetch(`${API_BASE}/content`, {
+      await fetch(ENDPOINTS.CONTENT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section, key, value })
@@ -125,6 +130,33 @@ export default function Admin() {
   if (!isAdmin || user.email !== 'saikumar89515@gmail.com') {
     return <Navigate to="/" />;
   }
+
+  const generateWhatsAppLink = (order) => {
+    if (!order) return '#';
+    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
+    const message = `🍦 *Cream Dream Order Slip* 🍦\n------------------------------\n*Order Status:* ${order.status}\n*Customer:* ${order.customerName}\n*Total:* ₹${order.total.toFixed(2)}\n\n*Items:*\n${itemsText}\n\nThank you for choosing Cream Dream!`;
+    
+    // Clean phone number (removing non-digits)
+    const cleanPhone = (order.customerPhone || "").replace(/\D/g, '');
+    const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    
+    return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
+  };
+
+  const generateSMSLink = (order) => {
+    if (!order) return '#';
+    const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
+    const message = `Cream Dream Order: Total ₹${order.total.toFixed(2)}. Items: ${itemsText}`;
+    return `sms:${order.customerPhone}?body=${encodeURIComponent(message)}`;
+  };
+
+  const copySlipToClipboard = (order) => {
+    if (!order) return;
+    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
+    const text = `🍦 Cream Dream Order Slip 🍦\nCustomer: ${order.customerName}\nTotal: ₹${order.total.toFixed(2)}\nItems:\n${itemsText}`;
+    navigator.clipboard.writeText(text);
+    alert("Slip copied to clipboard!");
+  };
 
   const filteredProducts = Array.isArray(products) ? products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -190,51 +222,137 @@ export default function Admin() {
 
                 <AnimatePresence>
                   {isAdding && (
-                    <motion.div className="flavor-form-wrapper" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
-                      <form className="flavor-form-deluxe glass-panel mb-10" onSubmit={handleSaveProduct}>
-                        <div className="form-grid-premium">
-                          <div className="premium-input">
-                            <label>Flavor Identity</label>
-                            <input placeholder="Enter name..." required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                          </div>
-                          <div className="premium-input">
-                            <label>Category Group</label>
-                            <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                              <option>Dairy</option><option>Vegan</option><option>Sorbet</option>
-                              <option>Specialty</option><option>Milkshake</option><option>Thick Shake</option>
-                            </select>
-                          </div>
-                          <div className="premium-input">
-                            <label>Pricing Unit</label>
-                            <input placeholder="₹350" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
-                          </div>
+                    <div className="admin-modal-backdrop" onClick={(e) => { if(e.target === e.currentTarget) setIsAdding(false); }}>
+                      <motion.div 
+                        className="admin-modal-content"
+                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                      >
+                        <button className="modal-close-corner" onClick={() => setIsAdding(false)}><X size={24}/></button>
+                        
+                        <div className="modal-header-deluxe">
+                          <h2>{editingProduct ? 'Modify Flavor' : 'Add New Flavor'}</h2>
+                          <p>{editingProduct ? `REFINING: ${editingProduct.name}` : 'EXPANDING THE CATALOG'}</p>
                         </div>
-                        <button type="submit" className="save-btn-premium mt-8">PERMANENTLY COMMIT FLAVOR <Database size={16} className="ml-2 inline"/></button>
-                      </form>
-                    </motion.div>
+
+                        <form className="flavor-form-official" onSubmit={handleSaveProduct}>
+                          <div className="flavor-photo-preview-section">
+                            <div className="modal-photo-preview-circle" style={{ filter: `hue-rotate(${formData.hue || 0}deg)` }}>
+                              <img src={formData.image || 'https://images.unsplash.com/photo-1501443762994-82bd5dabb892?auto=format&fit=crop&q=80&w=200'} alt="Preview" />
+                            </div>
+                            <div className="premium-input w-full">
+                              <label>Photograph URL</label>
+                              <input 
+                                placeholder="https://images.unsplash.com/..." 
+                                value={formData.image} 
+                                onChange={e => setFormData({...formData, image: e.target.value})} 
+                              />
+                            </div>
+                          </div>
+
+                          <div className="form-grid-premium grid grid-cols-2 gap-6">
+                            <div className="premium-input">
+                              <label>Flavor Identity</label>
+                              <input placeholder="Enter name..." required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                            </div>
+                            <div className="premium-input">
+                              <label>Category Group</label>
+                              <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                                <option>Dairy</option><option>Vegan</option><option>Sorbet</option>
+                                <option>Specialty</option><option>Milkshake</option><option>Thick Shake</option>
+                              </select>
+                            </div>
+                            <div className="premium-input">
+                              <label>Pricing Unit</label>
+                              <input placeholder="₹350" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
+                            </div>
+                            <div className="premium-input">
+                              <label>Color Hue Shift</label>
+                              <input type="range" min="0" max="360" value={formData.hue || 0} onChange={e => setFormData({...formData, hue: parseInt(e.target.value)})} />
+                            </div>
+                          </div>
+
+                          <div className="form-actions-premium mt-10 flex gap-4">
+                            <button type="submit" className="save-btn-premium flex-1 py-5 bg-pink-500 text-white rounded-2xl font-black tracking-widest hover:bg-pink-600 transition-all">
+                              {editingProduct ? 'COMMIT CHANGES' : 'CREATE FLAVOR'} <Database size={16} className="ml-2 inline"/>
+                            </button>
+                          </div>
+                        </form>
+                      </motion.div>
+                    </div>
                   )}
                 </AnimatePresence>
 
-                <div className="flavor-table-deluxe glass-panel p-0">
-                  <table className="perfect-table">
-                    <thead><tr><th>PREVIEW</th><th>FLAVOR NAME</th><th>CATEGORY</th><th>PRICE</th><th className="text-right">MGMT</th></tr></thead>
-                    <tbody>
-                      {filteredProducts.map(p => (
-                        <tr key={p._id} className="perfect-row">
-                          <td className="w-20"><div className="flavor-circle-preview" style={{ filter: `hue-rotate(${p.hue || 0}deg)` }}><img src={p.image} alt="" /></div></td>
-                          <td><div className="flavor-main-name">{p.name}</div><div className="flavor-rating-mini"><Star size={10} fill="var(--color-primary)"/> {p.rating}</div></td>
-                          <td><span className={`cat-pill ${p.category.toLowerCase().replace(' ', '-')}`}>{p.category}</span></td>
-                          <td><span className="price-text">{p.price}</span></td>
-                          <td className="text-right">
-                             <div className="mgmt-btns">
-                               <button className="p-btn edit" title="Modify" onClick={() => { setEditingProduct(p); setFormData(p); setIsAdding(true); }}><Edit2 size={16}/></button>
-                               <button className="p-btn delete" title="Erase" onClick={() => handleDeleteProduct(p._id)}><Trash2 size={16}/></button>
-                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="flavor-catalog-viewport">
+                  {[
+                    { title: 'Artisan Ice Creams', types: ['Dairy', 'Vegan', 'Sorbet', 'Specialty'], icon: IceCream },
+                    { title: 'Premium Milkshakes', types: ['Milkshake'], icon: Star },
+                    { title: 'Decadent Thick Shakes', types: ['Thick Shake'], icon: Coffee }
+                  ].map(group => {
+                    const groupProducts = filteredProducts.filter(p => group.types.includes(p.category));
+                    if (groupProducts.length === 0 && inventoryFilter !== 'All') return null;
+                    if (groupProducts.length === 0 && inventoryFilter === 'All') return null;
+
+                    return (
+                      <div key={group.title} className="admin-category-section">
+                        <div className="admin-category-header">
+                          <div className="category-icon"><group.icon size={20} /></div>
+                          <h2>{group.title}</h2>
+                          <div className="category-count-badge">{groupProducts.length} items</div>
+                        </div>
+                        
+                        <div className="flavor-table-deluxe glass-panel p-0">
+                          <table className="perfect-table">
+                            <thead>
+                              <tr>
+                                <th>PREVIEW</th>
+                                <th>FLAVOR NAME</th>
+                                <th>CATEGORY</th>
+                                <th>PRICE</th>
+                                <th className="text-right">MGMT</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {groupProducts.map(p => (
+                                <tr key={p._id} className="perfect-row">
+                                  <td className="w-20">
+                                    <div className="flavor-circle-preview" style={{ filter: `hue-rotate(${p.hue || 0}deg)` }}>
+                                      <img src={p.image} alt="" />
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <div className="flavor-main-name">{p.name}</div>
+                                    <div className="flavor-rating-mini"><Star size={10} fill="var(--color-primary)"/> {p.rating}</div>
+                                  </td>
+                                  <td><span className={`cat-pill ${p.category.toLowerCase().replace(' ', '-')}`}>{p.category}</span></td>
+                                  <td><span className="price-text">{p.price}</span></td>
+                                  <td className="text-right">
+                                     <div className="mgmt-btns">
+                                       <button 
+                                         className="p-btn edit" 
+                                         title="Modify" 
+                                         onClick={() => { setEditingProduct(p); setFormData(p); setIsAdding(true); }}
+                                       >
+                                         <Edit2 size={14}/> <span>Edit</span>
+                                       </button>
+                                       <button 
+                                         className="p-btn delete" 
+                                         title="Erase" 
+                                         onClick={() => handleDeleteProduct(p._id)}
+                                       >
+                                         <Trash2 size={14}/> <span>Delete</span>
+                                       </button>
+                                     </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })}
                   {filteredProducts.length === 0 && <div className="p-12 text-center opacity-40 italic">System: No flavors detected in this frequency.</div>}
                 </div>
               </motion.div>
@@ -245,14 +363,45 @@ export default function Admin() {
               <motion.div key="orders" className="tab-pane" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="perfect-table-wrapper glass-panel p-0">
                   <table className="perfect-table">
-                    <thead><tr><th>CUSTOMER</th><th>ORDER SPECS</th><th>TOTAL VALUE</th><th className="text-right">STATUS</th></tr></thead>
+                    <thead><tr><th>CUSTOMER</th><th>CONTACT</th><th>ORDER SPECS</th><th>TOTAL</th><th>STATUS</th><th className="text-right">MGMT</th></tr></thead>
                     <tbody>
-                      {orders.length === 0 ? <tr><td colSpan="4" className="text-center py-20 opacity-50">Zero incoming transmissions.</td></tr> : orders.map(o => (
+                      {orders.length === 0 ? <tr><td colSpan="6" className="text-center py-20 opacity-50">Zero incoming transmissions.</td></tr> : orders.map(o => (
                         <tr key={o._id} className="perfect-row">
                           <td><div className="cust-name">{o.customerName}</div><div className="cust-email">{o.customerEmail}</div></td>
-                          <td className="w-1/3"><div className="item-specs">{o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</div></td>
+                          <td><div className="cust-phone flex items-center gap-1"><Phone size={12}/> {o.customerPhone}</div></td>
+                          <td className="w-1/4"><div className="item-specs">{o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</div></td>
                           <td><span className="order-price">₹{o.total.toFixed(2)}</span></td>
-                          <td className="text-right"><span className={`status-orb ${o.status.toLowerCase().replace(' ', '-')}`}>{o.status}</span></td>
+                          <td><span className={`status-orb ${o.status.toLowerCase().replace(' ', '-')}`}>{o.status}</span></td>
+                          <td className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <a 
+                                href={generateWhatsAppLink(o)} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="p-btn edit flex items-center gap-1 justify-center px-3"
+                                style={{ background: 'rgba(37, 211, 102, 0.1)', color: '#25D366' }}
+                                title="Send WhatsApp Slip"
+                              >
+                                <MessageSquare size={14}/> <span>WhatsApp</span>
+                              </a>
+                              <a 
+                                href={generateSMSLink(o)} 
+                                className="p-btn edit flex items-center gap-1 justify-center px-3"
+                                style={{ background: 'rgba(0, 112, 243, 0.1)', color: '#0070f3' }}
+                                title="Send SMS Slip"
+                              >
+                                <Phone size={14}/> <span>SMS</span>
+                              </a>
+                              <button 
+                                onClick={() => copySlipToClipboard(o)} 
+                                className="p-btn edit flex items-center gap-1 justify-center px-3"
+                                style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--color-text-main)' }}
+                                title="Copy Slip Text"
+                              >
+                                <Copy size={14}/> <span>Copy</span>
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

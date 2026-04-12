@@ -13,7 +13,7 @@ const ADMIN_USER = {
   role: 'admin'
 };
 
-const API_VISITORS = 'http://localhost:5000/api/visitors';
+const API_VISITORS = '/api/visitors';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
