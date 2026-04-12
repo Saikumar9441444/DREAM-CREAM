@@ -22,10 +22,10 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(STATIC_PRODUCTS);
   const [cmsContent, setCmsContent] = useState({});
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const heroRef = useRef(null);
   const videoRef = useRef(null);
   const titleRef = useRef(null);
@@ -232,9 +232,8 @@ export default function Home() {
           <motion.div 
             className="flavors-grid"
             variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
+            initial="show"
+            animate="show"
           >
             {section.items.map(flavor => (
               <motion.div 

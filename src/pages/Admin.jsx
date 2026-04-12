@@ -19,9 +19,10 @@ export default function Admin() {
   const [activeMainTab, setActiveMainTab] = useState('inventory');
   const [inventoryFilter, setInventoryFilter] = useState('All');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   // Data States
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(STATIC_PRODUCTS);
   const [orders, setOrders] = useState([]);
   const [visitors, setVisitors] = useState([]);
   const [siteContent, setSiteContent] = useState([]);
@@ -73,8 +74,8 @@ export default function Admin() {
       
     } catch (err) { 
       console.error("Data fetch error:", err); 
-      // Ensure we don't crash by providing empty arrays on failure if they weren't initialized
-      if (activeMainTab === 'inventory') setProducts([]);
+      // Ensure we don't crash by providing static fallbacks on failure
+      if (activeMainTab === 'inventory') setProducts(STATIC_PRODUCTS);
       else if (activeMainTab === 'orders') setOrders([]);
       else if (activeMainTab === 'visitors') setVisitors([]);
       else if (activeMainTab === 'cms') setSiteContent([]);
