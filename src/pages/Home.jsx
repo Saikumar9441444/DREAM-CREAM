@@ -287,8 +287,10 @@ export default function Home() {
       <section className="newsletter-section">
         <div className="container">
           <div className="newsletter-box glass-panel">
-            <h2>Join the Dream Club</h2>
-            <p>Sign up to get exclusive access to secret menu drops.</p>
+            <div className="newsletter-content">
+              <h2>Join the Dream Club</h2>
+              <p>Sign up to get exclusive access to secret menu drops.</p>
+            </div>
             <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
               <input type="email" placeholder="Your email..." required className="newsletter-input" />
               <button type="submit" className="btn-primary">Subscribe</button>

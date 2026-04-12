@@ -377,8 +377,8 @@
 
 .newsletter-content p {
   font-size: 1.1rem;
-  color: #ccc;
-  margin-bottom: 2.5rem;
+  color: #eeeeee; /* Brighter for better contrast on black */
+  margin-bottom: 0; /* Let the flex gap handle it or container padding */
   line-height: 1.6;
 }
 
