@@ -123,9 +123,9 @@ export default function Home() {
   ];
 
   const safeProducts = Array.isArray(products) ? products : [];
-  const topIceCreams = safeProducts.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 3).map(p => ({ ...p, tag: 'Bestseller' }));
-  const topMilkshakes = safeProducts.filter(p => p.category === 'Milkshake').slice(0, 3).map(p => ({ ...p, tag: 'Must Try' }));
-  const topThickShakes = safeProducts.filter(p => p.category === 'Thick Shake').slice(0, 3).map(p => ({ ...p, tag: 'Dense & Rich' }));
+  const topIceCreams = safeProducts.filter(p => p.category === 'Specialty' || p.category === 'Dairy').slice(0, 4).map(p => ({ ...p, tag: 'Bestseller' }));
+  const topMilkshakes = safeProducts.filter(p => p.category === 'Milkshake').slice(0, 4).map(p => ({ ...p, tag: 'Must Try' }));
+  const topThickShakes = safeProducts.filter(p => p.category === 'Thick Shake').slice(0, 4).map(p => ({ ...p, tag: 'Dense & Rich' }));
 
   const nextTestimonial = () => setActiveTestimonial((prev) => (prev + 1) % testimonials.length);
   const prevTestimonial = () => setActiveTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
