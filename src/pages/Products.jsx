@@ -197,12 +197,19 @@ export default function Products() {
                     style={{ height: '100%', width: '100%' }} /* Ensure Tilt fills the flex item */
                     className={`flavor-card glass-panel ${flavor.category === 'Specialty' ? 'specialty' : ''} ${getCategoryInteraction(flavor.category).className}`} 
                   >
-
                     <div className="flavor-image-container">
-                      <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="lazy" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)` }} />
-                      <span className="flavor-tag">{flavor.category}</span>
-                      <button className="favorite-icon-btn" aria-label="Favorite">
-                        <Heart size={24} />
+                      <img 
+                        src={flavor.image} 
+                        alt={flavor.name} 
+                        className="flavor-img" 
+                        loading="lazy" /* CRITICAL FOR MOBILE PERFORMANCE */
+                        style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} 
+                      />
+                      {flavor.category === 'Specialty' && (
+                        <div className="specialty-shine"></div>
+                      )}
+                      <button className="favorite-btn" aria-label="Add to favorites">
+                        <Heart size={20} />
                       </button>
                     </div>
                     <div className="flavor-info">

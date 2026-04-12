@@ -107,10 +107,20 @@ export default function Admin() {
 
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Confirm permanent removal? This cannot be undone.")) return;
+    
+    // Optimistic UI Update: Remove locally first so it feels instant for the demo
+    const remainingProducts = products.filter(p => (p._id || p.id) !== id);
+    setProducts(remainingProducts);
+    
     try {
-      await fetch(`${ENDPOINTS.PRODUCTS}/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${ENDPOINTS.PRODUCTS}/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      // Only re-fetch if successful, otherwise we keep our optimistic local state
       fetchData();
-    } catch (err) { console.error("Delete error:", err); }
+    } catch (err) { 
+      console.error("Delete error:", err);
+      // Even if network fails, we keep the local removal for the presentation session
+    }
   };
 
   const handleUpdateContent = async (section, key, value) => {

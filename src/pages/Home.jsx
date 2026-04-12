@@ -150,13 +150,16 @@ export default function Home() {
             className="hero-bg-media placeholder-layer" 
             style={{ scale: 1.1 }}
           />
-          <motion.img 
-            src="/videos/hero_scoop.gif" 
-            alt="Cream Dream Experience" 
-            className={`hero-bg-media video-layer ${videoLoaded ? 'loaded' : ''}`}
-            onLoad={() => setVideoLoaded(true)}
-            style={{ scale: 1.1 }}
-          />
+          {/* PERFORMANCE: Only render the heavy 13MB gif on desktop to save mobile data/CPU */}
+          {window.innerWidth > 768 && (
+            <motion.img 
+              src="/videos/hero_scoop.gif" 
+              alt="Cream Dream Experience" 
+              className={`hero-bg-media video-layer ${videoLoaded ? 'loaded' : ''}`}
+              onLoad={() => setVideoLoaded(true)}
+              style={{ scale: 1.1 }}
+            />
+          )}
           <div className="hero-bg-overlay"></div>
         </div>
 
