@@ -522,11 +522,21 @@
   }
 
   /* Inventory Grid Fix */
+  .perfect-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 50px !important; /* Give room for the final column's buttons */
+  }
+
   .perfect-table {
     display: block;
     width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
+  }
+
+  /* Force MGMT buttons to be fully accessible */
+  .mgmt-btns {
+    min-width: 160px; /* Ensure enough horizontal space for Edit + Delete */
+    justify-content: flex-start !important;
   }
 
   .inventory-mobile-list {
