@@ -190,9 +190,9 @@ export default function Products() {
                   whileTap={getCategoryInteraction(flavor.category).whileTap}
                 >
                   <Tilt 
-                    tiltMaxAngleX={getCategoryInteraction(flavor.category).tiltMaxAngleX} 
-                    tiltMaxAngleY={getCategoryInteraction(flavor.category).tiltMaxAngleY} 
-                    scale={getCategoryInteraction(flavor.category).scale} 
+                    tiltMaxAngleX={window.innerWidth < 768 ? 0 : getCategoryInteraction(flavor.category).tiltMaxAngleX} 
+                    tiltMaxAngleY={window.innerWidth < 768 ? 0 : getCategoryInteraction(flavor.category).tiltMaxAngleY} 
+                    scale={window.innerWidth < 768 ? 1 : getCategoryInteraction(flavor.category).scale} 
                     transitionSpeed={getCategoryInteraction(flavor.category).transitionSpeed} 
                     style={{ height: '100%', width: '100%' }} /* Ensure Tilt fills the flex item */
                     className={`flavor-card glass-panel ${flavor.category === 'Specialty' ? 'specialty' : ''} ${getCategoryInteraction(flavor.category).className}`} 

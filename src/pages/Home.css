@@ -222,6 +222,15 @@
     gap: 0.8rem !important;
   }
 
+  .video-layer {
+    display: none !important; /* Hide 13MB gif on mobile to prevent lag */
+  }
+
+  .placeholder-layer {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
   .hero-btn, .btn-outline-white {
     width: 100% !important;
     justify-content: center !important;
