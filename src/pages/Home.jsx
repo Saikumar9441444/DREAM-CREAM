@@ -25,23 +25,31 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [cmsContent, setCmsContent] = useState({});
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const heroRef = useRef(null);
   const videoRef = useRef(null);
   const titleRef = useRef(null);
 
   useEffect(() => {
     // 1. Fetch Products from Cloud
-    fetch(ENDPOINTS.PRODUCTS)
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => setProducts(Array.isArray(data) && data.length > 0 ? data : STATIC_PRODUCTS))
-      .catch(err => {
-        console.error("Product fetch failed, using static fallback:", err);
-        setError(false); // No need for hard error UI
-        setProducts(STATIC_PRODUCTS); 
-      });
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(ENDPOINTS.PRODUCTS);
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(Array.isArray(data) && data.length > 0 ? data : STATIC_PRODUCTS);
+        } else {
+          setProducts(STATIC_PRODUCTS);
+        }
+      } catch (err) {
+        console.error("Home fetch error:", err);
+        setProducts(STATIC_PRODUCTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
 
     // 2. Fetch CMS Content from Cloud
     fetch(ENDPOINTS.CONTENT)
