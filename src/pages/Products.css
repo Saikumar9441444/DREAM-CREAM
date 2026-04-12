@@ -145,13 +145,21 @@
     -webkit-mask-image: none;
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: scroll !important;
+    overflow-x: auto !important;
     display: flex !important;
-    padding: 10px 0 !important;
-    -webkit-overflow-scrolling: touch; /* Smooth swipe on iPhone */
+    gap: 12px !important;
+    padding: 10px 1rem !important; /* Side padding for better snap alignment */
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none; /* Hide scrollbar for Chrome/Firefox/IE/Edge */
+  }
+
+  .category-filters::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Safari/Chrome */
   }
 
   .filter-btn {
-    flex-shrink: 0; /* Prevent buttons from squishing */
+    flex-shrink: 0;
+    scroll-snap-align: center;
   }
 }
