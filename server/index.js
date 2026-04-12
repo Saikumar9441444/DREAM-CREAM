@@ -8,10 +8,18 @@ import Product from './models/Product.js';
 import Order from './models/Order.js';
 import Visitor from './models/Visitor.js';
 import SiteContent from './models/SiteContent.js';
+import compression from 'compression';
+import helmet from 'helmet';
 
 dotenv.config();
 
 const app = express();
+
+// Performance & Security Middlewares
+app.use(helmet({ 
+  contentSecurityPolicy: false, // Allow external assets like GIFs/Fonts
+}));
+app.use(compression()); // Gzip/Brotli support for ultra-fast transfers
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -53,10 +61,28 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 1. PRODUCTS (FLAVORS)
+// 1. PRODUCTS (FLAVORS) with Performance Optimization
+let productCache = null;
+let lastCacheUpdate = 0;
+const CACHE_TTL = 300000; // 5 minutes
+
 app.get('/api/products', async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    // 1. Return cached data if valid
+    const now = Date.now();
+    if (productCache && (now - lastCacheUpdate < CACHE_TTL)) {
+      return res.json(productCache);
+    }
+
+    // 2. Optimized Database Query (Projection: only pull what's needed for the grid)
+    const products = await Product.find()
+      .select('name category price rating image hue isFeatured') // Projection
+      .sort({ isFeatured: -1, createdAt: -1 })
+      .lean(); // Faster JSON conversion
+
+    productCache = products;
+    lastCacheUpdate = now;
+    
     res.json(products);
   } catch (err) { res.status(500).json({ message: err.message }); }
 });

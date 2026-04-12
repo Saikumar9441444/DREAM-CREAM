@@ -10,4 +10,9 @@ const productSchema = new mongoose.Schema({
   isFeatured: { type: Boolean, default: false }
 }, { timestamps: true });
 
+// Performance Indexes for Ultra-Fast Queries
+productSchema.index({ category: 1 });
+productSchema.index({ isFeatured: -1 });
+productSchema.index({ name: 'text' }); 
+
 export default mongoose.model('Product', productSchema);
