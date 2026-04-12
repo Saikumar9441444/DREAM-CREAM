@@ -143,5 +143,15 @@
   .category-filters {
     mask-image: none;
     -webkit-mask-image: none;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: scroll !important;
+    display: flex !important;
+    padding: 10px 0 !important;
+    -webkit-overflow-scrolling: touch; /* Smooth swipe on iPhone */
+  }
+
+  .filter-btn {
+    flex-shrink: 0; /* Prevent buttons from squishing */
   }
 }
