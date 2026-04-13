@@ -53,38 +53,12 @@ export default function Admin() {
   }
 
   const fetchData = async () => {
-    setLoading(true);
-    try {
-      const endpointMap = {
-        inventory: ENDPOINTS.PRODUCTS,
-        orders: ENDPOINTS.ORDERS,
-        visitors: ENDPOINTS.VISITORS,
-        cms: ENDPOINTS.CONTENT
-      };
-      
-      const res = await fetch(endpointMap[activeMainTab]);
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      
-      const data = await res.json();
-      const safeData = Array.isArray(data) && data.length > 0 ? data : (activeMainTab === 'inventory' ? STATIC_PRODUCTS : []);
-      
-      if (activeMainTab === 'inventory') setProducts(safeData);
-      else if (activeMainTab === 'orders') setOrders(safeData);
-      else if (activeMainTab === 'visitors') setVisitors(safeData);
-      else if (activeMainTab === 'cms') setSiteContent(safeData);
-      
-    } catch (err) { 
-      console.warn("Falling back to local data due to server error:", err.message); 
-      if (activeMainTab === 'inventory') setProducts(STATIC_PRODUCTS);
-      else {
-        // For orders/visitors/cms, use empty arrays but preserve inventory if it was already loaded
-        if (activeMainTab === 'orders') setOrders([]);
-        if (activeMainTab === 'visitors') setVisitors([]);
-        if (activeMainTab === 'cms') setSiteContent([]);
-      }
-    } finally {
-      setLoading(false);
-    }
+    // Instant Local Loading (Zero Latency)
+    setProducts(STATIC_PRODUCTS);
+    setOrders([]);
+    setVisitors([]);
+    setSiteContent([]);
+    setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, [activeMainTab]);

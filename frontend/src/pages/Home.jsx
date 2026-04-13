@@ -31,44 +31,12 @@ export default function Home() {
   const titleRef = useRef(null);
 
   useEffect(() => {
-    // 1. Fetch Products from Cloud
-    const fetchProducts = async () => {
-      // 1. Set static content instantly as a baseline
-      setProducts(STATIC_PRODUCTS);
-      setLoading(false);
-
-      try {
-        const res = await fetch(ENDPOINTS.PRODUCTS);
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setProducts(data); // Upgrade if database is available
-          }
-        }
-      } catch (err) {
-        console.warn("Using backup flavors on Home page...");
-      }
-    };
-
-    fetchProducts();
-
-    // 2. Fetch CMS Content from Cloud
-    fetch(ENDPOINTS.CONTENT)
-      .then(res => {
-        if (!res.ok) throw new Error("CMS Fetch Failed");
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const contentMap = {};
-          data.forEach(item => { contentMap[item.key] = item.value; });
-          setCmsContent(contentMap);
-        }
-      })
-      .catch(err => {
-        console.warn("CMS fetch failed, using default values.");
-        setCmsContent({});
-      });
+  useEffect(() => {
+    // Instant Static Content for a "Perfect" experience
+    setProducts(STATIC_PRODUCTS);
+    setLoading(false);
+    setCmsContent({}); // Use default values
+  }, []);
 
     // GSAP Smooth Scroll Scrubbing for Hero
     const ctx = gsap.context(() => {

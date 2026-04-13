@@ -98,25 +98,9 @@ export default function Products() {
   }, [searchParams]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      // 1. Set static content instantly as a baseline
-      setProducts(STATIC_PRODUCTS);
-
-      try {
-        const response = await fetch(ENDPOINTS.PRODUCTS);
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setProducts(data); // Upgrade to live data if available
-          }
-        }
-      } catch (err) {
-        console.error("Fetch failed, using static fallback.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
+    // Instant Static Loading for a "Perfect" experience
+    setProducts(STATIC_PRODUCTS);
+    setLoading(false);
   }, []);
 
   // 3. OPTIMIZED FILTERING
@@ -154,37 +138,6 @@ export default function Products() {
   return (
     <motion.div className="products-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
     <div className="products-hero">
-      {/* Decorative background elements */}
-      <div className="hero-decor decor-left">
-        <motion.img 
-          src="/scoop.png" 
-          className="decor-item scoop-left"
-          animate={{ y: [0, -20, 0], rotate: [0, 8, 0], scale: [1, 1.05, 1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.img 
-          src="/cherry.png" 
-          className="decor-item cherry-left"
-          animate={{ y: [0, 15, 0], rotate: [0, -15, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
-      </div>
-
-      <div className="hero-decor decor-right">
-        <motion.img 
-          src="/mixed_nuts.png" 
-          className="decor-item nuts-right"
-          animate={{ y: [0, -15, 0], rotate: [10, -10, 10] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.img 
-          src="/scoop.png" 
-          className="decor-item scoop-right"
-          animate={{ y: [0, 20, 0], rotate: [-5, 5, -5] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        />
-      </div>
-
       <div className="container" style={{ position: 'relative', zIndex: 10 }}>
         <header className="section-header">
           <motion.div

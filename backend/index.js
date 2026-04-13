@@ -45,10 +45,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// Database Connection
+// Database Connection (Disabled for Pure Frontend Phase)
+/*
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
+*/
+console.log('ℹ️ Running in Static Data mode (Database connection disabled)');
 
 // --- API ROUTES ---
 
