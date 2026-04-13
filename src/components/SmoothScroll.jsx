@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import Lenis from '@studio-freight/lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -7,6 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function SmoothScroll({ children }) {
   const lenisRef = useRef(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     // Initialize Lenis
@@ -17,7 +19,7 @@ export default function SmoothScroll({ children }) {
       gestureOrientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1,
-      smoothTouch: false, // Disable for mobile to keep native feel if preferred, or true for total glide
+      smoothTouch: false,
       touchMultiplier: 2,
       infinite: false,
     });
@@ -40,6 +42,13 @@ export default function SmoothScroll({ children }) {
       gsap.ticker.remove(() => {});
     };
   }, []);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+    }
+  }, [pathname]);
 
   return <>{children}</>;
 }
