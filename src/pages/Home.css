@@ -481,11 +481,12 @@
     display: none;
   }
 }
-@media (max-width: 768px) {
-  .testimonials-section .section-title {
-    display: block;
-    text-align: center;
-    width: 100%;
-    margin-bottom: 2rem;
-  }
+.testimonials-section {
+  text-align: center;
+  padding-bottom: 4rem;
+}
+
+.testimonials-section .section-title {
+  display: inline-block;
+  margin-bottom: 2.5rem;
 }
