@@ -111,19 +111,18 @@
     flex-direction: column;
     align-items: stretch;
     border-radius: var(--border-radius-md);
-    padding: 1rem;
-    gap: 1.5rem;
+    padding: 1rem 0.5rem;
+    gap: 1.25rem;
   }
   
   .search-bar {
     max-width: 100%;
   }
 
-  /* Force 2 columns on mobile for a tighter, app-like grid */
+  /* Allow global responsiveness from index.css to take effect */
   .flavors-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 1rem !important;
-    padding: 0 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
   }
 
   .flavor-card {
@@ -161,5 +160,7 @@
   .filter-btn {
     flex-shrink: 0;
     scroll-snap-align: center;
+    padding: 6px 14px;
+    font-size: 0.85rem;
   }
 }

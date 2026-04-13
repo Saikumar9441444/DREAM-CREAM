@@ -58,9 +58,10 @@ body {
   position: relative !important;
 }
 
-html {
+html, body {
   overflow-x: hidden !important;
   width: 100% !important;
+  position: relative;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -118,6 +119,12 @@ button {
   padding: 0 24px;
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
 /* Animations */
 @keyframes float {
   0% { transform: translateY(0px); }
@@ -148,7 +155,7 @@ button {
 }
 
 .section-title {
-  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  font-size: clamp(1.8rem, 8vw, 3.5rem);
   font-weight: 900;
   margin-bottom: 1rem;
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
@@ -158,6 +165,7 @@ button {
   display: inline-block;
   letter-spacing: -0.5px;
   text-transform: uppercase;
+  line-height: 1.1;
 }
 
 .section-subtitle {
@@ -187,9 +195,16 @@ button {
 
 @media (max-width: 600px) {
   .flavors-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.8rem !important;
-    padding: 0 5px !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 0;
+  }
+}
+
+@media (max-width: 440px) {
+  .flavors-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 }
 
@@ -305,6 +320,7 @@ button {
   /* Limit to 2 lines for consistency */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   height: 3.5rem; /* Reserve space for 2 lines */
@@ -383,4 +399,9 @@ html.lenis {
 
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
+}
+
+/* Utility Classes */
+.text-center {
+  text-align: center !important;
 }

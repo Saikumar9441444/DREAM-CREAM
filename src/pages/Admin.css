@@ -29,6 +29,7 @@
   letter-spacing: -0.04em;
   background: linear-gradient(135deg, var(--color-text-main) 0%, #FF7B9C 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -63,7 +64,7 @@
 /* Tab Navigation Perfection */
 .admin-main-nav {
   display: grid;
-  grid-template-cols: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
 }
 
@@ -373,7 +374,7 @@
 /* Analytics Luxury grid */
 .analytics-grid {
   display: grid;
-  grid-template-cols: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
 }
 
@@ -477,8 +478,8 @@
 
   .deluxe-header {
     flex-direction: column;
-    padding: 1.5rem;
-    gap: 1.5rem;
+    padding: 1.25rem;
+    gap: 1.25rem;
     text-align: center;
     border-radius: 20px;
   }
@@ -499,8 +500,13 @@
   }
 
   .main-tab-btn {
-    padding: 1.25rem 0.5rem;
+    padding: 1rem 0.4rem;
     border-radius: 16px;
+    gap: 0.4rem;
+  }
+
+  .main-tab-btn span {
+    font-size: 0.65rem;
   }
 
   /* Catalog Mobile Swiper */
@@ -531,6 +537,11 @@
   .perfect-table {
     display: block;
     width: 100%;
+    font-size: 0.85rem;
+  }
+
+  .perfect-table th, .perfect-row td {
+    padding: 1rem 0.75rem;
   }
 
   /* Force MGMT buttons to be fully accessible */
@@ -650,7 +661,7 @@
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
-  padding: 3.5rem;
+  padding: 2.5rem 1.5rem;
   position: relative;
 }
 
