@@ -1,6 +1,50 @@
 .products-page {
-  padding-top: 4rem;
   padding-bottom: 6rem;
+  overflow-x: hidden;
+}
+
+.products-hero {
+  position: relative;
+  padding: 10rem 0 6rem;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 123, 156, 0.05) 0%, transparent 70%);
+  margin-bottom: 2rem;
+  overflow: visible;
+}
+
+.hero-decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decor-item {
+  position: absolute;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+  opacity: 0.8;
+}
+
+.scoop-left { left: 8%; top: 20%; width: 120px; }
+.cherry-left { left: 15%; top: 60%; width: 60px; }
+.nuts-right { right: 12%; top: 25%; width: 90px; }
+.scoop-right { right: 5%; top: 55%; width: 140px; }
+
+@media (max-width: 1024px) {
+  .scoop-left { left: 2%; width: 100px; }
+  .nuts-right { right: 2%; width: 80px; }
+  .scoop-right { right: -2%; width: 110px; }
+}
+
+@media (max-width: 850px) {
+  .hero-decor {
+    display: none; /* Hide decorative items on smaller screens to prevent clutter */
+  }
+  
+  .products-hero {
+    padding: 8rem 0 4rem;
+  }
 }
 
 

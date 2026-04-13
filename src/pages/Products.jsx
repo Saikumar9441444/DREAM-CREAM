@@ -159,56 +159,97 @@ export default function Products() {
 
   return (
     <motion.div className="products-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="container" style={{ paddingTop: '70px' }}>
-        <header className="section-header mb-8">
-          <h1 className="section-title">Our Flavors</h1>
-          <p className="section-subtitle">Handcrafted daily with the finest ingredients.</p>
-          <div className="section-header-accent"></div>
-        </header>
-
-        <div className="filters-container glass-panel">
-          <div className="search-bar">
-            <Search size={20} color="var(--color-text-muted)" />
-            <input 
-              type="text" placeholder="Search flavors..." value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setSearchParams({ search: e.target.value });
-              }}
-            />
-          </div>
-          <div className="category-filters">
-            {categories.map(cat => (
-              <button 
-                key={cat} className={`filter-btn ${filter === cat ? 'active' : ''}`}
-                onClick={() => setFilter(cat)}
-              >{cat}</button>
-            ))}
-          </div>
-        </div>
-
-        <motion.div className="flavors-grid products-grid mt-8" variants={containerVariants} initial="hidden" animate="show">
-          <AnimatePresence mode="popLayout">
-            {loading ? (
-              [...Array(8)].map((_, i) => <SkeletonCard key={i} />)
-            ) : filteredProducts.length > 0 ? (
-              filteredProducts.map(flavor => (
-                <FlavorCard 
-                  key={flavor._id || flavor.id}
-                  flavor={flavor}
-                  isAdded={!!addedItems[flavor._id || flavor.id]}
-                  onAdd={handleAddToCart}
-                  itemVariants={itemVariants}
-                />
-              ))
-            ) : (
-              <div className="no-results" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
-                <p>No flavors found for "{searchQuery}".</p>
-              </div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+    <div className="products-hero">
+      {/* Decorative background elements */}
+      <div className="hero-decor decor-left">
+        <motion.img 
+          src="/scoop.png" 
+          className="decor-item scoop-left"
+          animate={{ y: [0, -20, 0], rotate: [0, 8, 0], scale: [1, 1.05, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.img 
+          src="/cherry.png" 
+          className="decor-item cherry-left"
+          animate={{ y: [0, 15, 0], rotate: [0, -15, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
       </div>
-    </motion.div>
+
+      <div className="hero-decor decor-right">
+        <motion.img 
+          src="/mixed_nuts.png" 
+          className="decor-item nuts-right"
+          animate={{ y: [0, -15, 0], rotate: [10, -10, 10] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.img 
+          src="/scoop.png" 
+          className="decor-item scoop-right"
+          animate={{ y: [0, 20, 0], rotate: [-5, 5, -5] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
+      </div>
+
+      <div className="container" style={{ position: 'relative', zIndex: 10 }}>
+        <header className="section-header">
+          <motion.div
+            initial={{ opacity: 0, y: -30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <h1 className="section-title">Our Flavors</h1>
+            <p className="section-subtitle">Handcrafted daily with the finest ingredients.</p>
+            <div className="section-header-accent"></div>
+          </motion.div>
+        </header>
+      </div>
+    </div>
+
+    <div className="container">
+      <div className="filters-container glass-panel">
+        <div className="search-bar">
+          <Search size={20} color="var(--color-text-muted)" />
+          <input 
+            type="text" placeholder="Search flavors..." value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSearchParams({ search: e.target.value });
+            }}
+          />
+        </div>
+        <div className="category-filters">
+          {categories.map(cat => (
+            <button 
+              key={cat} className={`filter-btn ${filter === cat ? 'active' : ''}`}
+              onClick={() => setFilter(cat)}
+            >{cat}</button>
+          ))}
+        </div>
+      </div>
+
+      <motion.div className="flavors-grid products-grid mt-8" variants={containerVariants} initial="hidden" animate="show">
+        <AnimatePresence mode="popLayout">
+          {loading ? (
+            [...Array(8)].map((_, i) => <SkeletonCard key={i} />)
+          ) : filteredProducts.length > 0 ? (
+            filteredProducts.map(flavor => (
+              <FlavorCard 
+                key={flavor._id || flavor.id}
+                flavor={flavor}
+                isAdded={!!addedItems[flavor._id || flavor.id]}
+                onAdd={handleAddToCart}
+                itemVariants={itemVariants}
+              />
+            ))
+          ) : (
+            <div className="no-results" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+              <p>No flavors found for "{searchQuery}".</p>
+            </div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </div>
+  </motion.div>
   );
 }
