@@ -33,7 +33,7 @@ export default function Home() {
   useEffect(() => {
     // 1. Fetch Products from Cloud
     const fetchProducts = async () => {
-      // 1. Show backup catalogs instantly (0ms wait)
+      // 1. Set static content instantly as a baseline
       setProducts(STATIC_PRODUCTS);
       setLoading(false);
 
@@ -46,7 +46,7 @@ export default function Home() {
           }
         }
       } catch (err) {
-        console.log("Using backup flavors on Home page...");
+        console.warn("Using backup flavors on Home page...");
       }
     };
 
@@ -55,18 +55,18 @@ export default function Home() {
     // 2. Fetch CMS Content from Cloud
     fetch(ENDPOINTS.CONTENT)
       .then(res => {
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error("CMS Fetch Failed");
         return res.json();
       })
       .then(data => {
-        const contentMap = {};
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
+          const contentMap = {};
           data.forEach(item => { contentMap[item.key] = item.value; });
+          setCmsContent(contentMap);
         }
-        setCmsContent(contentMap);
       })
       .catch(err => {
-        console.error("CMS fetch failed:", err);
+        console.warn("CMS fetch failed, using default values.");
         setCmsContent({});
       });
 

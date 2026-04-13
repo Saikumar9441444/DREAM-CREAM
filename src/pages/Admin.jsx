@@ -63,8 +63,9 @@ export default function Admin() {
       };
       
       const res = await fetch(endpointMap[activeMainTab]);
-      const data = await res.json();
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
       
+      const data = await res.json();
       const safeData = Array.isArray(data) && data.length > 0 ? data : (activeMainTab === 'inventory' ? STATIC_PRODUCTS : []);
       
       if (activeMainTab === 'inventory') setProducts(safeData);
@@ -73,14 +74,17 @@ export default function Admin() {
       else if (activeMainTab === 'cms') setSiteContent(safeData);
       
     } catch (err) { 
-      console.error("Data fetch error:", err); 
-      // Ensure we don't crash by providing static fallbacks on failure
+      console.warn("Falling back to local data due to server error:", err.message); 
       if (activeMainTab === 'inventory') setProducts(STATIC_PRODUCTS);
-      else if (activeMainTab === 'orders') setOrders([]);
-      else if (activeMainTab === 'visitors') setVisitors([]);
-      else if (activeMainTab === 'cms') setSiteContent([]);
+      else {
+        // For orders/visitors/cms, use empty arrays but preserve inventory if it was already loaded
+        if (activeMainTab === 'orders') setOrders([]);
+        if (activeMainTab === 'visitors') setVisitors([]);
+        if (activeMainTab === 'cms') setSiteContent([]);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, [activeMainTab]);

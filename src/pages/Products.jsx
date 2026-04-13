@@ -99,27 +99,21 @@ export default function Products() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      // Show backup data if first load takes > 1.5s
-      const timer = setTimeout(() => {
-        if (loading) {
-           setProducts(STATIC_PRODUCTS);
-           setLoading(false);
-        }
-      }, 1500);
+      // 1. Set static content instantly as a baseline
+      setProducts(STATIC_PRODUCTS);
 
       try {
         const response = await fetch(ENDPOINTS.PRODUCTS);
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
-            setProducts(data);
+            setProducts(data); // Upgrade to live data if available
           }
         }
       } catch (err) {
-        setProducts(STATIC_PRODUCTS);
+        console.error("Fetch failed, using static fallback.");
       } finally {
         setLoading(false);
-        clearTimeout(timer);
       }
     };
     fetchProducts();
