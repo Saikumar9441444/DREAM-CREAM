@@ -15,14 +15,14 @@ import './Admin.css';
 // Remove local API_BASE
 
 export default function Admin() {
-  const { user, isAdmin, logout, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [activeMainTab, setActiveMainTab] = useState('inventory');
   const [inventoryFilter, setInventoryFilter] = useState('All');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
   // Data States
-  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [visitors, setVisitors] = useState([]);
   const [siteContent, setSiteContent] = useState([]);
@@ -33,40 +33,38 @@ export default function Admin() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
 
-  // Security check - wait for auth to finish loading
-  if (authLoading) {
-    return (
-      <div className="admin-loading-container">
-        <div className="loading-spinner"></div>
-        <p>Verifying Credentials...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" state={{ from: '/admin' }} />;
-  }
-  
-  const currentEmail = user.email ? user.email.trim().toLowerCase() : '';
-  if (!isAdmin || currentEmail !== 'saikumar89515@gmail.com') {
-    return <Navigate to="/" />;
-  }
-
   const fetchData = async () => {
-    // Instant Local Loading (Zero Latency)
-    setProducts(STATIC_PRODUCTS);
-    setOrders([]);
-    setVisitors([]);
-    setSiteContent([]);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const [prodRes, orderRes] = await Promise.all([
+        fetch(ENDPOINTS.PRODUCTS),
+        fetch(ENDPOINTS.ORDERS)
+      ]);
+
+      if (prodRes.ok) setProducts(await prodRes.json());
+      if (orderRes.ok) setOrders(await orderRes.json());
+      
+      setLoading(false);
+    } catch (err) {
+      console.error("Data fetch error:", err);
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchData(); }, [activeMainTab]);
+  useEffect(() => { 
+    if (user && isAdmin) fetchData(); 
+  }, [activeMainTab, user, isAdmin]);
+
+  // Auth Protection
+  if (authLoading) return <div className="admin-loading">AUTHENTICATING SECURE SESSION...</div>;
+  if (!user || !isAdmin) return <Navigate to="/login" replace />;
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     const method = editingProduct ? 'PUT' : 'POST';
-    const url = editingProduct ? `${ENDPOINTS.PRODUCTS}/${editingProduct._id}` : ENDPOINTS.PRODUCTS;
+    // Use the SQL ID (uuid) for the URL
+    const id = editingProduct?.id;
+    const url = editingProduct ? `${ENDPOINTS.PRODUCTS}/${id}` : ENDPOINTS.PRODUCTS;
     
     try {
       const res = await fetch(url, {
@@ -74,11 +72,15 @@ export default function Admin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+
       if (res.ok) {
-        fetchData();
+        await fetchData();
         setIsAdding(false);
         setEditingProduct(null);
         setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
+      } else {
+        const errData = await res.json();
+        alert(`Error: ${errData.message}`);
       }
     } catch (err) { console.error("Product save error:", err); }
   };
@@ -86,19 +88,14 @@ export default function Admin() {
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Confirm permanent removal? This cannot be undone.")) return;
     
-    // Optimistic UI Update: Remove locally first so it feels instant for the demo
-    const remainingProducts = products.filter(p => (p._id || p.id) !== id);
-    setProducts(remainingProducts);
-    
     try {
       const res = await fetch(`${ENDPOINTS.PRODUCTS}/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      // Only re-fetch if successful, otherwise we keep our optimistic local state
-      fetchData();
-    } catch (err) { 
-      console.error("Delete error:", err);
-      // Even if network fails, we keep the local removal for the presentation session
-    }
+      if (res.ok) {
+        await fetchData();
+      } else {
+        alert("Deletion failed on server.");
+      }
+    } catch (err) { console.error("Product delete error:", err); }
   };
 
   const handleUpdateContent = async (section, key, value) => {
@@ -112,14 +109,11 @@ export default function Admin() {
     } catch (err) { console.error("CMS update error:", err); }
   };
 
-  // Security check - redirect to login if not admin or not logged in
-  if (!user) {
-    return <Navigate to="/login" state={{ from: '/admin' }} />;
-  }
-  
-  if (!isAdmin || user.email !== 'saikumar89515@gmail.com') {
-    return <Navigate to="/" />;
-  }
+  const logout = () => { 
+    localStorage.removeItem('dream_cream_user');
+    localStorage.removeItem('dream_cream_token');
+    window.location.href = '/'; 
+  };
 
   const generateWhatsAppLink = (order) => {
     if (!order) return '#';
@@ -215,11 +209,11 @@ export default function Admin() {
                     <div className="admin-modal-backdrop" onClick={(e) => { if(e.target === e.currentTarget) setIsAdding(false); }}>
                       <motion.div 
                         className="admin-modal-content"
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 30 }}
                       >
-                        <button className="modal-close-corner" onClick={() => setIsAdding(false)}><X size={24}/></button>
+                        <button className="modal-close-corner" onClick={() => setIsAdding(false)}><X size={20}/></button>
                         
                         <div className="modal-header-deluxe">
                           <h2>{editingProduct ? 'Modify Flavor' : 'Add New Flavor'}</h2>
@@ -231,7 +225,7 @@ export default function Admin() {
                             <div className="modal-photo-preview-circle" style={{ filter: `hue-rotate(${formData.hue || 0}deg)` }}>
                               <img src={formData.image || 'https://images.unsplash.com/photo-1501443762994-82bd5dabb892?auto=format&fit=crop&q=80&w=200'} alt="Preview" />
                             </div>
-                            <div className="premium-input w-full">
+                            <div className="premium-input">
                               <label>Photograph URL</label>
                               <input 
                                 placeholder="https://images.unsplash.com/..." 
@@ -241,7 +235,7 @@ export default function Admin() {
                             </div>
                           </div>
 
-                          <div className="form-grid-premium grid grid-cols-2 gap-6">
+                          <div className="form-grid-premium">
                             <div className="premium-input">
                               <label>Flavor Identity</label>
                               <input placeholder="Enter name..." required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
@@ -263,9 +257,10 @@ export default function Admin() {
                             </div>
                           </div>
 
-                          <div className="form-actions-premium mt-10 flex gap-4">
-                            <button type="submit" className="save-btn-premium flex-1 py-5 bg-pink-500 text-white rounded-2xl font-black tracking-widest hover:bg-pink-600 transition-all">
-                              {editingProduct ? 'COMMIT CHANGES' : 'CREATE FLAVOR'} <Database size={16} className="ml-2 inline"/>
+                          <div className="form-actions-premium">
+                            <button type="button" className="p-btn delete" onClick={() => setIsAdding(false)}>Cancel</button>
+                            <button type="submit" className="save-btn-premium p-btn">
+                              {editingProduct ? 'COMMIT CHANGES' : 'CREATE FLAVOR'} <Database size={16}/>
                             </button>
                           </div>
                         </form>

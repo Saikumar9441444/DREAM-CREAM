@@ -54,27 +54,33 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const lowerEmail = email.trim().toLowerCase();
-        if (lowerEmail === ADMIN_USER.email && password === 'admin123') {
-          const userObj = { ...ADMIN_USER };
-          localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
-          setUser(userObj);
-          setIsAdmin(true);
-          trackVisit(userObj);
-          resolve({ success: true });
-        } else {
-          // For now, allow other "demo" logins but they are not admins
-          const userObj = { email: lowerEmail, displayName: lowerEmail.split('@')[0], role: 'user' };
-          localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
-          setUser(userObj);
-          setIsAdmin(false);
-          trackVisit(userObj);
-          resolve({ success: true });
-        }
-      }, 100);
-    });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+      const data = await response.json();
+      const userObj = data.user;
+      
+      localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
+      localStorage.setItem('dream_cream_token', data.token); // Save JWT
+      
+      setUser(userObj);
+      setIsAdmin(userObj.role === 'admin');
+      trackVisit(userObj);
+      
+      return { success: true };
+    } catch (err) {
+      console.error("Login Error:", err);
+      return { success: false, message: err.message };
+    }
   };
 
   const logout = () => {

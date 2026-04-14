@@ -24,6 +24,12 @@ dist-ssr
 *.sw?
 
 # Backend
+backend/node_modules
+backend/.env
+backend/*.db
+backend/*.db-journal
+backend/prisma/*.db
+backend/prisma/*.db-journal
 server/node_modules
 server/.env
 server/*.sqlite

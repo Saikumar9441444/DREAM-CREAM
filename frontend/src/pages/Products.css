@@ -136,6 +136,10 @@
   .flavor-card {
     padding: 0.8rem;
     border-radius: var(--border-radius-md);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .flavor-info h3 {

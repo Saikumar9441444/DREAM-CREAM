@@ -10,7 +10,7 @@ import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Products.css';
 
 // 1. MEMOIZED FLAVOR CARD FOR ELITE RENDERING
-const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants }) => {
+const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants, priority }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const interaction = getCategoryInteraction(flavor.category);
 
@@ -27,6 +27,8 @@ const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants }) => {
         tiltMaxAngleY={isMobile ? 0 : interaction.tiltMaxAngleY} 
         scale={isMobile ? 1 : interaction.scale} 
         transitionSpeed={interaction.transitionSpeed} 
+        tiltEnable={!isMobile}
+        glareEnable={!isMobile}
         style={{ height: '100%', width: '100%' }}
         className={`flavor-card glass-panel ${flavor.category === 'Specialty' ? 'specialty' : ''} ${interaction.className}`} 
       >
@@ -35,7 +37,7 @@ const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants }) => {
             src={flavor.image} 
             alt={flavor.name} 
             className="flavor-img" 
-            loading="eager"
+            loading={priority ? "eager" : "lazy"}
             style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} 
           />
           {flavor.category === 'Specialty' && <div className="specialty-shine"></div>}
@@ -98,9 +100,25 @@ export default function Products() {
   }, [searchParams]);
 
   useEffect(() => {
-    // Instant Static Loading for a "Perfect" experience
-    setProducts(STATIC_PRODUCTS);
-    setLoading(false);
+    const fetchLiveProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(ENDPOINTS.PRODUCTS);
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data);
+        } else {
+          setError("Could not connect to flavoring engine.");
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+        setError("Network error: DB connection unstable.");
+        setLoading(false);
+      }
+    };
+    
+    fetchLiveProducts();
   }, []);
 
   // 3. OPTIMIZED FILTERING
@@ -180,13 +198,14 @@ export default function Products() {
           {loading ? (
             [...Array(8)].map((_, i) => <SkeletonCard key={i} />)
           ) : filteredProducts.length > 0 ? (
-            filteredProducts.map(flavor => (
+            filteredProducts.map((flavor, index) => (
               <FlavorCard 
                 key={flavor._id || flavor.id}
                 flavor={flavor}
                 isAdded={!!addedItems[flavor._id || flavor.id]}
                 onAdd={handleAddToCart}
                 itemVariants={itemVariants}
+                priority={index < 4}
               />
             ))
           ) : (
