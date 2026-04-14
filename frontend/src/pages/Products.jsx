@@ -89,8 +89,8 @@ export default function Products() {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [addedItems, setAddedItems] = useState({});
-  const [products, setProducts] = useState([]); // Start empty for skeleton test
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState(STATIC_PRODUCTS); 
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
@@ -99,27 +99,8 @@ export default function Products() {
     setSearchQuery(q);
   }, [searchParams]);
 
-  useEffect(() => {
-    const fetchLiveProducts = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(ENDPOINTS.PRODUCTS);
-        if (res.ok) {
-          const data = await res.json();
-          setProducts(data);
-        } else {
-          setError("Could not connect to flavoring engine.");
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error("Fetch Error:", err);
-        setError("Network error: DB connection unstable.");
-        setLoading(false);
-      }
-    };
-    
-    fetchLiveProducts();
-  }, []);
+  // Backend sync removed for pure frontend build
+
 
   // 3. OPTIMIZED FILTERING
   const filteredProducts = useMemo(() => {

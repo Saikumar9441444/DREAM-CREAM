@@ -33,80 +33,74 @@ export default function Admin() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [prodRes, orderRes] = await Promise.all([
-        fetch(ENDPOINTS.PRODUCTS),
-        fetch(ENDPOINTS.ORDERS)
-      ]);
+  const fetchData = () => {
+    setLoading(true);
+    // Load from localStorage or fallback to static data
+    const savedProducts = localStorage.getItem('dream_cream_products');
+    const savedOrders = localStorage.getItem('dream_cream_orders');
+    const savedContent = localStorage.getItem('dream_cream_content');
 
-      if (prodRes.ok) setProducts(await prodRes.json());
-      if (orderRes.ok) setOrders(await orderRes.json());
-      
-      setLoading(false);
-    } catch (err) {
-      console.error("Data fetch error:", err);
-      setLoading(false);
+    if (savedProducts) setProducts(JSON.parse(savedProducts));
+    else {
+      setProducts(STATIC_PRODUCTS);
+      localStorage.setItem('dream_cream_products', JSON.stringify(STATIC_PRODUCTS));
     }
+
+    if (savedOrders) setOrders(JSON.parse(savedOrders));
+    if (savedContent) setSiteContent(JSON.parse(savedContent));
+    
+    setLoading(false);
   };
 
   useEffect(() => { 
     if (user && isAdmin) fetchData(); 
-  }, [activeMainTab, user, isAdmin]);
+  }, [user, isAdmin]);
 
   // Auth Protection
   if (authLoading) return <div className="admin-loading">AUTHENTICATING SECURE SESSION...</div>;
   if (!user || !isAdmin) return <Navigate to="/login" replace />;
 
-  const handleSaveProduct = async (e) => {
+  const handleSaveProduct = (e) => {
     e.preventDefault();
-    const method = editingProduct ? 'PUT' : 'POST';
-    // Use the SQL ID (uuid) for the URL
-    const id = editingProduct?.id;
-    const url = editingProduct ? `${ENDPOINTS.PRODUCTS}/${id}` : ENDPOINTS.PRODUCTS;
+    let updatedProducts;
     
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      if (res.ok) {
-        await fetchData();
-        setIsAdding(false);
-        setEditingProduct(null);
-        setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
-      } else {
-        const errData = await res.json();
-        alert(`Error: ${errData.message}`);
-      }
-    } catch (err) { console.error("Product save error:", err); }
+    if (editingProduct) {
+      updatedProducts = products.map(p => 
+        (p.id === editingProduct.id || p._id === editingProduct._id) ? { ...formData, id: p.id || p._id } : p
+      );
+    } else {
+      const newProduct = { ...formData, id: Date.now().toString() };
+      updatedProducts = [newProduct, ...products];
+    }
+    
+    setProducts(updatedProducts);
+    localStorage.setItem('dream_cream_products', JSON.stringify(updatedProducts));
+    
+    setIsAdding(false);
+    setEditingProduct(null);
+    setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
   };
 
-  const handleDeleteProduct = async (id) => {
+  const handleDeleteProduct = (id) => {
     if (!window.confirm("Confirm permanent removal? This cannot be undone.")) return;
     
-    try {
-      const res = await fetch(`${ENDPOINTS.PRODUCTS}/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        await fetchData();
-      } else {
-        alert("Deletion failed on server.");
-      }
-    } catch (err) { console.error("Product delete error:", err); }
+    const updatedProducts = products.filter(p => p.id !== id && p._id !== id);
+    setProducts(updatedProducts);
+    localStorage.setItem('dream_cream_products', JSON.stringify(updatedProducts));
   };
 
-  const handleUpdateContent = async (section, key, value) => {
-    try {
-      await fetch(ENDPOINTS.CONTENT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ section, key, value })
-      });
-      fetchData();
-    } catch (err) { console.error("CMS update error:", err); }
+  const handleUpdateContent = (section, key, value) => {
+    const updatedContent = [...siteContent];
+    const index = updatedContent.findIndex(c => c.key === key && c.section === section);
+    
+    if (index > -1) {
+      updatedContent[index] = { ...updatedContent[index], value, updatedAt: new Date() };
+    } else {
+      updatedContent.push({ section, key, value, updatedAt: new Date() });
+    }
+    
+    setSiteContent(updatedContent);
+    localStorage.setItem('dream_cream_content', JSON.stringify(updatedContent));
   };
 
   const logout = () => { 
