@@ -54,32 +54,30 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+      // PURE FRONTEND MOCK: Simulate server delay
+      await new Promise(resolve => setTimeout(resolve, 800));
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+      const normalizedEmail = email.trim().toLowerCase();
+      
+      // Check if it matches the hardcoded admin
+      if (normalizedEmail === ADMIN_USER.email) {
+        const userObj = { ...ADMIN_USER };
+        localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
+        localStorage.setItem('dream_cream_token', 'mock-jwt-token-saikumar');
+        
+        setUser(userObj);
+        setIsAdmin(true);
+        return { success: true };
+      } else {
+        throw new Error('Invalid credentials. For evaluation, use: ' + ADMIN_USER.email);
       }
-
-      const data = await response.json();
-      const userObj = data.user;
-      
-      localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
-      localStorage.setItem('dream_cream_token', data.token); // Save JWT
-      
-      setUser(userObj);
-      setIsAdmin(userObj.role === 'admin');
-      trackVisit(userObj);
-      
-      return { success: true };
     } catch (err) {
       console.error("Login Error:", err);
       return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
     }
   };
 

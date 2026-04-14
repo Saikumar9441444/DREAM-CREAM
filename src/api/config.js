@@ -5,7 +5,8 @@
 
 // Use relative paths by default for proxy-based dev and same-origin prod
 // Priority: 1. Environment Variable (Production), 2. Local Fallback (Vite Proxy)
-export const API_BASE = import.meta.env.VITE_API_URL || '';
+// Pure Frontend Build: API_BASE is always empty
+export const API_BASE = '';
 
 export const ENDPOINTS = {
   PRODUCTS: `${API_BASE}/api/products`,

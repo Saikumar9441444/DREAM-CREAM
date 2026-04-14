@@ -51,22 +51,30 @@ export default function Orders() {
       total: finalTotal
     };
 
-    setLastOrder(orderData); // Store for WhatsApp slip
+    setLastOrder(orderData);
+    setLoading(true);
 
     try {
-      const resp = await fetch(ENDPOINTS.ORDERS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
+      // PURE FRONTEND MOCK: Simulate network latency for cinematic feel
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (resp.ok) {
-        setSubmitted(true);
-        clearCart(); 
-      }
+      // Save order to localStorage for Admin panel to see
+      const existingOrders = JSON.parse(localStorage.getItem('dream_cream_orders') || '[]');
+      const newOrder = { 
+        ...orderData, 
+        _id: 'ORDER-' + Date.now(), 
+        status: 'Pending', 
+        createdAt: new Date().toISOString() 
+      };
+      localStorage.setItem('dream_cream_orders', JSON.stringify([newOrder, ...existingOrders]));
+      
+      setSubmitted(true);
+      clearCart();
     } catch (err) {
-      console.error("Order submission failed:", err);
-      alert("Failed to connect to the cloud. Please ensure the server is running.");
+      console.error("Order simulation failed:", err);
+      alert("Order processing failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
