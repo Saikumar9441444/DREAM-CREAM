@@ -362,7 +362,7 @@ export default function Admin() {
                             </thead>
                             <tbody>
                               {groupProducts.map(p => (
-                                <tr key={p._id} className="perfect-row">
+                                <tr key={p._id || p.id} className="perfect-row">
                                   <td className="w-20">
                                     <div className="flavor-circle-preview" style={{ filter: `hue-rotate(${p.hue || 0}deg)` }}>
                                       <img src={p.image} alt="" />
@@ -386,7 +386,7 @@ export default function Admin() {
                                        <button 
                                          className="p-btn delete" 
                                          title="Erase" 
-                                         onClick={() => handleDeleteProduct(p._id)}
+                                         onClick={() => handleDeleteProduct(p._id || p.id)}
                                        >
                                          <Trash2 size={14}/> <span>Delete</span>
                                        </button>
@@ -413,7 +413,7 @@ export default function Admin() {
                     <thead><tr><th>CUSTOMER</th><th>CONTACT</th><th>ORDER SPECS</th><th>TOTAL</th><th>STATUS</th><th className="text-right">MGMT</th></tr></thead>
                     <tbody>
                       {orders.length === 0 ? <tr><td colSpan="6" className="text-center py-20 opacity-50">Zero incoming transmissions.</td></tr> : orders.map(o => (
-                        <tr key={o._id} className="perfect-row">
+                        <tr key={o._id || o.id} className="perfect-row">
                           <td><div className="cust-name">{o.customerName}</div><div className="cust-email">{o.customerEmail}</div></td>
                           <td><div className="cust-phone flex items-center gap-1"><Phone size={12}/> {o.customerPhone}</div></td>
                           <td className="w-1/4"><div className="item-specs">{o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</div></td>
