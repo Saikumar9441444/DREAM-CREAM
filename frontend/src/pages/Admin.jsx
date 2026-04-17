@@ -32,27 +32,43 @@ export default function Admin() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
+  const [dbStatus, setDbStatus] = useState('Checking...');
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch Products
-      const prodRes = await fetch(ENDPOINTS.PRODUCTS);
-      if (prodRes.ok) setProducts(await prodRes.json());
-      else setProducts(STATIC_PRODUCTS);
+      // 1. Fetch Products
+      try {
+        const prodRes = await fetch(ENDPOINTS.PRODUCTS);
+        if (prodRes.ok) {
+          const data = await prodRes.json();
+          setProducts(data.length > 0 ? data : STATIC_PRODUCTS);
+          setDbStatus('Connected to Cloud');
+        } else {
+          setProducts(STATIC_PRODUCTS);
+          setDbStatus('Using Local Fallback');
+        }
+      } catch (e) {
+        console.warn("Backend products unavailable, using static fallback.");
+        setProducts(STATIC_PRODUCTS);
+        setDbStatus('Backend Offline');
+      }
 
-      // Fetch Orders
-      const orderRes = await fetch(ENDPOINTS.ORDERS);
-      if (orderRes.ok) setOrders(await orderRes.json());
+      // 2. Fetch Orders
+      try {
+        const orderRes = await fetch(ENDPOINTS.ORDERS);
+        if (orderRes.ok) setOrders(await orderRes.json());
+      } catch (e) {
+        console.warn("Backend orders unavailable.");
+      }
 
-      // Fallback for site content from localStorage
+      // 3. Fallback for site content
       const savedContent = localStorage.getItem('dream_cream_content');
       if (savedContent) setSiteContent(JSON.parse(savedContent));
       
     } catch (err) {
-      console.error("Admin Fetch Error:", err);
-      setError("Failed to sync with secure database.");
-      setProducts(STATIC_PRODUCTS);
+      console.error("Critical Admin Sync Error:", err);
+      setError("System partially offline. Using local vault.");
     } finally {
       setLoading(false);
     }
@@ -189,7 +205,12 @@ export default function Admin() {
               <h1 className="luxury-text">
                 {(Array.isArray(siteContent) && siteContent.find(c => c.key === 'adminName')?.value) || "Master Control Center"}
               </h1>
-              <p className="admin-badge-text">SECURE SESSION: {user?.email}</p>
+              <div className="flex items-center gap-3">
+                <p className="admin-badge-text">SECURE SESSION: {user?.email}</p>
+                <div className={`connection-status-pill ${dbStatus.toLowerCase().replace(' ', '-')}`}>
+                   <div className="status-dot"></div> {dbStatus}
+                </div>
+              </div>
             </div>
           </div>
           <button onClick={logout} className="logout-btn-deluxe"><LogOut size={18} /> EXIT PORTAL</button>
