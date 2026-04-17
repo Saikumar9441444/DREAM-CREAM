@@ -17,9 +17,9 @@ Follow these steps to take your project from GitHub to a live, public website.
 1.  **Login:** Go to [render.com](https://render.com) and login with your GitHub.
 2.  **New Web Service:** Select your "ice cream website" repository.
 3.  **Settings:**
-    - **Root Directory:** `server`
+    - **Root Directory:** `backend`
     - **Build Command:** `npm install`
-    - **Start Command:** `node index.js`
+    - **Start Command:** `node server.js`
 4.  **Environment Variables:**
     - `MONGODB_URI`: (Paste your Atlas connection string here).
     - `PORT`: 5000
