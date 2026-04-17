@@ -262,7 +262,7 @@ export default function Home() {
             </div>
             <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
               <input type="email" placeholder="Your email..." required className="newsletter-input" />
-              <button type="submit" className="btn-primary">Subscribe</button>
+              <button type="submit" className="btn-primary">Join</button>
             </form>
           </div>
         </div>

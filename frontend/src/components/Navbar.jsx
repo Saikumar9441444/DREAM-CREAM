@@ -43,7 +43,8 @@ export default function Navbar({ onOpenCart }) {
   const navLinks = [
     { path: '/', label: 'HOME' },
     { path: '/products', label: 'FLAVORS' },
-    { path: '/about', label: 'ABOUT US' }
+    { path: '/about', label: 'ABOUT US' },
+    { path: '/contact', label: 'CONTACT' }
   ];
 
   const handleSearchSubmit = (e) => {

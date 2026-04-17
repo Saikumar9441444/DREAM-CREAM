@@ -43,60 +43,79 @@ export default function Orders() {
       customerName: e.target.name.value,
       customerEmail: e.target.email.value,
       customerPhone: e.target.phone.value,
+      address: e.target.address.value,
+      deliveryType: e.target.type.value,
+      deliveryTime: e.target.datetime.value,
       items: cartItems.map(item => ({
         name: item.name,
         quantity: item.quantity,
-        price: item.price
+        price: parseFloat(item.price.replace(/[^\d.]/g, ''))
       })),
-      total: finalTotal
+      total: finalTotal,
+      paymentMethod: paymentMethod
     };
 
     setLastOrder(orderData);
     setLoading(true);
 
     try {
-      // PURE FRONTEND MOCK: Simulate network latency for cinematic feel
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // POST to backend
+      const response = await fetch(ENDPOINTS.ORDERS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) throw new Error('Failed to save order');
       
-      // Save order to localStorage for Admin panel to see
-      const existingOrders = JSON.parse(localStorage.getItem('dream_cream_orders') || '[]');
-      const newOrder = { 
-        ...orderData, 
-        _id: 'ORDER-' + Date.now(), 
-        status: 'Pending', 
-        createdAt: new Date().toISOString() 
-      };
-      localStorage.setItem('dream_cream_orders', JSON.stringify([newOrder, ...existingOrders]));
+      const savedOrder = await response.json();
+      setLastOrder(savedOrder);
+      
+      // Simulation delay for UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setSubmitted(true);
       clearCart();
+      
+      // Auto-open WhatsApp link
+      const waLink = generateWhatsAppLink(savedOrder);
+      window.open(waLink, '_blank');
+
     } catch (err) {
-      console.error("Order simulation failed:", err);
+      console.error("Order processing failed:", err);
       alert("Order processing failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const TAX_RATE = 0.08; // 8% tax
-  const taxAmount = cartTotalPrice * TAX_RATE;
-  const deliveryFee = 3.99;
+  const TAX_RATE = 0.05; // 5% GST
+  const GST_AMOUNT = cartTotalPrice * TAX_RATE;
+  const DELIVERY_FEE = 35;
+  const PLATFORM_FEE = 5;
+  const RESTAURANT_CHARGES = 15;
   
-  // Calculate final total based on some dummy delivery rule (if they selected delivery vs pickup)
-  // For simplicity, we just add tax to subtotal here. We'll leave delivery fee out unless they explicitly select it in a real app, 
-  // but let's add a fixed "₹0 Pickup" or show the fee.
-  const finalTotal = cartTotalPrice + taxAmount + (cartItems.length > 0 ? 0 : 0);
+  const finalTotal = cartTotalPrice + GST_AMOUNT + DELIVERY_FEE + PLATFORM_FEE + RESTAURANT_CHARGES;
 
   const generateWhatsAppLink = (order) => {
     if (!order) return '#';
-    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
-    const message = `🍦 *Cream Dream Order Slip* 🍦\n------------------------------\n*Customer:* ${order.customerName}\n*Total:* ₹${order.total.toFixed(2)}\n\n*Items:*\n${itemsText}\n\nThank you for choosing Cream Dream!`;
+    const BUSINESS_PHONE = "919014002314"; // Target business phone
+    const itemsText = order.items.map(i => `• ${i.name} x ${i.quantity}`).join('\n');
     
-    // Clean phone number (removing non-digits)
-    const cleanPhone = order.customerPhone.replace(/\D/g, '');
-    const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const message = `🍦 *NEW CREAM DREAM ORDER* 🍦\n` +
+                    `--------------------------------\n` +
+                    `*Customer:* ${order.customerName}\n` +
+                    `*Phone:* ${order.customerPhone}\n` +
+                    `*Type:* ${order.deliveryType?.toUpperCase() || 'PICKUP'}\n` +
+                    `*Date/Time:* ${order.deliveryTime ? new Date(order.deliveryTime).toLocaleString() : 'N/A'}\n` +
+                    `*Address:* ${order.address || 'N/A'}\n` +
+                    `*Payment:* ${order.paymentMethod?.toUpperCase() || 'COD'}\n\n` +
+                    `*ITEMS:*\n${itemsText}\n\n` +
+                    `*TOTAL PAYABLE:* ₹${order.total.toFixed(2)}\n` +
+                    `--------------------------------\n` +
+                    `Please confirm this order. Thank you!`;
     
-    return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${BUSINESS_PHONE}?text=${encodeURIComponent(message)}`;
   };
 
   const generateSMSLink = (order) => {
@@ -120,46 +139,68 @@ export default function Orders() {
       <div className="orders-page fade-in">
         <div className="container">
           <div className="order-container">
-            <div className="success-message glass-panel text-center fade-in">
-              <div className="success-icon animate-float">
-                <CheckCircle2 size={64} color="var(--color-primary)" />
-              </div>
-              <h2 className="mb-2">Order Confirmed!</h2>
-              <p>Thank you for choosing Cream Dream. Your order is being prepared with love.</p>
-              
-              <div className="whatsapp-slip-section mt-6 p-4 glass-panel" style={{ background: 'rgba(72, 209, 204, 0.1)', borderRadius: '20px', border: '1px solid rgba(72, 209, 204, 0.2)' }}>
-                <p className="text-sm font-bold opacity-70 mb-3">GET YOUR ORDER SLIP ON WHATSAPP</p>
-                <a 
-                  href={generateWhatsAppLink(lastOrder)} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn-primary"
-                  style={{ background: '#25D366', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}
-                >
-                  <Send size={18} className="mr-2" /> WhatsApp Slip
-                </a>
-                
-                <div className="flex gap-2 mt-3">
-                  <a 
-                    href={generateSMSLink(lastOrder)} 
-                    className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2"
-                    style={{ background: 'rgba(255,255,255,0.8)', color: 'var(--color-text-main)' }}
-                  >
-                    <MessageSquare size={16} /> SMS Slip
-                  </a>
-                  <button 
-                    onClick={() => copySlipToClipboard(lastOrder)} 
-                    className="btn-secondary flex-1 py-3 text-sm flex items-center justify-center gap-2"
-                  >
-                    <Copy size={16} /> Copy Text
-                  </button>
+            <div className="order-tracking-section glass-panel fade-in">
+              <div className="success-header">
+                <div className="success-icon-circle">
+                  <CheckCircle2 size={32} />
+                </div>
+                <div>
+                  <h2 className="text-left">Order Confirmed</h2>
+                  <p className="text-left text-sm opacity-70">Your scoops are on the way!</p>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 mt-8">
-                <Link to="/products" onClick={() => setSubmitted(false)} className="btn-secondary">
-                  Continue Shopping
-                </Link>
+              <div className="live-tracker mt-8">
+                <div className="tracker-line"></div>
+                <div className="tracker-steps">
+                  <div className="tracker-step active">
+                    <div className="step-dot"></div>
+                    <span className="step-label">Order Received</span>
+                  </div>
+                  <div className="tracker-step active animate-pulse-soft">
+                    <div className="step-dot"></div>
+                    <span className="step-label">Preparing Your Order</span>
+                  </div>
+                  <div className="tracker-step">
+                    <div className="step-dot"></div>
+                    <span className="step-label">Out for Delivery</span>
+                  </div>
+                  <div className="tracker-step">
+                    <div className="step-dot"></div>
+                    <span className="step-label">Arrived</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="delivery-partner-card mt-8">
+                <div className="partner-info">
+                  <div className="partner-avatar">🛵</div>
+                  <div className="partner-details">
+                    <p className="partner-name">Rahul is on his way</p>
+                    <p className="partner-sub">Your delivery partner</p>
+                  </div>
+                </div>
+                <div className="partner-actions">
+                  <button className="action-icn"><Phone size={18} /></button>
+                  <button className="action-icn"><MessageSquare size={18} /></button>
+                </div>
+              </div>
+              
+              <div className="whatsapp-slip-section mt-8">
+                <p className="text-xs font-bold opacity-50 mb-4 tracking-widest uppercase">Official Slip</p>
+                <div className="flex flex-col gap-3">
+                  <a href={generateWhatsAppLink(lastOrder)} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
+                    <Send size={18} /> WhatsApp Order Slip
+                  </a>
+                  <div className="flex gap-2">
+                    <button onClick={() => copySlipToClipboard(lastOrder)} className="btn-action-outline flex-1">
+                      <Copy size={16} /> Copy
+                    </button>
+                    <Link to="/products" onClick={() => setSubmitted(false)} className="btn-action-outline flex-1">
+                      Shop More
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -228,17 +269,27 @@ export default function Orders() {
               ))}
             </div>
 
-            <div className="cart-totals">
-              <div className="total-row">
-                <span>Subtotal</span>
+            <div className="cart-totals bill-details">
+              <h3 className="bill-title">Bill Details</h3>
+              <div className="bill-row">
+                <span>Item Total</span>
                 <span>₹{cartTotalPrice.toFixed(2)}</span>
               </div>
-              <div className="total-row">
-                <span>Tax (8%)</span>
-                <span>₹{taxAmount.toFixed(2)}</span>
+              <div className="bill-row">
+                <span>Delivery Partner Fee</span>
+                <span>₹{DELIVERY_FEE.toFixed(2)}</span>
               </div>
-              <div className="total-row grand-total">
-                <span>Total</span>
+              <div className="bill-row">
+                <span>Platform Fee</span>
+                <span>₹{PLATFORM_FEE.toFixed(2)}</span>
+              </div>
+              <div className="bill-row">
+                <span>GST & Restaurant Charges</span>
+                <span>₹{(GST_AMOUNT + RESTAURANT_CHARGES).toFixed(2)}</span>
+              </div>
+              <div className="divider"></div>
+              <div className="bill-row grand-total">
+                <span>Total Payable</span>
                 <span>₹{finalTotal.toFixed(2)}</span>
               </div>
             </div>

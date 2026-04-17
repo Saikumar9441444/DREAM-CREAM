@@ -84,8 +84,8 @@ export default function About() {
         <div className="visit-overlay"></div>
         <div className="container visit-content">
           <div className="section-header mb-12">
-            <h2 className="section-title" style={{ color: 'white', background: 'none', WebkitTextFillColor: 'white' }}>Your Table is Ready</h2>
-            <div className="section-header-accent" style={{ background: 'var(--color-accent)', opacity: 1 }}></div>
+            <h2 className="section-title">Your Table is Ready</h2>
+            <div className="section-header-accent"></div>
           </div>
           <div className="visit-info-grid">
             <div className="visit-card">

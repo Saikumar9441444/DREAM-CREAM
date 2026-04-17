@@ -1,16 +1,47 @@
-# React + Vite
+# Cream Dream Full-Stack eCommerce
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A premium ice cream eCommerce platform with MongoDB backend and WhatsApp ordering integration.
 
-Currently, two official plugins are available:
+## Project Structure
+- `/frontend`: React + Vite (UI, Cart, Checkout, WhatsApp logic)
+- `/backend`: Node.js + Express + MongoDB (Products, Orders, Admin API)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Local Setup
 
-## React Compiler
+### 1. Backend
+```bash
+cd backend
+npm install
+# Make sure MongoDB is running locally
+npm run dev # or node server.js
+```
+*Note: Use `node seed.js` to populate the database with initial flavors.*
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+## WhatsApp Order System
+The checkout process automatically formats order details and redirects the customer to send them to the business WhatsApp number. This ensures a seamless "human-in-the-loop" ordering experience without complex payment gateways.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Deployment Checklist
+
+### Step 1: Connect Database (MongoDB Atlas)
+1. Create a cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+2. Get your connection string.
+3. Add it to your backend `.env` file or environment variables as `MONGODB_URI`.
+
+### Step 2: Backend Deployment (Render)
+1. Push the `/backend` folder to a new GitHub repo or use a monorepo setup.
+2. Deploy to [Render.com](https://render.com) as a "Web Service".
+3. Set environment variables: `PORT=10000`, `MONGODB_URI=your_atlas_url`.
+
+### Step 3: Frontend Deployment (Vercel)
+1. Deploy the `/frontend` folder to [Vercel](https://vercel.com).
+2. Set environment variable: `VITE_API_URL=your_render_backend_url`.
+
+### Step 4: Domain
+Connect your custom domain (Namecheap/GoDaddy) via Vercel settings.

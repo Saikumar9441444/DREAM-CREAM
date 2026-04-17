@@ -741,6 +741,24 @@
   object-fit: contain;
 }
 
+.photo-input-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.image-guideline {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: rgba(0,0,0,0.03);
+  padding: 0.75rem;
+  border-radius: 8px;
+  border-left: 3px solid var(--color-primary);
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
 /* Two-Column Form Grid */
 .form-grid-premium {
   display: grid;
@@ -762,6 +780,40 @@
   color: var(--color-text-muted);
   margin-bottom: 0.6rem;
   opacity: 0.6;
+}
+
+.premium-category-selector {
+  grid-column: span 2;
+}
+
+.category-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.cat-select-pill {
+  padding: 0.6rem 1.25rem;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cat-select-pill:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.cat-select-pill.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 10px rgba(255, 123, 156, 0.3);
 }
 
 .premium-input input, .premium-input select {

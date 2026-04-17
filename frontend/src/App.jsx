@@ -19,6 +19,7 @@ const About = lazy(() => import('./pages/About'));
 const Orders = lazy(() => import('./pages/Orders'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Login = lazy(() => import('./pages/Login'));
+const Contact = lazy(() => import('./pages/Contact'));
 
 function App() {
   const { scrollYProgress } = useScroll();
@@ -34,7 +35,8 @@ function App() {
       '/about': 'Cream Dream',
       '/orders': 'Cream Dream',
       '/admin': 'Cream Dream',
-      '/login': 'Cream Dream'
+      '/login': 'Cream Dream',
+      '/contact': 'Cream Dream'
     };
     document.title = routeTitles[location.pathname] || 'Dream Cream';
   }, [location.pathname]);
@@ -68,6 +70,7 @@ function App() {
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/login" element={<Login />} />
+                  <Route path="/contact" element={<Contact />} />
                 </Routes>
               </Suspense>
             </AnimatePresence>

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Heart, Star, Check } from 'lucide-react';
+import { Search, Heart, Star, Check, Clock } from 'lucide-react';
 import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { getCategoryInteraction } from '../utils/animations';
 import { ENDPOINTS } from '../api/config';
 import { STATIC_PRODUCTS } from '../data/staticProducts';
+import SpotlightSearch from '../components/SpotlightSearch';
 import './Products.css';
 
 // 1. MEMOIZED FLAVOR CARD FOR ELITE RENDERING
@@ -41,9 +42,21 @@ const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants, priority }) => 
             style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} 
           />
           {flavor.category === 'Specialty' && <div className="specialty-shine"></div>}
+          <div className="flavor-badges">
+            {flavor.rating >= 4.9 && <span className="badge-bestseller">Bestseller</span>}
+            <span className="badge-eta">
+              <Clock size={12} /> {flavor.category.includes('Shake') ? '10-15' : '15-20'} min
+            </span>
+          </div>
           <button className="favorite-btn" aria-label="Add to favorites">
             <Heart size={20} />
           </button>
+          
+          <div className="dietary-indicator">
+            <div className={`dietary-icon ${flavor.category === 'Vegan' || flavor.category === 'Sorbet' ? 'vegan' : 'dairy'}`}>
+              <div className="dietary-dot"></div>
+            </div>
+          </div>
         </div>
         <div className="flavor-info">
           <h3>{flavor.name}</h3>
@@ -99,7 +112,26 @@ export default function Products() {
     setSearchQuery(q);
   }, [searchParams]);
 
-  // Backend sync removed for pure frontend build
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(ENDPOINTS.PRODUCTS);
+        if (!response.ok) throw new Error('Failed to fetch flavors');
+        const data = await response.json();
+        setProducts(data);
+      } catch (err) {
+        console.error("API Fetch Error:", err);
+        setError(err.message);
+        // Fallback to static products if API fails
+        setProducts(STATIC_PRODUCTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
 
   // 3. OPTIMIZED FILTERING
@@ -154,23 +186,25 @@ export default function Products() {
 
     <div className="container">
       <div className="filters-container glass-panel">
-        <div className="search-bar">
-          <Search size={20} color="var(--color-text-muted)" />
-          <input 
-            type="text" placeholder="Search flavors..." value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setSearchParams({ search: e.target.value });
-            }}
-          />
-        </div>
-        <div className="category-filters">
-          {categories.map(cat => (
-            <button 
-              key={cat} className={`filter-btn ${filter === cat ? 'active' : ''}`}
-              onClick={() => setFilter(cat)}
-            >{cat}</button>
-          ))}
+        <SpotlightSearch 
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setSearchParams({ search: e.target.value });
+          }}
+        />
+        <div className="category-section">
+          <span className="category-label-text">Select Category</span>
+          <div className="category-filters-wrapper">
+            <div className="category-filters">
+              {categories.map(cat => (
+                <button 
+                  key={cat} className={`filter-btn ${filter === cat ? 'active' : ''}`}
+                  onClick={() => setFilter(cat)}
+                >{cat}</button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

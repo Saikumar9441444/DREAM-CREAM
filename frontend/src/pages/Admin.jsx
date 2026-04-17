@@ -33,23 +33,29 @@ export default function Admin() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
 
-  const fetchData = () => {
+  const fetchData = async () => {
     setLoading(true);
-    // Load from localStorage or fallback to static data
-    const savedProducts = localStorage.getItem('dream_cream_products');
-    const savedOrders = localStorage.getItem('dream_cream_orders');
-    const savedContent = localStorage.getItem('dream_cream_content');
+    try {
+      // Fetch Products
+      const prodRes = await fetch(ENDPOINTS.PRODUCTS);
+      if (prodRes.ok) setProducts(await prodRes.json());
+      else setProducts(STATIC_PRODUCTS);
 
-    if (savedProducts) setProducts(JSON.parse(savedProducts));
-    else {
+      // Fetch Orders
+      const orderRes = await fetch(ENDPOINTS.ORDERS);
+      if (orderRes.ok) setOrders(await orderRes.json());
+
+      // Fallback for site content from localStorage
+      const savedContent = localStorage.getItem('dream_cream_content');
+      if (savedContent) setSiteContent(JSON.parse(savedContent));
+      
+    } catch (err) {
+      console.error("Admin Fetch Error:", err);
+      setError("Failed to sync with secure database.");
       setProducts(STATIC_PRODUCTS);
-      localStorage.setItem('dream_cream_products', JSON.stringify(STATIC_PRODUCTS));
+    } finally {
+      setLoading(false);
     }
-
-    if (savedOrders) setOrders(JSON.parse(savedOrders));
-    if (savedContent) setSiteContent(JSON.parse(savedContent));
-    
-    setLoading(false);
   };
 
   useEffect(() => { 
@@ -60,33 +66,60 @@ export default function Admin() {
   if (authLoading) return <div className="admin-loading">AUTHENTICATING SECURE SESSION...</div>;
   if (!user || !isAdmin) return <Navigate to="/login" replace />;
 
-  const handleSaveProduct = (e) => {
+  const handleSaveProduct = async (e) => {
     e.preventDefault();
-    let updatedProducts;
+    setLoading(true);
     
-    if (editingProduct) {
-      updatedProducts = products.map(p => 
-        (p.id === editingProduct.id || p._id === editingProduct._id) ? { ...formData, id: p.id || p._id } : p
-      );
-    } else {
-      const newProduct = { ...formData, id: Date.now().toString() };
-      updatedProducts = [newProduct, ...products];
+    // Convert price string to number for backend
+    const cleanPrice = typeof formData.price === 'string' ? parseFloat(formData.price.replace(/[^\d.]/g, '')) : formData.price;
+    const submissionData = { ...formData, price: cleanPrice };
+
+    try {
+      let response;
+      if (editingProduct) {
+        response = await fetch(`${ENDPOINTS.PRODUCTS}/${editingProduct._id || editingProduct.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submissionData)
+        });
+      } else {
+        response = await fetch(ENDPOINTS.PRODUCTS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(submissionData)
+        });
+      }
+
+      if (response.ok) {
+        await fetchData(); // Refresh list
+        setIsAdding(false);
+        setEditingProduct(null);
+        setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
+      } else {
+        const errData = await response.json();
+        alert(`Failed to save: ${errData.message}`);
+      }
+    } catch (err) {
+      console.error("Save Error:", err);
+      alert("Network error while connecting to vault.");
+    } finally {
+      setLoading(false);
     }
-    
-    setProducts(updatedProducts);
-    localStorage.setItem('dream_cream_products', JSON.stringify(updatedProducts));
-    
-    setIsAdding(false);
-    setEditingProduct(null);
-    setFormData({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
   };
 
-  const handleDeleteProduct = (id) => {
+  const handleDeleteProduct = async (id) => {
     if (!window.confirm("Confirm permanent removal? This cannot be undone.")) return;
     
-    const updatedProducts = products.filter(p => p.id !== id && p._id !== id);
-    setProducts(updatedProducts);
-    localStorage.setItem('dream_cream_products', JSON.stringify(updatedProducts));
+    try {
+      const response = await fetch(`${ENDPOINTS.PRODUCTS}/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        await fetchData();
+      } else {
+        alert("Deletion failed on server.");
+      }
+    } catch (err) {
+      console.error("Delete Error:", err);
+    }
   };
 
   const handleUpdateContent = (section, key, value) => {
@@ -219,13 +252,19 @@ export default function Admin() {
                             <div className="modal-photo-preview-circle" style={{ filter: `hue-rotate(${formData.hue || 0}deg)` }}>
                               <img src={formData.image || 'https://images.unsplash.com/photo-1501443762994-82bd5dabb892?auto=format&fit=crop&q=80&w=200'} alt="Preview" />
                             </div>
-                            <div className="premium-input">
-                              <label>Photograph URL</label>
-                              <input 
-                                placeholder="https://images.unsplash.com/..." 
-                                value={formData.image} 
-                                onChange={e => setFormData({...formData, image: e.target.value})} 
-                              />
+                            <div className="photo-input-group">
+                              <div className="premium-input mb-2">
+                                <label>Photograph URL</label>
+                                <input 
+                                  placeholder="https://images.unsplash.com/..." 
+                                  value={formData.image} 
+                                  onChange={e => setFormData({...formData, image: e.target.value})} 
+                                />
+                              </div>
+                              <div className="image-guideline">
+                                <strong>Optimal Resolution: 800 x 800px (1:1 Ratio)</strong><br/>
+                                For the best presentation, use high-quality transparent PNGs or images with a centered subject.
+                              </div>
                             </div>
                           </div>
 
@@ -234,12 +273,20 @@ export default function Admin() {
                               <label>Flavor Identity</label>
                               <input placeholder="Enter name..." required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                             </div>
-                            <div className="premium-input">
+                            <div className="premium-input premium-category-selector">
                               <label>Category Group</label>
-                              <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                                <option>Dairy</option><option>Vegan</option><option>Sorbet</option>
-                                <option>Specialty</option><option>Milkshake</option><option>Thick Shake</option>
-                              </select>
+                              <div className="category-pill-group">
+                                {['Dairy', 'Vegan', 'Sorbet', 'Specialty', 'Milkshake', 'Thick Shake'].map(cat => (
+                                  <button 
+                                    key={cat}
+                                    type="button" 
+                                    className={`cat-select-pill ${formData.category === cat ? 'active' : ''}`}
+                                    onClick={() => setFormData({...formData, category: cat})}
+                                  >
+                                    {cat}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                             <div className="premium-input">
                               <label>Pricing Unit</label>
