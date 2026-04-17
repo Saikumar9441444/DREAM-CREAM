@@ -161,7 +161,7 @@ export default function Admin() {
   const generateWhatsAppLink = (order) => {
     if (!order) return '#';
     const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
-    const message = `🍦 *Cream Dream Order Slip* 🍦\n------------------------------\n*Order Status:* ${order.status}\n*Customer:* ${order.customerName}\n*Total:* ₹${order.total.toFixed(2)}\n\n*Items:*\n${itemsText}\n\nThank you for choosing Cream Dream!`;
+    const message = `🍦 *Cream Dream Order Slip* 🍦\n------------------------------\n*Order Status:* ${order.status}\n*Customer:* ${order.customerName}\n*Phone Number:* ${order.customerPhone}\n\n*ORDER DETAILS:*\n${itemsText}\n\n*Total:* ₹${order.total.toFixed(2)}\n\nThanks for ordering in CREAM DREAM! 🍦✨`;
     
     // Clean phone number (removing non-digits)
     const cleanPhone = (order.customerPhone || "").replace(/\D/g, '');

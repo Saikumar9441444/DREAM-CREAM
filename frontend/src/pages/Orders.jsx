@@ -105,15 +105,14 @@ export default function Orders() {
     const message = `🍦 *NEW CREAM DREAM ORDER* 🍦\n` +
                     `--------------------------------\n` +
                     `*Customer:* ${order.customerName}\n` +
-                    `*Phone:* ${order.customerPhone}\n` +
+                    `*Phone Number:* ${order.customerPhone}\n` +
                     `*Type:* ${order.deliveryType?.toUpperCase() || 'PICKUP'}\n` +
-                    `*Date/Time:* ${order.deliveryTime ? new Date(order.deliveryTime).toLocaleString() : 'N/A'}\n` +
-                    `*Address:* ${order.address || 'N/A'}\n` +
-                    `*Payment:* ${order.paymentMethod?.toUpperCase() || 'COD'}\n\n` +
-                    `*ITEMS:*\n${itemsText}\n\n` +
+                    `*Address:* ${order.address || 'N/A'}\n\n` +
+                    `*ORDER DETAILS:*\n${itemsText}\n\n` +
                     `*TOTAL PAYABLE:* ₹${order.total.toFixed(2)}\n` +
+                    `*PAYMENT:* ${order.paymentMethod?.toUpperCase() || 'COD'}\n` +
                     `--------------------------------\n` +
-                    `Please confirm this order. Thank you!`;
+                    `Thanks for ordering in CREAM DREAM! 🍦✨`;
     
     return `https://wa.me/${BUSINESS_PHONE}?text=${encodeURIComponent(message)}`;
   };
