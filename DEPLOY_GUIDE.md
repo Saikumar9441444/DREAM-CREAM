@@ -32,6 +32,7 @@ Follow these steps to take your project from GitHub to a live, public website.
 1.  **Login:** Go to [vercel.com](https://vercel.com) and login with GitHub.
 2.  **Import Project:** Select your "ice cream website" repository.
 3.  **Settings:**
+    - **Root Directory:** `frontend`
     - **Framework Preset:** Vite
     - **Environment Variables:**
         - `VITE_API_URL`: (Paste your Render link from Phase 2).
