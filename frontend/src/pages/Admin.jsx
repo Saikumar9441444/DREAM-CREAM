@@ -79,7 +79,18 @@ export default function Admin() {
         console.warn("Backend orders unavailable.");
       }
 
-      // 3. Fallback for site content
+      // 3. Fetch Visitors (Analytics)
+      try {
+        const visitorRes = await fetch(ENDPOINTS.VISITORS);
+        if (visitorRes.ok) {
+          const visitorData = await visitorRes.json();
+          setVisitors(visitorData);
+        }
+      } catch (e) {
+        console.warn("Backend visitors unavailable.");
+      }
+
+      // 4. Fallback for site content
       const savedContent = localStorage.getItem('dream_cream_content');
       if (savedContent) setSiteContent(JSON.parse(savedContent));
       
@@ -94,6 +105,14 @@ export default function Admin() {
   useEffect(() => { 
     if (user && isAdmin) {
       fetchData();
+      
+      // Log this access for analytics
+      fetch(ENDPOINTS.VISITORS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      }).catch(e => console.warn("Visitor logging failed:", e));
+
       // Poll for new orders every 30 seconds
       const interval = setInterval(fetchData, 30000);
       return () => clearInterval(interval);
@@ -109,10 +128,13 @@ export default function Admin() {
   }, [alertQueue, newOrderAlert]);
 
   const handleAlertConfirm = (order) => {
+    if (!order) return;
     // Mark order as notified
     const notified = JSON.parse(localStorage.getItem('cream_dream_notified_orders') || '[]');
     const id = (order._id || order.id || '').toString();
-    localStorage.setItem('cream_dream_notified_orders', JSON.stringify([...notified, id]));
+    if (!notified.includes(id)) {
+      localStorage.setItem('cream_dream_notified_orders', JSON.stringify([...notified, id]));
+    }
     // Open WhatsApp with confirmation to customer
     const waLink = generateWhatsAppLink(order);
     window.open(waLink, '_blank');
@@ -120,10 +142,16 @@ export default function Admin() {
   };
 
   const handleAlertDismiss = (order) => {
+    if (!order) {
+      setNewOrderAlert(null);
+      return;
+    }
     // Mark as notified but don't send WhatsApp
     const notified = JSON.parse(localStorage.getItem('cream_dream_notified_orders') || '[]');
     const id = (order._id || order.id || '').toString();
-    localStorage.setItem('cream_dream_notified_orders', JSON.stringify([...notified, id]));
+    if (id && !notified.includes(id)) {
+      localStorage.setItem('cream_dream_notified_orders', JSON.stringify([...notified, id]));
+    }
     setNewOrderAlert(null);
   };
 
