@@ -1,83 +1,68 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Heart, Star, Check, Clock } from 'lucide-react';
-import Tilt from 'react-parallax-tilt';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { getCategoryInteraction } from '../utils/animations';
 import { ENDPOINTS } from '../api/config';
 import { STATIC_PRODUCTS } from '../data/staticProducts';
 import SpotlightSearch from '../components/SpotlightSearch';
 import './Products.css';
 
-// 1. MEMOIZED FLAVOR CARD FOR ELITE RENDERING
+// 1. MEMOIZED FLAVOR CARD
 const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants, priority }) => {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const interaction = getCategoryInteraction(flavor.category);
-
   return (
-    <motion.div 
-      variants={itemVariants} 
-      style={{ display: 'flex' }}
-      whileHover={isMobile ? undefined : interaction.whileHover}
-      whileTap={interaction.whileTap}
+    <motion.div
+      variants={itemVariants}
+      whileHover={{ y: -6, transition: { duration: 0.25, ease: 'easeOut' } }}
+      whileTap={{ scale: 0.97 }}
+      className={`flavor-card glass-panel ${flavor.category === 'Specialty' ? 'specialty' : ''}`}
     >
-      <Tilt 
-        tiltMaxAngleX={isMobile ? 0 : interaction.tiltMaxAngleX} 
-        tiltMaxAngleY={isMobile ? 0 : interaction.tiltMaxAngleY} 
-        scale={isMobile ? 1 : interaction.scale} 
-        transitionSpeed={interaction.transitionSpeed} 
-        tiltEnable={!isMobile}
-        glareEnable={!isMobile}
-        style={{ height: '100%', width: '100%' }}
-        className={`flavor-card glass-panel ${flavor.category === 'Specialty' ? 'specialty' : ''} ${interaction.className}`} 
-      >
-        <div className="flavor-image-container">
-          <img 
-            src={flavor.image} 
-            alt={flavor.name} 
-            className="flavor-img" 
-            loading={priority ? "eager" : "lazy"}
-            style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} 
-          />
-          {flavor.category === 'Specialty' && <div className="specialty-shine"></div>}
-          <div className="flavor-badges">
-            {flavor.rating >= 4.9 && <span className="badge-bestseller">Bestseller</span>}
-            <span className="badge-eta">
-              <Clock size={12} /> {flavor.category.includes('Shake') ? '10-15' : '15-20'} min
-            </span>
-          </div>
-          <button className="favorite-btn" aria-label="Add to favorites">
-            <Heart size={20} />
-          </button>
-          
-          <div className="dietary-indicator">
-            <div className={`dietary-icon ${flavor.category === 'Vegan' || flavor.category === 'Sorbet' ? 'vegan' : 'dairy'}`}>
-              <div className="dietary-dot"></div>
-            </div>
+      <div className="flavor-image-container">
+        <img
+          src={flavor.image}
+          alt={flavor.name}
+          className="flavor-img"
+          loading={priority ? "eager" : "lazy"}
+          style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }}
+        />
+        {/* Clean overlay on image only */}
+        <div className="flavor-img-overlay" />
+
+        <div className="flavor-badges">
+          {flavor.rating >= 4.9 && <span className="badge-bestseller">Bestseller</span>}
+          <span className="badge-eta">
+            <Clock size={12} /> {flavor.category.includes('Shake') ? '10-15' : '15-20'} min
+          </span>
+        </div>
+        <button className="favorite-btn" aria-label="Add to favorites">
+          <Heart size={18} />
+        </button>
+        <div className="dietary-indicator">
+          <div className={`dietary-icon ${flavor.category === 'Vegan' || flavor.category === 'Sorbet' ? 'vegan' : 'dairy'}`}>
+            <div className="dietary-dot"></div>
           </div>
         </div>
-        <div className="flavor-info">
-          <h3>{flavor.name}</h3>
-          <div className="flavor-meta">
-            <div className="flavor-rating">
-              <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-              <span>{flavor.rating}</span>
-            </div>
-            <span className="flavor-price">{flavor.price}</span>
+      </div>
+      <div className="flavor-info">
+        <h3>{flavor.name}</h3>
+        <div className="flavor-meta">
+          <div className="flavor-rating">
+            <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
+            <span>{flavor.rating}</span>
           </div>
-          <button 
-            className={`btn-primary add-to-cart-btn ${isAdded ? 'added' : ''}`}
-            onClick={() => onAdd(flavor)}
-          >
-            {isAdded ? (
-              <span style={{ display: 'flex', alignItems: 'center' }}>Added <Check size={16} className="ml-1" /></span>
-            ) : (
-              'Add to Order'
-            )}
-          </button>
+          <span className="flavor-price">{flavor.price}</span>
         </div>
-      </Tilt>
+        <button
+          className={`btn-primary add-to-cart-btn ${isAdded ? 'added' : ''}`}
+          onClick={() => onAdd(flavor)}
+        >
+          {isAdded ? (
+            <span style={{ display: 'flex', alignItems: 'center' }}>Added <Check size={16} className="ml-1" /></span>
+          ) : (
+            'Add to Order'
+          )}
+        </button>
+      </div>
     </motion.div>
   );
 });

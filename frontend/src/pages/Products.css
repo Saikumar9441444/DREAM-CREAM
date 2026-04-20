@@ -51,6 +51,56 @@
 }
 
 
+/* ── Flavor Card Image Effects ─────────────────────────── */
+.flavor-image-container {
+  position: relative;
+  overflow: hidden;         /* clips the zoom inside the container */
+  border-radius: 1rem;
+  background: #f9f0f3;
+}
+
+/* Image zooms smoothly on card hover — effect STAYS inside container */
+.flavor-card:hover .flavor-img {
+  transform: scale(1.07);
+}
+
+.flavor-img {
+  width: 100%;
+  display: block;
+  transition: transform 0.4s ease;
+  transform-origin: center center;
+}
+
+/* Soft gradient overlay appears on hover — inside image only */
+.flavor-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(255, 123, 156, 0.18) 0%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.flavor-card:hover .flavor-img-overlay {
+  opacity: 1;
+}
+
+/* Card itself: clean shadow lift only */
+.flavor-card {
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.flavor-card:hover {
+  box-shadow: 0 16px 40px rgba(255, 123, 156, 0.15), 0 4px 12px rgba(0,0,0,0.06);
+}
+
 /* Flavor Card Enhancements */
 .flavor-badges {
   position: absolute;
