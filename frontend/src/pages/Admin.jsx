@@ -34,6 +34,10 @@ export default function Admin() {
   const [formData, setFormData] = useState({ name: '', category: 'Dairy', price: '', rating: 4.5, image: '', hue: 0 });
   const [dbStatus, setDbStatus] = useState('Checking...');
 
+  // 🔔 New Order Notification States
+  const [newOrderAlert, setNewOrderAlert] = useState(null); // order to show in popup
+  const [alertQueue, setAlertQueue] = useState([]);         // queue of new orders
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -54,10 +58,23 @@ export default function Admin() {
         setDbStatus('Backend Offline');
       }
 
-      // 2. Fetch Orders
+      // 2. Fetch Orders & detect new ones for popup
       try {
         const orderRes = await fetch(ENDPOINTS.ORDERS);
-        if (orderRes.ok) setOrders(await orderRes.json());
+        if (orderRes.ok) {
+          const freshOrders = await orderRes.json();
+          setOrders(freshOrders);
+
+          // Check for orders not yet notified
+          const notified = JSON.parse(localStorage.getItem('cream_dream_notified_orders') || '[]');
+          const newOrders = freshOrders.filter(o => {
+            const id = (o._id || o.id || '').toString();
+            return id && !notified.includes(id);
+          });
+          if (newOrders.length > 0) {
+            setAlertQueue(newOrders);
+          }
+        }
       } catch (e) {
         console.warn("Backend orders unavailable.");
       }
@@ -75,8 +92,40 @@ export default function Admin() {
   };
 
   useEffect(() => { 
-    if (user && isAdmin) fetchData(); 
+    if (user && isAdmin) {
+      fetchData();
+      // Poll for new orders every 30 seconds
+      const interval = setInterval(fetchData, 30000);
+      return () => clearInterval(interval);
+    }
   }, [user, isAdmin]);
+
+  // Show popup for next order in queue
+  useEffect(() => {
+    if (alertQueue.length > 0 && !newOrderAlert) {
+      setNewOrderAlert(alertQueue[0]);
+      setAlertQueue(prev => prev.slice(1));
+    }
+  }, [alertQueue, newOrderAlert]);
+
+  const handleAlertConfirm = (order) => {
+    // Mark order as notified
+    const notified = JSON.parse(localStorage.getItem('cream_dream_notified_orders') || '[]');
+    const id = (order._id || order.id || '').toString();
+    localStorage.setItem('cream_dream_notified_orders', JSON.stringify([...notified, id]));
+    // Open WhatsApp with confirmation to customer
+    const waLink = generateWhatsAppLink(order);
+    window.open(waLink, '_blank');
+    setNewOrderAlert(null);
+  };
+
+  const handleAlertDismiss = (order) => {
+    // Mark as notified but don't send WhatsApp
+    const notified = JSON.parse(localStorage.getItem('cream_dream_notified_orders') || '[]');
+    const id = (order._id || order.id || '').toString();
+    localStorage.setItem('cream_dream_notified_orders', JSON.stringify([...notified, id]));
+    setNewOrderAlert(null);
+  };
 
   // Auth Protection
   if (authLoading) return <div className="admin-loading">AUTHENTICATING SECURE SESSION...</div>;
@@ -160,13 +209,41 @@ export default function Admin() {
 
   const generateWhatsAppLink = (order) => {
     if (!order) return '#';
-    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
-    const message = `🍦 *Cream Dream Order Slip* 🍦\n------------------------------\n*Order Status:* ${order.status}\n*Customer:* ${order.customerName}\n*Phone Number:* ${order.customerPhone}\n\n*ORDER DETAILS:*\n${itemsText}\n\n*Total:* ₹${order.total.toFixed(2)}\n\nThanks for ordering in CREAM DREAM! 🍦✨`;
-    
-    // Clean phone number (removing non-digits)
-    const cleanPhone = (order.customerPhone || "").replace(/\D/g, '');
+    const itemsText = order.items.map(i => {
+      const price = typeof i.price === 'number' ? i.price : parseFloat((i.price || '0').toString().replace(/[^\d.]/g, '')) || 0;
+      return `  • ${i.name} × ${i.quantity}  =  ₹${(price * i.quantity).toFixed(2)}`;
+    }).join('\n');
+
+    const orderId = (order._id || order.id || 'N/A').toString().slice(-6).toUpperCase();
+    const deliveryType = (order.deliveryType || 'pickup').toUpperCase();
+    const address = order.address && order.address.trim() ? order.address : 'Store Pickup';
+    const paymentMethod = (order.paymentMethod || 'COD').toUpperCase();
+    const orderDate = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const message =
+      `🍦 *CREAM DREAM — ORDER CONFIRMED* 🍦\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `✅ *Your order has been received!*\n\n` +
+      `📋 *Order ID:* #${orderId}\n` +
+      `📅 *Date:* ${orderDate}\n` +
+      `👤 *Name:* ${order.customerName}\n` +
+      `📞 *Phone:* ${order.customerPhone}\n\n` +
+      `🛒 *ITEMS ORDERED:*\n${itemsText}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `🚚 *Delivery Type:* ${deliveryType}\n` +
+      `📍 *Address:* ${address}\n` +
+      `💳 *Payment:* ${paymentMethod}\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 *TOTAL PAYABLE: ₹${order.total.toFixed(2)}*\n\n` +
+      `🕐 *Estimated Time:* 30–45 mins\n\n` +
+      `Thank you for ordering from *Cream Dream*! 🍦✨\n` +
+      `We're preparing your order with love. ❤️\n\n` +
+      `For queries, reply to this message.`;
+
+    // Send to CUSTOMER's phone number
+    const cleanPhone = (order.customerPhone || '').replace(/\D/g, '');
     const phoneWithCode = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-    
+
     return `https://wa.me/${phoneWithCode}?text=${encodeURIComponent(message)}`;
   };
 
@@ -193,6 +270,82 @@ export default function Admin() {
 
   return (
     <motion.div className="admin-page" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+
+      {/* 🔔 NEW ORDER POPUP NOTIFICATION */}
+      <AnimatePresence>
+        {newOrderAlert && (
+          <motion.div
+            className="order-alert-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="order-alert-modal"
+              initial={{ scale: 0.7, opacity: 0, y: -40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.7, opacity: 0, y: -40 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            >
+              {/* Pulsing ring */}
+              <div className="alert-ping-ring" />
+
+              <div className="alert-header">
+                <span className="alert-bell">🔔</span>
+                <div>
+                  <h3 className="alert-title">New Order Received!</h3>
+                  <p className="alert-subtitle">A customer just placed an order</p>
+                </div>
+              </div>
+
+              <div className="alert-order-card">
+                <div className="alert-row">
+                  <span className="alert-label">👤 Customer</span>
+                  <span className="alert-value">{newOrderAlert.customerName}</span>
+                </div>
+                <div className="alert-row">
+                  <span className="alert-label">📞 Phone</span>
+                  <span className="alert-value">{newOrderAlert.customerPhone}</span>
+                </div>
+                <div className="alert-row">
+                  <span className="alert-label">🛒 Items</span>
+                  <span className="alert-value">
+                    {newOrderAlert.items.map(i => `${i.name} ×${i.quantity}`).join(', ')}
+                  </span>
+                </div>
+                <div className="alert-row">
+                  <span className="alert-label">🚚 Type</span>
+                  <span className="alert-value">{(newOrderAlert.deliveryType || 'Pickup').toUpperCase()}</span>
+                </div>
+                <div className="alert-total-row">
+                  <span>Total Payable</span>
+                  <span className="alert-total-amount">₹{newOrderAlert.total?.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <p className="alert-instruction">
+                Click <strong>"Send Confirmation"</strong> to open WhatsApp on your phone and send the order details to the customer.
+              </p>
+
+              <div className="alert-actions">
+                <button
+                  className="alert-btn-confirm"
+                  onClick={() => handleAlertConfirm(newOrderAlert)}
+                >
+                  <MessageSquare size={18} /> Send WhatsApp Confirmation
+                </button>
+                <button
+                  className="alert-btn-dismiss"
+                  onClick={() => handleAlertDismiss(newOrderAlert)}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="container">
         
         {/* Cinematic Admin Header */}
@@ -426,10 +579,10 @@ export default function Admin() {
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="p-btn edit flex items-center gap-1 justify-center px-3"
-                                style={{ background: 'rgba(37, 211, 102, 0.1)', color: '#25D366' }}
-                                title="Send WhatsApp Slip"
+                                style={{ background: 'rgba(37, 211, 102, 0.15)', color: '#25D366', border: '1px solid rgba(37,211,102,0.4)', fontWeight: 700 }}
+                                title="Send Order Confirmation to Customer via WhatsApp"
                               >
-                                <MessageSquare size={14}/> <span>WhatsApp</span>
+                                <MessageSquare size={14}/> <span>✉ Confirm to Customer</span>
                               </a>
                               <a 
                                 href={generateSMSLink(o)} 

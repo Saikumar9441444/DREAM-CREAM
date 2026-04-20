@@ -24,28 +24,31 @@ export function CartProvider({ children }) {
 
   // Add item to cart, or increment quantity if it already exists
   const addToCart = (product) => {
+    const productId = product._id || product.id;
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id);
+      const existingItem = prevItems.find((item) => (item._id || item.id) === productId);
       if (existingItem) {
         return prevItems.map((item) =>
-          item.id === product.id
+          (item._id || item.id) === productId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prevItems, { ...product, quantity: 1 }];
+      // Ensure we don't carry over old quantities if the product object happens to have one
+      const { quantity, ...productData } = product;
+      return [...prevItems, { ...productData, quantity: 1 }];
     });
   };
 
   // Decrease quantity by 1, or remove completely if quantity reaches 0
   const removeFromCart = (productId) => {
     setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === productId);
+      const existingItem = prevItems.find((item) => (item._id || item.id) === productId);
       if (existingItem?.quantity === 1) {
-        return prevItems.filter((item) => item.id !== productId);
+        return prevItems.filter((item) => (item._id || item.id) !== productId);
       }
       return prevItems.map((item) =>
-        item.id === productId
+        (item._id || item.id) === productId
           ? { ...item, quantity: item.quantity - 1 }
           : item
       );
@@ -54,7 +57,7 @@ export function CartProvider({ children }) {
 
   // Remove completely regardless of quantity
   const clearItemFromCart = (productId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId));
+    setCartItems((prevItems) => prevItems.filter((item) => (item._id || item.id) !== productId));
   };
 
   const clearCart = () => {
@@ -66,11 +69,16 @@ export function CartProvider({ children }) {
   }, [cartItems]);
 
   const cartTotalPrice = useMemo(() => {
-    return cartItems.reduce((total, item) => {
-      // Assuming price is passed as a string like "₹373"
-      const numericPrice = parseFloat(item.price.replace('₹', ''));
-      return total + numericPrice * item.quantity;
+    const total = cartItems.reduce((acc, item) => {
+      let numericPrice = 0;
+      if (typeof item.price === 'string') {
+        numericPrice = parseFloat(item.price.replace(/[^\d.]/g, '')) || 0;
+      } else if (typeof item.price === 'number') {
+        numericPrice = item.price;
+      }
+      return acc + (numericPrice * (item.quantity || 1));
     }, 0);
+    return isNaN(total) ? 0 : total;
   }, [cartItems]);
 
   const value = {

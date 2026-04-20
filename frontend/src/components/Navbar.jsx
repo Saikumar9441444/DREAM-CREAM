@@ -83,6 +83,19 @@ export default function Navbar({ onOpenCart }) {
               key={link.path} 
               to={link.path} 
               className={`nav-item ${location.pathname === link.path ? 'active' : ''}`}
+              onMouseEnter={() => {
+                if (link.path === '/products') {
+                  // Prefetch Component Chunk
+                  import('../pages/Products').catch(() => {});
+                  // Prefetch Data if possible (optional but good for speed)
+                  fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`)
+                    .then(res => res.json())
+                    .then(data => {
+                      localStorage.setItem('dream_cream_products_cache', JSON.stringify(data));
+                    })
+                    .catch(() => {});
+                }
+              }}
             >
               {link.label}
               {location.pathname === link.path && (

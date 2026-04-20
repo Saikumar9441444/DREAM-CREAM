@@ -41,28 +41,46 @@ function App() {
     document.title = routeTitles[location.pathname] || 'Dream Cream';
   }, [location.pathname]);
 
+  // 🔥 Keep-alive: ping backend every 14 min so Render never sleeps
+  React.useEffect(() => {
+    const BACKEND_URL = import.meta.env.VITE_API_URL || '';
+    const ping = () => {
+      fetch(`${BACKEND_URL}/api/products?_keepalive=1`)
+        .catch(() => {}); // Silent — never shows errors to user
+    };
+    ping(); // Ping immediately on first load to wake backend
+    const interval = setInterval(ping, 14 * 60 * 1000); // Every 14 minutes
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <ErrorBoundary>
       <AuthProvider>
         <div className="app-layout">
+          <Navbar onOpenCart={() => setIsCartOpen(true)} />
+          <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
           <SmoothScroll>
             <AmbientBackground />
             <Cursor />
-          {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
-          
-          {/* Scroll Progress Bar */}
-          <motion.div
-            className="scroll-progress-bar"
-            style={{ scaleX: scrollYProgress }}
-          />
-          
-          <Navbar onOpenCart={() => setIsCartOpen(true)} />
-          
-          <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+            {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
+            
+            {/* Scroll Progress Bar */}
+            <motion.div
+              className="scroll-progress-bar"
+              style={{ scaleX: scrollYProgress }}
+            />
 
           <main className="main-content">
             <AnimatePresence mode="wait">
-              <Suspense fallback={<div className="loading-fallback"></div>}>
+              <Suspense fallback={
+                <div className="loading-fallback">
+                  <div className="loader-orbit">
+                    <div className="loader-planet"></div>
+                  </div>
+                  <p>Preparing Freshness...</p>
+                </div>
+              }>
                 <Routes location={location} key={location.pathname}>
                   <Route path="/" element={<Home />} />
                   <Route path="/products" element={<Products />} />

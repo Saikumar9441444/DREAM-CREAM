@@ -48,7 +48,7 @@ export default function CartSidebar({ isOpen, onClose }) {
               ) : (
                 <div className="cart-items-list">
                   {cartItems.map((item) => (
-                    <motion.div layout key={item.id} className="cart-item">
+                    <motion.div key={item._id || item.id} className="cart-item">
                       <img src={item.image} alt={item.name} className="cart-item-image" style={{ filter: `hue-rotate(${item.hue || 0}deg)` }} />
                       <div className="cart-item-details">
                         <h3>{item.name}</h3>
@@ -56,11 +56,11 @@ export default function CartSidebar({ isOpen, onClose }) {
                       </div>
                       <div className="cart-item-actions">
                         <div className="quantity-controls">
-                          <button onClick={() => removeFromCart(item.id)}><Minus size={14} /></button>
+                          <button onClick={() => removeFromCart(item._id || item.id)}><Minus size={14} /></button>
                           <span>{item.quantity}</span>
                           <button onClick={() => addToCart(item)}><Plus size={14} /></button>
                         </div>
-                        <button className="remove-btn" onClick={() => clearItemFromCart(item.id)}>
+                        <button className="remove-btn" onClick={() => clearItemFromCart(item._id || item.id)}>
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -74,7 +74,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                <div className="cart-footer">
                  <div className="total-row">
                    <span>Subtotal</span>
-                   <span>₹${cartTotalPrice.toFixed(2)}</span>
+                   <span>₹{cartTotalPrice.toFixed(2)}</span>
                  </div>
                  <button className="btn-primary checkout-btn" onClick={handleCheckout}>
                    Proceed to Checkout <Send size={18} />

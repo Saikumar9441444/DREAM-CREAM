@@ -18,7 +18,6 @@ const FlavorCard = memo(({ flavor, isAdded, onAdd, itemVariants, priority }) => 
   return (
     <motion.div 
       variants={itemVariants} 
-      layoutId={`product-${flavor._id || flavor.id}`}
       style={{ display: 'flex' }}
       whileHover={isMobile ? undefined : interaction.whileHover}
       whileTap={interaction.whileTap}
@@ -99,10 +98,23 @@ export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
   
+  // 0. INITIALIZE FROM CACHE FOR INSTANT LOADING
+  const getInitialProducts = () => {
+    const cached = localStorage.getItem('dream_cream_products_cache');
+    if (cached) {
+      try {
+        return JSON.parse(cached);
+      } catch (e) {
+        return [];
+      }
+    }
+    return []; // No more static fallback here, we want "working" flavours from DB/Cache
+  };
+
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [addedItems, setAddedItems] = useState({});
-  const [products, setProducts] = useState(STATIC_PRODUCTS); 
+  const [products, setProducts] = useState(getInitialProducts); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
@@ -114,17 +126,23 @@ export default function Products() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      // Show loading if we have no products at all (first visit)
+      if (products.length === 0) {
+        setLoading(true);
+      }
+      
       try {
         const response = await fetch(ENDPOINTS.PRODUCTS);
         if (!response.ok) throw new Error('Failed to fetch flavors');
         const data = await response.json();
+        
         setProducts(data);
+        // Persist fresh data from DB to cache
+        localStorage.setItem('dream_cream_products_cache', JSON.stringify(data));
       } catch (err) {
         console.error("API Fetch Error:", err);
         setError(err.message);
-        // Fallback to static products if API fails
-        setProducts(STATIC_PRODUCTS);
+        // If fetch fails and we have no cache, we show the error or stay empty
       } finally {
         setLoading(false);
       }

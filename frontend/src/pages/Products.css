@@ -196,15 +196,20 @@
 
 @media (max-width: 768px) {
   .products-page {
-    padding-top: 2rem;
+    padding-top: 1rem;
+  }
+
+  .products-hero {
+    padding: 6rem 0 2rem;
   }
 
   .filters-container {
     flex-direction: column;
     align-items: stretch;
-    padding: 1rem;
-    gap: 1rem;
+    padding: 1.25rem;
+    gap: 1.25rem;
     border-radius: 1.5rem;
+    margin-bottom: 1.5rem;
   }
   
   .category-section {
@@ -216,52 +221,57 @@
   .category-label-text {
     font-size: 0.65rem;
     margin-left: 5px;
+    margin-bottom: 4px;
   }
 
   .spotlight-search-container {
     max-width: 100%;
   }
 
-  .category-filters-wrapper {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .category-filters-wrapper::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 40px;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5));
-    pointer-events: none;
-  }
-
-  /* Allow global responsiveness from index.css to take effect */
+  /* Optimized 2-column grid for mobile clarity */
   .flavors-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding: 0 0.5rem;
   }
 
   .flavor-card {
-    padding: 0.8rem;
-    border-radius: var(--border-radius-md);
+    padding: 0.75rem;
+    border-radius: 1.2rem;
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform: translateZ(0);
   }
 
+  .flavor-image-container {
+    margin-bottom: 0.75rem;
+  }
+
   .flavor-info h3 {
-    font-size: 0.95rem;
-    height: 2.5rem;
+    font-size: 0.9rem;
+    height: 2.2rem;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+
+  .flavor-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 1rem;
   }
 
   .flavor-price {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
   
+  .add-to-cart-btn {
+    padding: 12px 8px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+  }
+
   .category-filters {
     mask-image: none;
     -webkit-mask-image: none;
@@ -269,21 +279,15 @@
     max-width: 100% !important;
     overflow-x: auto !important;
     display: flex !important;
-    gap: 12px !important;
-    padding: 10px 1rem !important; /* Side padding for better snap alignment */
+    gap: 10px !important;
+    padding: 4px 0.5rem !important;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x proximity;
-    scrollbar-width: none; /* Hide scrollbar for Chrome/Firefox/IE/Edge */
-  }
-
-  .category-filters::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Safari/Chrome */
   }
 
   .filter-btn {
     flex-shrink: 0;
-    scroll-snap-align: center;
     padding: 6px 14px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 }

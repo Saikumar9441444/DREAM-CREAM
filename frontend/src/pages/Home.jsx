@@ -22,7 +22,17 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  
+  // 0. INITIALIZE FROM CACHE FOR INSTANT LOADING
+  const getInitialProducts = () => {
+    const cached = localStorage.getItem('dream_cream_products_cache');
+    if (cached) {
+      try { return JSON.parse(cached); } catch (e) { return []; }
+    }
+    return [];
+  };
+
+  const [products, setProducts] = useState(getInitialProducts);
   const [cmsContent, setCmsContent] = useState({});
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,10 +41,19 @@ export default function Home() {
   const titleRef = useRef(null);
 
   useEffect(() => {
-    // Instant Static Content for a "Perfect" experience
-    setProducts(STATIC_PRODUCTS);
-    setLoading(false);
-    setCmsContent({}); // Use default values
+    const fetchHomeData = async () => {
+      try {
+        const response = await fetch(ENDPOINTS.PRODUCTS);
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data);
+          localStorage.setItem('dream_cream_products_cache', JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error("Home Fetch Error:", err);
+      }
+    };
+    fetchHomeData();
   }, []);
 
   useEffect(() => {

@@ -46,11 +46,19 @@ export default function Orders() {
       address: e.target.address.value,
       deliveryType: e.target.type.value,
       deliveryTime: e.target.datetime.value,
-      items: cartItems.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: parseFloat(item.price.replace(/[^\d.]/g, ''))
-      })),
+      items: cartItems.map(item => {
+        let numericPrice = 0;
+        if (typeof item.price === 'string') {
+          numericPrice = parseFloat(item.price.replace(/[^\d.]/g, ''));
+        } else if (typeof item.price === 'number') {
+          numericPrice = item.price;
+        }
+        return {
+          name: item.name,
+          quantity: item.quantity,
+          price: numericPrice
+        };
+      }),
       total: finalTotal,
       paymentMethod: paymentMethod
     };
@@ -239,7 +247,7 @@ export default function Orders() {
             
             <div className="cart-items-list">
               {cartItems.map((item) => (
-                <div key={item.id} className="cart-item">
+                <div key={item._id || item.id} className="cart-item">
                   <img src={item.image} alt={item.name} className="cart-item-image" loading="lazy" style={{ filter: `hue-rotate(${item.hue || 0}deg)` }} />
                   <div className="cart-item-details">
                     <h3>{item.name}</h3>
@@ -247,7 +255,7 @@ export default function Orders() {
                   </div>
                   <div className="cart-item-actions">
                     <div className="quantity-controls">
-                      <button type="button" onClick={() => removeFromCart(item.id)}>
+                      <button type="button" onClick={() => removeFromCart(item._id || item.id)}>
                         <Minus size={14} />
                       </button>
                       <span>{item.quantity}</span>
@@ -258,7 +266,7 @@ export default function Orders() {
                     <button 
                       type="button" 
                       className="remove-btn" 
-                      onClick={() => clearItemFromCart(item.id)}
+                      onClick={() => clearItemFromCart(item._id || item.id)}
                       aria-label="Remove item"
                     >
                       <Trash2 size={16} />
@@ -300,17 +308,17 @@ export default function Orders() {
             <form onSubmit={handleSubmit} className="custom-form">
               <div className="form-row">
                 <div className="input-group">
-                  <input type="text" id="name" required placeholder=" " />
+                  <input type="text" id="name" name="name" required placeholder=" " />
                   <label htmlFor="name">Full Name</label>
                 </div>
                 <div className="input-group">
-                  <input type="email" id="email" required placeholder=" " />
+                  <input type="email" id="email" name="email" required placeholder=" " />
                   <label htmlFor="email">Email Address</label>
                 </div>
               </div>
 
               <div className="input-group">
-                <input type="tel" id="phone" required placeholder=" " />
+                <input type="tel" id="phone" name="phone" required placeholder=" " />
                 <label htmlFor="phone">Phone Number</label>
               </div>
 
@@ -318,19 +326,19 @@ export default function Orders() {
 
               <div className="form-row">
                 <div className="input-group">
-                  <select id="type" required defaultValue="pickup">
+                  <select id="type" name="type" required defaultValue="pickup">
                     <option value="pickup">Store Pickup (Free)</option>
                     <option value="delivery">Local Delivery (₹50)</option>
                   </select>
                 </div>
                 <div className="input-group">
-                  <input type="datetime-local" id="datetime" required className="filled" />
+                  <input type="datetime-local" id="datetime" name="datetime" required className="filled" />
                   <label htmlFor="datetime" className="always-float">Time</label>
                 </div>
               </div>
               
               <div className="input-group">
-                <textarea id="address" rows="2" placeholder=" "></textarea>
+                <textarea id="address" name="address" rows="2" placeholder=" "></textarea>
                 <label htmlFor="address">Delivery / Billing Address</label>
               </div>
 
