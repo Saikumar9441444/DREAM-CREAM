@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogIn, Mail, Lock, AlertCircle, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle, ArrowLeft, Loader2, UserPlus, User } from 'lucide-react';
 import './Login.css';
 
 export default function Login() {
-  const { login, loginWithGoogle, user } = useAuth();
+  const { login, register, loginWithGoogle, user } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // If already logged in, redirect to home or admin
+  // Determine where to redirect after login
+  const queryParams = new URLSearchParams(location.search);
+  const redirectUrl = queryParams.get('redirect');
+
+  // If already logged in, redirect
   if (user) {
-    return <Navigate to={user.role === 'admin' ? '/admin' : '/'} />;
+    if (user.role === 'admin') {
+      return <Navigate to="/admin" />;
+    }
+    return <Navigate to={redirectUrl || '/'} />;
   }
 
   const handleGoogleLogin = async () => {
@@ -24,8 +34,8 @@ export default function Login() {
     setError('');
     try {
       const result = await loginWithGoogle();
-      if (result.success) {
-        navigate('/admin');
+      if (!result.success) {
+        setError(result.message || 'Google Sign-In failed.');
       }
     } catch (err) {
       setError('Google Sign-In failed. Please try again.');
@@ -40,11 +50,21 @@ export default function Login() {
     setError('');
 
     try {
-      const result = await login(email, password);
-      if (result.success) {
-        navigate('/admin');
+      let result;
+      if (isSignUp) {
+        result = await register(email, password, displayName || email.split('@')[0]);
       } else {
-        setError(result.message || 'Access denied. Please check your credentials.');
+        result = await login(email, password);
+      }
+
+      if (result.success) {
+        // Redirection happens automatically
+      } else {
+        if (result.message?.includes('Invalid email')) {
+            setError('Account not found or incorrect password. Please Sign Up if you are new.');
+        } else {
+            setError(result.message || 'Authentication failed. Please try again.');
+        }
       }
     } catch (err) {
       setError('Connection error. Is the server running?');
@@ -55,7 +75,6 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      {/* Decorative blurred backgrounds */}
       <div className="login-bg-decoration login-bg-1"></div>
       <div className="login-bg-decoration login-bg-2"></div>
 
@@ -72,21 +91,21 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            Management Portal
+            {isSignUp ? 'Join Cream Dream' : 'Welcome Back'}
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            Admin Sign In
+            {isSignUp ? 'Create Account' : 'Sign In'}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            Authenticate to continue to dashboard
+            {isSignUp ? 'Sign up to place an order and track deliveries.' : 'Authenticate to access your account and orders.'}
           </motion.p>
         </header>
 
@@ -105,6 +124,27 @@ export default function Login() {
         </AnimatePresence>
 
         <form onSubmit={handleSubmit} className="login-form">
+          <AnimatePresence>
+            {isSignUp && (
+              <motion.div 
+                className="login-input-wrapper"
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginBottom: '1rem' }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+              >
+                <input 
+                  type="text" 
+                  required={isSignUp}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Full Name"
+                  autoComplete="name"
+                />
+                <User className="input-icon" size={20} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.div 
             className="login-input-wrapper"
             initial={{ opacity: 0, x: -20 }}
@@ -152,7 +192,10 @@ export default function Login() {
             {isLoading ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
-              <>Sign In <LogIn size={20} /></>
+              <>
+                {isSignUp ? 'Sign Up' : 'Sign In'} 
+                {isSignUp ? <UserPlus size={20} /> : <LogIn size={20} />}
+              </>
             )}
           </motion.button>
         </form>
@@ -187,20 +230,28 @@ export default function Login() {
         </motion.button>
 
         <motion.div
+          className="mt-6 text-center text-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
+        >
+          {isSignUp ? (
+            <p>Already have an account? <button onClick={() => setIsSignUp(false)} className="text-[var(--accent-color)] hover:underline font-bold bg-transparent border-none cursor-pointer">Sign In</button></p>
+          ) : (
+            <p>Don't have an account? <button onClick={() => setIsSignUp(true)} className="text-[var(--accent-color)] hover:underline font-bold bg-transparent border-none cursor-pointer">Sign Up</button></p>
+          )}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="mt-4"
         >
           <Link to="/" className="back-home-link">
             <ArrowLeft size={16} /> Back to Shop
           </Link>
         </motion.div>
-
-        <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <p className="text-xs opacity-40 uppercase tracking-widest font-bold">
-                Authorized Personnel Only
-            </p>
-        </div>
       </motion.div>
     </div>
   );

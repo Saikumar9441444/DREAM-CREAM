@@ -144,7 +144,7 @@ export default function Navbar({ onOpenCart }) {
 
           <div className="auth-group">
             {user ? (
-              <button onClick={logout} className="user-avatar-btn" title="Logout">
+              <button onClick={() => navigate('/profile')} className="user-avatar-btn" title="Profile">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-check">
                   <path d="M2 21a8 8 0 0 1 13.292-6" />
                   <circle cx="10" cy="8" r="5" />
@@ -195,9 +195,12 @@ export default function Navbar({ onOpenCart }) {
                 </Link>
               ))}
               <div className="drawer-footer">
-                <Link to="/login" className="drawer-link" onClick={() => setIsMenuOpen(false)}>ACCOUNT</Link>
+                {user ? (
+                  <Link to="/profile" className="drawer-link" onClick={() => setIsMenuOpen(false)}>PROFILE</Link>
+                ) : (
+                  <Link to="/login" className="drawer-link" onClick={() => setIsMenuOpen(false)}>ACCOUNT</Link>
+                )}
                 {isAdmin && <Link to="/admin" className="drawer-link" onClick={() => setIsMenuOpen(false)}>ADMIN</Link>}
-                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="drawer-link logout-btn">LOGOUT</button>
               </div>
             </div>
           </motion.div>

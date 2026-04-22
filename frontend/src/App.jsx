@@ -1,7 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
-import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartSidebar from './components/CartSidebar';
@@ -20,6 +19,7 @@ const Orders = lazy(() => import('./pages/Orders'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Login = lazy(() => import('./pages/Login'));
 const Contact = lazy(() => import('./pages/Contact'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 function App() {
   const { scrollYProgress } = useScroll();
@@ -55,7 +55,6 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
         <div className="app-layout">
           <Navbar onOpenCart={() => setIsCartOpen(true)} />
           <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
@@ -89,6 +88,7 @@ function App() {
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/profile" element={<Profile />} />
                 </Routes>
               </Suspense>
             </AnimatePresence>
@@ -97,7 +97,6 @@ function App() {
           <Footer />
         </SmoothScroll>
       </div>
-      </AuthProvider>
     </ErrorBoundary>
   );
 }

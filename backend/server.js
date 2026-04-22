@@ -6,6 +6,7 @@ require('dotenv').config();
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const visitorRoutes = require('./routes/visitorRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/visitors', visitorRoutes);
+app.use('/api/auth', authRoutes);
 
 
 // Database Connection

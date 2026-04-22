@@ -2,16 +2,22 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, Trash2, Send } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './CartSidebar.css';
 
 export default function CartSidebar({ isOpen, onClose }) {
   const { cartItems, cartTotalItems, cartTotalPrice, addToCart, removeFromCart, clearItemFromCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleCheckout = () => {
     onClose();
-    navigate('/orders');
+    if (user) {
+      navigate('/orders');
+    } else {
+      navigate('/login?redirect=/orders');
+    }
   };
 
   return (
@@ -42,8 +48,12 @@ export default function CartSidebar({ isOpen, onClose }) {
             <div className="cart-content">
               {cartItems.length === 0 ? (
                 <div className="empty-cart flex-center">
-                  <p>Your cart is empty.</p>
-                  <button className="btn-secondary mt-4" onClick={onClose}>Continue Shopping</button>
+                  <p>{!user ? "Please sign in to start your order." : "Your cart is empty."}</p>
+                  {!user ? (
+                    <button className="btn-secondary mt-4" onClick={() => { onClose(); navigate('/login'); }}>Sign In</button>
+                  ) : (
+                    <button className="btn-secondary mt-4" onClick={onClose}>Continue Shopping</button>
+                  )}
                 </div>
               ) : (
                 <div className="cart-items-list">

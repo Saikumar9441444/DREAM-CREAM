@@ -6,14 +6,8 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-// Static admin credentials for local-only mode
-const ADMIN_USER = {
-  email: 'saikumar89515@gmail.com',
-  displayName: 'Admin Saikumar',
-  role: 'admin'
-};
-
-const API_VISITORS = '/api/visitors';
+const API_AUTH = 'http://localhost:5000/api/auth';
+const API_VISITORS = 'http://localhost:5000/api/visitors';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -28,11 +22,12 @@ export function AuthProvider({ children }) {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && parsedUser.email) {
           setUser(parsedUser);
-          setIsAdmin(parsedUser.email.trim().toLowerCase() === ADMIN_USER.email);
+          setIsAdmin(parsedUser.role === 'admin');
         }
       } catch (err) {
         console.error("Corrupted session cleared:", err);
         localStorage.removeItem('dream_cream_user');
+        localStorage.removeItem('dream_cream_token');
       }
     }
     setLoading(false);
@@ -56,22 +51,39 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // PURE FRONTEND MOCK: Simulate server delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-
+      // Hardcoded admin bypass
       const normalizedEmail = email.trim().toLowerCase();
-      
-      // Check if it matches the hardcoded admin
-      if (normalizedEmail === ADMIN_USER.email) {
-        const userObj = { ...ADMIN_USER };
-        localStorage.setItem('dream_cream_user', JSON.stringify(userObj));
+      if (normalizedEmail === 'saikumar89515@gmail.com') {
+        const adminUser = {
+          email: 'saikumar89515@gmail.com',
+          displayName: 'Admin Saikumar',
+          role: 'admin',
+          _id: 'admin_static_id'
+        };
+        localStorage.setItem('dream_cream_user', JSON.stringify(adminUser));
         localStorage.setItem('dream_cream_token', 'mock-jwt-token-saikumar');
-        
-        setUser(userObj);
+        setUser(adminUser);
         setIsAdmin(true);
         return { success: true };
+      }
+
+      const response = await fetch(`${API_AUTH}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('dream_cream_user', JSON.stringify(data));
+        localStorage.setItem('dream_cream_token', data.token);
+        
+        setUser(data);
+        setIsAdmin(data.role === 'admin');
+        return { success: true };
       } else {
-        throw new Error('Invalid credentials. For evaluation, use: ' + ADMIN_USER.email);
+        throw new Error(data.message || 'Login failed');
       }
     } catch (err) {
       console.error("Login Error:", err);
@@ -81,19 +93,47 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const register = async (email, password, displayName) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_AUTH}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, displayName })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('dream_cream_user', JSON.stringify(data));
+        localStorage.setItem('dream_cream_token', data.token);
+        
+        setUser(data);
+        setIsAdmin(data.role === 'admin');
+        return { success: true };
+      } else {
+        throw new Error(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error("Register Error:", err);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('dream_cream_user');
+    localStorage.removeItem('dream_cream_token');
     setUser(null);
     setIsAdmin(false);
   };
 
   const loginWithGoogle = async () => {
-    // SECURITY: Disabling the automatic admin bypass for Google login.
-    // In a real app, this would integrate with Firebase/Google OAuth.
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ success: false, message: "Google Login is disabled for this secure presentation." });
-      }, 100);
+        resolve({ success: false, message: "Google Sign-In requires Firebase configuration or a Google Client ID to be set up." });
+      }, 500);
     });
   };
 
@@ -101,6 +141,7 @@ export function AuthProvider({ children }) {
     user,
     isAdmin,
     login,
+    register,
     loginWithGoogle,
     logout,
     loading

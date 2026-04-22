@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const CartContext = createContext();
 
@@ -7,6 +9,10 @@ export function useCart() {
 }
 
 export function CartProvider({ children }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem('cream_dream_cart');
@@ -17,13 +23,28 @@ export function CartProvider({ children }) {
     }
   });
 
+  // Clear cart when user logs out
+  useEffect(() => {
+    if (!user) {
+      setCartItems([]);
+      localStorage.removeItem('cream_dream_cart');
+    }
+  }, [user]);
+
   // Persist cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('cream_dream_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (cartItems.length > 0 || user) {
+      localStorage.setItem('cream_dream_cart', JSON.stringify(cartItems));
+    }
+  }, [cartItems, user]);
 
   // Add item to cart, or increment quantity if it already exists
   const addToCart = (product) => {
+    if (!user) {
+      // Redirect to login if trying to add while logged out
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return false; // Indicating failure
+    }
     const productId = product._id || product.id;
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => (item._id || item.id) === productId);

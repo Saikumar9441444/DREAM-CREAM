@@ -1,5 +1,5 @@
 import React from 'react';
-import { IceCream2, Share2, Mail, MessageCircle } from 'lucide-react';
+import { IceCream2, Facebook, Instagram, Youtube } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './Footer.css';
 
@@ -20,9 +20,9 @@ export default function Footer() {
           </div>
           <p>Handcrafted, artisanal ice cream made with love and magic, daily.</p>
           <div className="social-links">
-            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="#" aria-label="Share"><Share2 size={20} /></motion.a>
-            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="#" aria-label="Mail"><Mail size={20} /></motion.a>
-            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="#" aria-label="Chat"><MessageCircle size={20} /></motion.a>
+            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={20} /></motion.a>
+            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={20} /></motion.a>
+            <motion.a whileHover={{ scale: 1.2, color: 'var(--color-primary)' }} whileTap={{ scale: 0.9 }} href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={20} /></motion.a>
           </div>
         </div>
         

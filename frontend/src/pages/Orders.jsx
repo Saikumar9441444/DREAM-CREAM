@@ -5,6 +5,7 @@ import {
   Plus, Minus, Trash2, Copy, MessageSquare, Phone 
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { ENDPOINTS } from '../api/config';
 import './Orders.css';
 
@@ -23,13 +24,54 @@ export default function Orders() {
   const [loading, setLoading] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
 
+  const { user } = useAuth();
+  
+  const [formData, setFormData] = useState({
+    name: user?.displayName || '',
+    email: user?.email || '',
+    phone: '',
+    address: ''
+  });
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('dream_cream_billing_details');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFormData(prev => ({
+          ...prev,
+          name: parsed.name || prev.name,
+          email: parsed.email || prev.email,
+          phone: parsed.phone || prev.phone,
+          address: parsed.address || prev.address
+        }));
+      } catch (e) {
+        console.error("Failed to parse billing details", e);
+      }
+    } else if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.displayName || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user]);
+
+  const handleInputChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   // Fallback: If cart is empty and not just submitted, redirect back to flavors
   if (cartItems.length === 0 && !submitted) {
     return (
       <div className="orders-page flex flex-col items-center justify-center p-20 text-center">
-        <h2 className="text-3xl font-bold mb-4">Your Cart is Empty</h2>
-        <p className="opacity-70 mb-8">You haven't added any magic to your order yet.</p>
-        <Link to="/products" className="btn-primary">Explore Flavors</Link>
+        <h2 className="text-3xl font-bold mb-4">{!user ? 'Authentication Required' : 'Your Cart is Empty'}</h2>
+        <p className="opacity-70 mb-8">{!user ? 'Please sign in to place an order.' : "You haven't added any magic to your order yet."}</p>
+        {!user ? (
+          <Link to="/login?redirect=/orders" className="btn-primary">Sign In</Link>
+        ) : (
+          <Link to="/products" className="btn-primary">Explore Flavors</Link>
+        )}
       </div>
     );
   }
@@ -38,12 +80,21 @@ export default function Orders() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Save billing details for future
+    const billingDetails = {
+      name: e.target.name.value,
+      email: e.target.email.value,
+      phone: e.target.phone.value,
+      address: e.target.address.value,
+    };
+    localStorage.setItem('dream_cream_billing_details', JSON.stringify(billingDetails));
+
     // Capture order data from form
     const orderData = {
-      customerName: e.target.name.value,
-      customerEmail: e.target.email.value,
-      customerPhone: e.target.phone.value,
-      address: e.target.address.value,
+      customerName: billingDetails.name,
+      customerEmail: billingDetails.email,
+      customerPhone: billingDetails.phone,
+      address: billingDetails.address,
       deliveryType: e.target.type.value,
       deliveryTime: e.target.datetime.value,
       items: cartItems.map(item => {
@@ -221,11 +272,17 @@ export default function Orders() {
       <div className="orders-page fade-in">
         <div className="container">
           <div className="empty-cart-state text-center glass-panel">
-            <h2>Your Cart is Empty</h2>
-            <p className="mt-2 mb-4">Looks like you haven't selected any flavors yet!</p>
-            <Link to="/products" className="btn-primary">
-              <ChevronLeft size={20} className="mr-2" /> Explore Flavors
-            </Link>
+            <h2>{!user ? 'Authentication Required' : 'Your Cart is Empty'}</h2>
+            <p className="mt-2 mb-4">{!user ? 'Please sign in to place an order.' : "Looks like you haven't selected any flavors yet!"}</p>
+            {!user ? (
+              <Link to="/login?redirect=/orders" className="btn-primary">
+                <ChevronLeft size={20} className="mr-2" /> Sign In
+              </Link>
+            ) : (
+              <Link to="/products" className="btn-primary">
+                <ChevronLeft size={20} className="mr-2" /> Explore Flavors
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -308,17 +365,17 @@ export default function Orders() {
             <form onSubmit={handleSubmit} className="custom-form">
               <div className="form-row">
                 <div className="input-group">
-                  <input type="text" id="name" name="name" required placeholder=" " />
+                  <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder=" " />
                   <label htmlFor="name">Full Name</label>
                 </div>
                 <div className="input-group">
-                  <input type="email" id="email" name="email" required placeholder=" " />
+                  <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} required placeholder=" " />
                   <label htmlFor="email">Email Address</label>
                 </div>
               </div>
 
               <div className="input-group">
-                <input type="tel" id="phone" name="phone" required placeholder=" " />
+                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} required placeholder=" " />
                 <label htmlFor="phone">Phone Number</label>
               </div>
 
@@ -338,7 +395,7 @@ export default function Orders() {
               </div>
               
               <div className="input-group">
-                <textarea id="address" name="address" rows="2" placeholder=" "></textarea>
+                <textarea id="address" name="address" rows="2" value={formData.address} onChange={handleInputChange} placeholder=" "></textarea>
                 <label htmlFor="address">Delivery / Billing Address</label>
               </div>
 

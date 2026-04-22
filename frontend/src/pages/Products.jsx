@@ -150,7 +150,9 @@ export default function Products() {
   // 4. MEMOIZED HANDLERS
   const handleAddToCart = useCallback((product) => {
     const id = product._id || product.id;
-    addToCart(product);
+    const success = addToCart(product);
+    if (success === false) return; // Means user wasn't logged in and gets redirected
+    
     setAddedItems(prev => ({ ...prev, [id]: true }));
     setTimeout(() => {
       setAddedItems(prev => ({ ...prev, [id]: false }));

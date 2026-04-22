@@ -599,7 +599,29 @@ export default function Admin() {
                           <td><div className="cust-phone flex items-center gap-1"><Phone size={12}/> {o.customerPhone}</div></td>
                           <td className="w-1/4"><div className="item-specs">{o.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</div></td>
                           <td><span className="order-price">₹{o.total.toFixed(2)}</span></td>
-                          <td><span className={`status-orb ${o.status.toLowerCase().replace(' ', '-')}`}>{o.status}</span></td>
+                          <td>
+                            <button 
+                              onClick={async () => {
+                                const newStatus = o.status === 'Completed' ? 'Pending' : 'Completed';
+                                try {
+                                  const res = await fetch(`${ENDPOINTS.ORDERS}/${o._id || o.id}/status`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ status: newStatus })
+                                  });
+                                  if (res.ok) {
+                                    setOrders(orders.map(order => order._id === o._id ? { ...order, status: newStatus } : order));
+                                  }
+                                } catch (e) {
+                                  console.error("Status update failed", e);
+                                }
+                              }}
+                              className={`status-orb cursor-pointer hover:opacity-80 transition-opacity ${o.status.toLowerCase().replace(' ', '-')}`}
+                              title="Click to toggle status"
+                            >
+                              {o.status}
+                            </button>
+                          </td>
                           <td className="text-right">
                             <div className="flex justify-end gap-2">
                               <a 
