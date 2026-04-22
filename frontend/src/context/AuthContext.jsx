@@ -6,8 +6,9 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-const API_AUTH = 'http://localhost:5000/api/auth';
-const API_VISITORS = 'http://localhost:5000/api/visitors';
+import { ENDPOINTS, API_BASE } from '../api/config';
+
+const API_AUTH = `${API_BASE}/api/auth`;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -35,7 +36,7 @@ export function AuthProvider({ children }) {
 
   const trackVisit = async (userData) => {
     try {
-      await fetch(API_VISITORS, {
+      await fetch(ENDPOINTS.VISITORS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
