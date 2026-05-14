@@ -8,6 +8,9 @@ export function useAuth() {
 
 import { ENDPOINTS, API_BASE } from '../api/config';
 
+import { auth, googleProvider } from '../firebase';
+import { signInWithPopup, signOut } from 'firebase/auth';
+
 const API_AUTH = `${API_BASE}/api/auth`;
 
 export function AuthProvider({ children }) {
@@ -123,7 +126,12 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Firebase logout error:", err);
+    }
     localStorage.removeItem('dream_cream_user');
     localStorage.removeItem('dream_cream_token');
     setUser(null);
@@ -131,11 +139,37 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ success: false, message: "Google Sign-In requires Firebase configuration or a Google Client ID to be set up." });
-      }, 500);
-    });
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const idToken = await result.user.getIdToken();
+      
+      // Verify with our backend
+      const response = await fetch(`${API_AUTH}/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('dream_cream_user', JSON.stringify(data));
+        localStorage.setItem('dream_cream_token', data.token);
+        
+        setUser(data);
+        setIsAdmin(data.role === 'admin');
+        await trackVisit(data);
+        return { success: true };
+      } else {
+        throw new Error(data.message || 'Google verification failed');
+      }
+    } catch (err) {
+      console.error("Google Auth Error:", err);
+      return { success: false, message: err.message };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const value = {

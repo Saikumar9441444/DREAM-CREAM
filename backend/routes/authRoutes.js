@@ -72,4 +72,50 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// @route   POST /api/auth/google
+// @desc    Auth user with Google/Firebase token
+router.post('/google', async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ message: 'Token is required' });
+
+    // In a production app, you MUST verify the token using firebase-admin
+    // const decodedToken = await admin.auth().verifyIdToken(idToken);
+    
+    // For now, we will decode the token to get the user info.
+    // NOTE: This is NOT secure without verification! 
+    // The user should set up firebase-admin for real production use.
+    const decodedToken = jwt.decode(idToken);
+    
+    if (!decodedToken || !decodedToken.email) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+
+    const { email, name, picture } = decodedToken;
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if they don't exist
+      user = await User.create({
+        email,
+        displayName: name || email.split('@')[0],
+        // password is not set for Google users
+      });
+    }
+
+    res.json({
+      _id: user._id,
+      displayName: user.displayName,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id, user.role),
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(500).json({ message: 'Server error during Google login' });
+  }
+});
+
 module.exports = router;

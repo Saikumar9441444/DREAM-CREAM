@@ -263,6 +263,22 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05), inset 0 0 30px rgba(255, 255, 255, 0.5);
 }
 
+@media (max-width: 600px) {
+  .testimonial-spotlight-card {
+    padding: 3rem 1.5rem;
+    border-radius: 24px;
+  }
+  
+  .testimonial-text {
+    font-size: 1.25rem !important;
+    margin-bottom: 2rem !important;
+  }
+  
+  .author-name {
+    font-size: 1.2rem !important;
+  }
+}
+
 .quote-icon {
   position: absolute;
   top: -1.5rem;
