@@ -1,6 +1,6 @@
 import React, { useState, Suspense } from 'react';
 import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tags, ShoppingCart, Settings, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Package, Tags, ShoppingCart, Settings, LogOut, Menu, Users, BarChart2, MessageSquare, Star, Archive, Repeat, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Admin.css';
 
@@ -29,9 +29,14 @@ export default function AdminLayout() {
   const navItems = [
     { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { path: '/admin/pos', icon: <ShoppingCart size={20} />, label: 'POS Terminal' },
-    { path: '/admin/products', icon: <Package size={20} />, label: 'Products' },
-    { path: '/admin/categories', icon: <Tags size={20} />, label: 'Categories' },
-    { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders' },
+    { path: '/admin/orders', icon: <ClipboardList size={20} />, label: 'Orders' },
+    { path: '/admin/menu', icon: <Package size={20} />, label: 'Menu Management' },
+    { path: '/admin/inventory', icon: <Archive size={20} />, label: 'Inventory (Stock)' },
+    { path: '/admin/subscriptions', icon: <Repeat size={20} />, label: 'Subscriptions' },
+    { path: '/admin/customers', icon: <Users size={20} />, label: 'Customers' },
+    { path: '/admin/analytics', icon: <BarChart2 size={20} />, label: 'iAnalytics' },
+    { path: '/admin/enquiries', icon: <MessageSquare size={20} />, label: 'Enquiries' },
+    { path: '/admin/testimonials', icon: <Star size={20} />, label: 'Testimonials' },
     { path: '/admin/settings', icon: <Settings size={20} />, label: 'Settings' },
   ];
 

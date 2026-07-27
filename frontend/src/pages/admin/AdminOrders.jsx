@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './Admin.css';
 
 export default function AdminOrders() {
-  const [searchTerm, setSearchTerm] = useState('');
   const [orders, setOrders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('All');
 
   const fetchOrders = async () => {
     const data = await getOrders();
@@ -47,10 +48,17 @@ export default function AdminOrders() {
     return items.map(item => `${item.quantity}x ${item.name}`).join(', ');
   };
 
-  const filteredOrders = orders.filter(order => 
-    order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          order.customerName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === 'Pending') {
+      return matchesSearch && order.status !== 'completed';
+    } else if (activeTab === 'Delivered') {
+      return matchesSearch && order.status === 'completed';
+    }
+    return matchesSearch;
+  });
 
   return (
     <div className="fade-in">
@@ -66,7 +74,30 @@ export default function AdminOrders() {
       </div>
       
       <div className="admin-panel">
-        <div className="admin-panel-header" style={{ borderBottom: '1px solid #eee', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
+        <div className="admin-panel-header" style={{ borderBottom: '1px solid #eee', paddingBottom: '1.5rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <button 
+              className={activeTab === 'All' ? 'btn-primary' : 'btn-outline-primary'} 
+              style={{ padding: '0.4rem 1rem' }}
+              onClick={() => setActiveTab('All')}
+            >
+              All
+            </button>
+            <button 
+              className={activeTab === 'Pending' ? 'btn-primary' : 'btn-outline-primary'} 
+              style={{ padding: '0.4rem 1rem' }}
+              onClick={() => setActiveTab('Pending')}
+            >
+              Pending
+            </button>
+            <button 
+              className={activeTab === 'Delivered' ? 'btn-primary' : 'btn-outline-primary'} 
+              style={{ padding: '0.4rem 1rem' }}
+              onClick={() => setActiveTab('Delivered')}
+            >
+              Delivered
+            </button>
+          </div>
           <div style={{ position: 'relative', width: '300px' }}>
             <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
             <input 

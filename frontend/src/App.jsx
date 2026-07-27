@@ -29,6 +29,12 @@ const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminPOS = lazy(() => import('./pages/admin/AdminPOS'));
+const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
+const AdminSubscriptions = lazy(() => import('./pages/admin/AdminSubscriptions'));
+const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
+const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
+const AdminEnquiries = lazy(() => import('./pages/admin/AdminEnquiries'));
+const AdminTestimonials = lazy(() => import('./pages/admin/AdminTestimonials'));
 
 function App() {
   const { scrollYProgress } = useScroll();
@@ -95,10 +101,17 @@ function App() {
                   <Route path="/admin" element={<AdminLayout />}>
                     <Route index element={<Navigate to="/admin/dashboard" replace />} />
                     <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="menu" element={<AdminProducts />} />
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="categories" element={<AdminCategories />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="pos" element={<AdminPOS />} />
+                    <Route path="inventory" element={<AdminInventory />} />
+                    <Route path="subscriptions" element={<AdminSubscriptions />} />
+                    <Route path="customers" element={<AdminCustomers />} />
+                    <Route path="analytics" element={<AdminAnalytics />} />
+                    <Route path="enquiries" element={<AdminEnquiries />} />
+                    <Route path="testimonials" element={<AdminTestimonials />} />
                     <Route path="settings" element={<AdminSettings />} />
                   </Route>
 
