@@ -21,6 +21,13 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const isAuth = localStorage.getItem('dream_cream_admin_auth');
+    if (!isAuth) {
+      navigate('/admin/login');
+    }
+  }, [location.pathname, navigate]);
+
   const handleLogout = () => {
     localStorage.removeItem('dream_cream_admin_auth');
     navigate('/admin/login');
@@ -28,7 +35,6 @@ export default function AdminLayout() {
 
   const navItems = [
     { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-    { path: '/admin/pos', icon: <ShoppingCart size={20} />, label: 'POS Terminal' },
     { path: '/admin/orders', icon: <ClipboardList size={20} />, label: 'Orders' },
     { path: '/admin/menu', icon: <Package size={20} />, label: 'Menu Management' },
     { path: '/admin/inventory', icon: <Archive size={20} />, label: 'Inventory (Stock)' },
