@@ -10,7 +10,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import heroBg from '../assets/hero_bg.png';
 
-import { STATIC_PRODUCTS } from '../data/staticProducts';
+import { getProducts } from '../data/productStore';
 import './Home.css';
 
 // Register GSAP Plugin
@@ -20,18 +20,29 @@ export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   
-  // 0. PURE FRONTEND MODE (No Backend)
-  const [products, setProducts] = useState(STATIC_PRODUCTS);
+  // FETCH REAL DATA
+  const [products, setProducts] = useState([]);
   const [cmsContent, setCmsContent] = useState({});
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const heroRef = useRef(null);
   const videoRef = useRef(null);
   const titleRef = useRef(null);
 
   useEffect(() => {
-    // Backend fetch disabled for pure frontend showcase
-    // Using STATIC_PRODUCTS directly.
+    const fetchHomeData = async () => {
+      try {
+        setLoading(true);
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHomeData();
   }, []);
 
   useEffect(() => {
