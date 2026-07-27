@@ -83,3 +83,18 @@ export const simulateNewOrder = () => {
   localStorage.setItem('dream_cream_orders_db', JSON.stringify(updated));
   return updated;
 };
+
+// Function to actually place a real user order
+export const addOrder = (orderData) => {
+  const orders = getOrders();
+  const newOrder = {
+    ...orderData,
+    id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+    status: 'new',
+    timestamp: new Date().toISOString(),
+    prepTime: 0
+  };
+  const updated = [newOrder, ...orders];
+  localStorage.setItem('dream_cream_orders_db', JSON.stringify(updated));
+  return newOrder;
+};

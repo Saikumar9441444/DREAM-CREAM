@@ -1,29 +1,62 @@
-import React, { useState } from 'react';
-import { Search, CheckCircle, Clock, ChefHat } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, CheckCircle, Clock, ChefHat, Play, Check } from 'lucide-react';
+import { getOrders, updateOrderStatus, simulateNewOrder } from '../../data/orderStore';
 import './Admin.css';
-
-const mockOrders = [
-  { id: 'ORD-001', customer: 'John Doe', items: '2x Strawberry Dream, 1x Classic Vanilla', total: '₹1,245', status: 'Pending', date: 'Just now' },
-  { id: 'ORD-002', customer: 'Sarah Smith', items: '1x Chocolate Fudge Brownie', total: '₹450', status: 'Preparing', date: '5 mins ago' },
-  { id: 'ORD-003', customer: 'Mike Johnson', items: '3x Mango Sorbet', total: '₹890', status: 'Completed', date: '1 hour ago' },
-  { id: 'ORD-004', customer: 'Emma Wilson', items: '1x Pistachio Delight, 2x Chocolate Thick Shake', total: '₹1,560', status: 'Completed', date: '2 hours ago' },
-];
 
 export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    setOrders(getOrders());
+  }, []);
+
+  const handleSimulateOrder = () => {
+    const updated = simulateNewOrder();
+    setOrders(updated);
+  };
+
+  const handleStatusChange = (orderId, newStatus) => {
+    const updated = updateOrderStatus(orderId, newStatus);
+    setOrders(updated);
+  };
 
   const getStatusBadge = (status) => {
-    switch(status) {
-      case 'Completed': return <span className="status-badge" style={{ background: 'rgba(37, 211, 102, 0.1)', color: '#25D366' }}><CheckCircle size={14} style={{ display: 'inline', marginRight: '4px' }}/> Completed</span>;
-      case 'Preparing': return <span className="status-badge" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><ChefHat size={14} style={{ display: 'inline', marginRight: '4px' }}/> Preparing</span>;
-      default: return <span className="status-badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}><Clock size={14} style={{ display: 'inline', marginRight: '4px' }}/> Pending</span>;
+    switch(status.toLowerCase()) {
+      case 'completed': return <span className="status-badge" style={{ background: 'rgba(37, 211, 102, 0.1)', color: '#25D366' }}><CheckCircle size={14} style={{ display: 'inline', marginRight: '4px' }}/> Completed</span>;
+      case 'ready': return <span className="status-badge" style={{ background: 'rgba(37, 211, 102, 0.1)', color: '#25D366' }}><CheckCircle size={14} style={{ display: 'inline', marginRight: '4px' }}/> Ready</span>;
+      case 'preparing': return <span className="status-badge" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><ChefHat size={14} style={{ display: 'inline', marginRight: '4px' }}/> Preparing</span>;
+      default: return <span className="status-badge" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}><Clock size={14} style={{ display: 'inline', marginRight: '4px' }}/> New</span>;
     }
   };
+
+  const formatTimeAgo = (isoString) => {
+    const minutes = Math.floor((new Date() - new Date(isoString)) / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} mins ago`;
+    return `${Math.floor(minutes / 60)} hours ago`;
+  };
+
+  const formatItems = (items) => {
+    return items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+  };
+
+  const filteredOrders = orders.filter(order => 
+    order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '2rem', margin: 0 }}>Recent Orders</h2>
+        <button 
+          className="btn-outline-primary"
+          style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          onClick={handleSimulateOrder}
+        >
+          <Play size={20} /> Simulate New Order
+        </button>
       </div>
       
       <div className="admin-panel">
@@ -48,19 +81,36 @@ export default function AdminOrders() {
                 <th>Customer</th>
                 <th>Items</th>
                 <th>Total</th>
-                <th>Date</th>
+                <th>Time</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {mockOrders.map(order => (
+              {filteredOrders.map(order => (
                 <tr key={order.id}>
                   <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{order.id}</td>
-                  <td style={{ fontWeight: 600 }}>{order.customer}</td>
-                  <td style={{ color: 'var(--color-text-muted)' }}>{order.items}</td>
-                  <td style={{ fontWeight: 700 }}>{order.total}</td>
-                  <td style={{ color: 'var(--color-text-muted)' }}>{order.date}</td>
+                  <td style={{ fontWeight: 600 }}>{order.customerName}<br/><small style={{ color: '#999' }}>{order.phone}</small></td>
+                  <td style={{ color: 'var(--color-text-muted)' }}>{formatItems(order.items)}</td>
+                  <td style={{ fontWeight: 700 }}>₹{order.totalAmount}</td>
+                  <td style={{ color: 'var(--color-text-muted)' }}>{formatTimeAgo(order.timestamp)}</td>
                   <td>{getStatusBadge(order.status)}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      {order.status === 'new' && (
+                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => handleStatusChange(order.id, 'preparing')}>Start Prep</button>
+                      )}
+                      {order.status === 'preparing' && (
+                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: '#f59e0b', color: 'white' }} onClick={() => handleStatusChange(order.id, 'ready')}>Mark Ready</button>
+                      )}
+                      {order.status === 'ready' && (
+                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: '#16a34a', color: 'white' }} onClick={() => handleStatusChange(order.id, 'completed')}>Complete</button>
+                      )}
+                      {order.status === 'completed' && (
+                         <span style={{ color: '#16a34a', fontSize: '0.9rem' }}><Check size={18} /></span>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

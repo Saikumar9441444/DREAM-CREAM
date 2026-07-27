@@ -528,3 +528,22 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* --- Print Styles for POS Receipt --- */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-only, .print-only * {
+    visibility: visible;
+  }
+  .print-only {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

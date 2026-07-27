@@ -88,7 +88,7 @@ export default function Orders() {
     const orderData = {
       customerName: billingDetails.name,
       customerEmail: billingDetails.email,
-      customerPhone: billingDetails.phone,
+      phone: billingDetails.phone,
       address: billingDetails.address,
       deliveryType: e.target.type.value,
       deliveryTime: e.target.datetime.value,
@@ -105,16 +105,19 @@ export default function Orders() {
           price: numericPrice
         };
       }),
-      total: finalTotal,
+      totalAmount: finalTotal,
       paymentMethod: paymentMethod
     };
 
-    setLastOrder(orderData);
     setLoading(true);
 
     try {
-      // PURE FRONTEND MODE: Simulate backend response
-      const savedOrder = { ...orderData, _id: 'mock-id-' + Date.now(), status: 'Pending' };
+      // Import the addOrder function dynamically or at the top
+      // Wait, we can just import at the top of the file
+      // I will add the imports at the top
+      const { addOrder } = await import('../data/orderStore.js');
+      const savedOrder = addOrder(orderData);
+      
       setLastOrder(savedOrder);
       
       // Simulation delay for UX
@@ -124,7 +127,7 @@ export default function Orders() {
       clearCart();
       
       // Auto-open WhatsApp link
-      const waLink = generateWhatsAppLink(savedOrder);
+      const waLink = await generateWhatsAppLink(savedOrder);
       window.open(waLink, '_blank');
 
     } catch (err) {
@@ -143,19 +146,22 @@ export default function Orders() {
   
   const finalTotal = cartTotalPrice + GST_AMOUNT + DELIVERY_FEE + PLATFORM_FEE + RESTAURANT_CHARGES;
 
-  const generateWhatsAppLink = (order) => {
+  const generateWhatsAppLink = async (order) => {
     if (!order) return '#';
-    const BUSINESS_PHONE = "919014002314"; // Target business phone
+    const { getSettings } = await import('../data/settingsStore.js');
+    const settings = getSettings();
+    const BUSINESS_PHONE = settings.whatsappNumber || "919014002314"; // Fallback
+    
     const itemsText = order.items.map(i => `• ${i.name} x ${i.quantity}`).join('\n');
     
     const message = `🍦 *NEW CREAM DREAM ORDER* 🍦\n` +
                     `--------------------------------\n` +
                     `*Customer:* ${order.customerName}\n` +
-                    `*Phone Number:* ${order.customerPhone}\n` +
+                    `*Phone Number:* ${order.phone}\n` +
                     `*Type:* ${order.deliveryType?.toUpperCase() || 'PICKUP'}\n` +
                     `*Address:* ${order.address || 'N/A'}\n\n` +
                     `*ORDER DETAILS:*\n${itemsText}\n\n` +
-                    `*TOTAL PAYABLE:* ₹${order.total.toFixed(2)}\n` +
+                    `*TOTAL PAYABLE:* ₹${order.totalAmount.toFixed(2)}\n` +
                     `*PAYMENT:* ${order.paymentMethod?.toUpperCase() || 'COD'}\n` +
                     `--------------------------------\n` +
                     `Thanks for ordering in CREAM DREAM! 🍦✨`;

@@ -27,6 +27,7 @@ export default function AdminLayout() {
 
   const navItems = [
     { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
+    { path: '/admin/pos', icon: <ShoppingCart size={20} />, label: 'POS Terminal' },
     { path: '/admin/products', icon: <Package size={20} />, label: 'Products' },
     { path: '/admin/categories', icon: <Tags size={20} />, label: 'Categories' },
     { path: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Orders' },

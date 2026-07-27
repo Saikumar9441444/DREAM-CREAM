@@ -28,6 +28,7 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+const AdminPOS = lazy(() => import('./pages/admin/AdminPOS'));
 
 function App() {
   const { scrollYProgress } = useScroll();
@@ -97,6 +98,7 @@ function App() {
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="categories" element={<AdminCategories />} />
                     <Route path="orders" element={<AdminOrders />} />
+                    <Route path="pos" element={<AdminPOS />} />
                     <Route path="settings" element={<AdminSettings />} />
                   </Route>
 

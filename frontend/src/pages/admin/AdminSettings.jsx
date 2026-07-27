@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Store, Phone, Clock } from 'lucide-react';
+import { getSettings, saveSettings } from '../../data/settingsStore';
 import './Admin.css';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
     storeName: 'Cream Dream',
-    whatsappNumber: '919014002314', // Using the placeholder we saw earlier
+    whatsappNumber: '919014002314',
     openingTime: '10:00 AM',
     closingTime: '10:00 PM',
     status: 'Open'
@@ -13,9 +14,13 @@ export default function AdminSettings() {
 
   const [isSaved, setIsSaved] = useState(false);
 
+  useEffect(() => {
+    setSettings(getSettings());
+  }, []);
+
   const handleSave = (e) => {
     e.preventDefault();
-    // Here we would normally save to backend or localStorage
+    saveSettings(settings);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

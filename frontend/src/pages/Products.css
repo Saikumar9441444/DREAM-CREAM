@@ -285,18 +285,12 @@
   font-size: 1.1rem;
 }
 
-/* Hidden sliding button */
+/* Always visible cart button */
 .premium-cart-action {
-  overflow: hidden;
-  height: 0;
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  margin-top: 0;
-}
-
-.flavor-card.premium-card:hover .premium-cart-action {
-  height: 45px;
+  overflow: visible;
+  height: auto;
   opacity: 1;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   margin-top: 1rem;
 }
 
