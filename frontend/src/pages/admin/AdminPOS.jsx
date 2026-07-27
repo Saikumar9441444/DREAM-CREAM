@@ -162,6 +162,7 @@ export default function AdminPOS() {
             <button onClick={() => handleCheckout('UPI/Card')} style={{ padding: '1rem', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>UPI / Card</button>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Modifier Modal */}
