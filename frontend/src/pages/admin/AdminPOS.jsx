@@ -57,7 +57,6 @@ export default function AdminPOS() {
 
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const [lastOrder, setLastOrder] = useState(null);
 
   const handleCheckout = (method) => {
     if (cart.length === 0) return;
