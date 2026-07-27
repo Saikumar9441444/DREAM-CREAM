@@ -12,17 +12,22 @@ export default function AdminProducts() {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
 
+  const fetchProducts = async () => {
+    const data = await getProducts();
+    setProducts(data);
+  };
+
   useEffect(() => {
-    setProducts(getProducts());
+    fetchProducts();
     setCategories(getCategories());
   }, []);
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if(window.confirm('Are you sure you want to delete this product?')) {
-      const updated = deleteProduct(id);
-      setProducts(updated);
+      await deleteProduct(id);
+      await fetchProducts();
     }
   };
 
@@ -32,11 +37,10 @@ export default function AdminProducts() {
     setIsModalOpen(true);
   };
 
-  const handleToggleStock = (product) => {
+  const handleToggleStock = async (product) => {
     const updatedProduct = { ...product, inStock: product.inStock === false ? true : false };
-    updateProduct(product.id || product._id, updatedProduct);
-    const updatedData = getProducts();
-    setProducts(updatedData);
+    await updateProduct(product.id || product._id, updatedProduct);
+    await fetchProducts();
   };
 
   const handleOpenEdit = (product) => {
@@ -46,15 +50,14 @@ export default function AdminProducts() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isEditing) {
-      const updated = updateProduct({ ...formData, id: editId });
-      setProducts(updated);
+      await updateProduct(editId, formData);
     } else {
-      const updated = addProduct(formData);
-      setProducts(updated);
+      await addProduct(formData);
     }
+    await fetchProducts();
     setIsModalOpen(false);
   };
 

@@ -1,27 +1,31 @@
-const DEFAULT_SETTINGS = {
-  storeName: 'Cream Dream',
-  whatsappNumber: '919014002314',
-  openingTime: '10:00 AM',
-  closingTime: '10:00 PM',
-  status: 'Open' // 'Open' or 'Closed'
-};
+const API_URL = 'http://localhost:5000/api/settings';
 
-export const getSettings = () => {
-  const cached = localStorage.getItem('dream_cream_settings_db');
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch (e) {
-      console.error('Failed to parse settings cache', e);
-    }
+export const getSettings = async () => {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error('Failed to fetch settings');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    // Return safe defaults if backend fails
+    return {
+      storeName: 'Cream Dream',
+      whatsappNumber: '919014002314',
+      openingHours: '10:00 AM - 11:00 PM',
+      currency: '₹'
+    };
   }
-  
-  // Initialize with default settings if empty
-  localStorage.setItem('dream_cream_settings_db', JSON.stringify(DEFAULT_SETTINGS));
-  return DEFAULT_SETTINGS;
 };
 
-export const saveSettings = (newSettings) => {
-  localStorage.setItem('dream_cream_settings_db', JSON.stringify(newSettings));
-  return newSettings;
+export const updateSettings = async (newSettings) => {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newSettings)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+  }
 };

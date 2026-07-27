@@ -7,18 +7,23 @@ export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    setOrders(getOrders());
-  }, []);
-
-  const handleSimulateOrder = () => {
-    const updated = simulateNewOrder();
-    setOrders(updated);
+  const fetchOrders = async () => {
+    const data = await getOrders();
+    setOrders(data);
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    const updated = updateOrderStatus(orderId, newStatus);
-    setOrders(updated);
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const handleSimulateOrder = async () => {
+    await simulateNewOrder();
+    await fetchOrders();
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    await updateOrderStatus(orderId, newStatus);
+    await fetchOrders();
   };
 
   const getStatusBadge = (status) => {

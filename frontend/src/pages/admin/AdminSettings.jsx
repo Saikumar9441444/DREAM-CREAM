@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Store, Phone, Clock } from 'lucide-react';
-import { getSettings, saveSettings } from '../../data/settingsStore';
+import { getSettings, updateSettings } from '../../data/settingsStore';
 import './Admin.css';
 
 export default function AdminSettings() {
@@ -15,12 +15,16 @@ export default function AdminSettings() {
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    setSettings(getSettings());
+    const fetchSettings = async () => {
+      const data = await getSettings();
+      setSettings(data);
+    };
+    fetchSettings();
   }, []);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    saveSettings(settings);
+    await updateSettings(settings);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

@@ -16,22 +16,28 @@ export default function AdminDashboard() {
   
   const [recentOrders, setRecentOrders] = useState([]);
 
+  const [ordersState, setOrdersState] = useState([]);
+
   useEffect(() => {
-    const orders = getOrders();
-    const products = getProducts();
-    
-    const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'ready');
-    const revenue = completedOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-    
-    setMetrics({
-      totalOrders: orders.length,
-      totalRevenue: revenue,
-      activeFlavors: products.filter(p => p.inStock !== false).length,
-      lowStock: products.filter(p => p.inStock === false).length
-    });
-    
-    // Get top 5 recent orders
-    setRecentOrders(orders.slice(0, 5));
+    const fetchData = async () => {
+      const orders = await getOrders();
+      const products = await getProducts();
+      
+      setOrdersState(orders);
+      const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'ready');
+      const revenue = completedOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+      
+      setMetrics({
+        totalOrders: orders.length,
+        totalRevenue: revenue,
+        activeFlavors: products.filter(p => p.inStock !== false).length,
+        lowStock: products.filter(p => p.inStock === false).length
+      });
+      
+      // Get top 5 recent orders
+      setRecentOrders(orders.slice(0, 5));
+    };
+    fetchData();
   }, []);
 
   const getStatusBadge = (status) => {
@@ -112,41 +118,71 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Cash Register (Today) */}
-        <div className="admin-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0, height: 'fit-content' }}>
-          <div className="admin-panel-header">
-            <h3>Daily Cash Register</h3>
-            <span style={{ fontSize: '0.8rem', color: '#10b981', background: '#dcfce7', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>OPEN</span>
-          </div>
+        {/* Right Sidebar Stack */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
-            <span style={{ color: '#64748b' }}>Cash Payments</span>
-            <span style={{ fontWeight: 600 }}>₹{
-              getOrders().filter(o => o.paymentMethod === 'Cash' && new Date(o.timestamp).toDateString() === new Date().toDateString())
-              .reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()
-            }</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
-            <span style={{ color: '#64748b' }}>Card/UPI Payments</span>
-            <span style={{ fontWeight: 600 }}>₹{
-              getOrders().filter(o => o.paymentMethod !== 'Cash' && new Date(o.timestamp).toDateString() === new Date().toDateString())
-              .reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()
-            }</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, paddingTop: '0.5rem' }}>
-            <span>Total Today</span>
-            <span style={{ color: 'var(--color-primary)' }}>₹{
-              getOrders().filter(o => new Date(o.timestamp).toDateString() === new Date().toDateString())
-              .reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()
-            }</span>
+          {/* Cash Register (Today) */}
+          <div className="admin-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0, height: 'fit-content' }}>
+            <div className="admin-panel-header">
+              <h3>Daily Cash Register</h3>
+              <span style={{ fontSize: '0.8rem', color: '#10b981', background: '#dcfce7', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 600 }}>OPEN</span>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ color: '#64748b' }}>Cash Payments</span>
+              <span style={{ fontWeight: 600 }}>₹{
+                ordersState.filter(o => o.paymentMethod === 'Cash' && new Date(o.timestamp).toDateString() === new Date().toDateString())
+                .reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()
+              }</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ color: '#64748b' }}>Card/UPI Payments</span>
+              <span style={{ fontWeight: 600 }}>₹{
+                ordersState.filter(o => o.paymentMethod !== 'Cash' && new Date(o.timestamp).toDateString() === new Date().toDateString())
+                .reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()
+              }</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, paddingTop: '0.5rem' }}>
+              <span>Total Today</span>
+              <span style={{ color: 'var(--color-primary)' }}>₹{
+                ordersState.filter(o => new Date(o.timestamp).toDateString() === new Date().toDateString())
+                .reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString()
+              }</span>
+            </div>
+
+            <button 
+              onClick={() => alert('Register closed for the day. EOD report generated.')}
+              style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc', color: '#ef4444', border: '1px solid #fee2e2', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
+            >
+              Close Register (EOD)
+            </button>
           </div>
 
-          <button 
-            onClick={() => alert('Register closed for the day. EOD report generated.')}
-            style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc', color: '#ef4444', border: '1px solid #fee2e2', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer' }}
-          >
-            Close Register (EOD)
-          </button>
+          {/* Quick Actions */}
+          <div className="admin-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0, height: 'fit-content' }}>
+            <div className="admin-panel-header">
+              <h3>Quick Actions</h3>
+            </div>
+            <button 
+              onClick={() => navigate('/admin/products')}
+              style={{ padding: '1.2rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <Plus size={20} /> Add New Flavor
+            </button>
+            <button 
+              onClick={() => navigate('/admin/pos')}
+              style={{ padding: '1.2rem', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <ShoppingCart size={20} /> POS Terminal
+            </button>
+            <button 
+              onClick={() => navigate('/admin/settings')}
+              style={{ padding: '1.2rem', background: '#8b5cf6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              <Settings size={20} /> Store Settings
+            </button>
+          </div>
+
         </div>
 
       </div>

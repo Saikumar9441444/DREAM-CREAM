@@ -1,100 +1,60 @@
-const MOCK_ORDERS = [
-  {
-    id: 'ORD-8921',
-    customerName: 'Rahul Sharma',
-    phone: '9876543210',
-    items: [
-      { name: 'Strawberry Dream', quantity: 2, price: 120 },
-      { name: 'Classic Vanilla', quantity: 1, price: 90 }
-    ],
-    totalAmount: 330,
-    status: 'new', // new, preparing, ready, completed, rejected
-    timestamp: new Date(Date.now() - 1000 * 60 * 2).toISOString(), // 2 mins ago
-    prepTime: 0
-  },
-  {
-    id: 'ORD-8922',
-    customerName: 'Priya Patel',
-    phone: '9876543211',
-    items: [
-      { name: 'Chocolate Fudge Brownie', quantity: 1, price: 150 }
-    ],
-    totalAmount: 150,
-    status: 'preparing',
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    prepTime: 10
-  },
-  {
-    id: 'ORD-8923',
-    customerName: 'Vikram Singh',
-    phone: '9876543212',
-    items: [
-      { name: 'Mango Sorbet', quantity: 3, price: 150 }
-    ],
-    totalAmount: 450,
-    status: 'ready',
-    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    prepTime: 15
+const API_URL = 'http://localhost:5000/api/orders';
+
+export const getOrders = async () => {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error('Failed to fetch orders');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
   }
-];
+};
 
-export const getOrders = () => {
-  const cached = localStorage.getItem('dream_cream_orders_db');
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch (e) {
-      console.error('Failed to parse orders cache', e);
-    }
+export const addOrder = async (orderData) => {
+  try {
+    // Generate a quick ID on frontend for optimistic UI if needed, but backend will handle real ID
+    const newOrder = {
+      ...orderData,
+      id: `ORD-${Math.floor(Math.random() * 100000)}`
+    };
+    
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newOrder)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(error);
   }
-  
-  // Initialize with mock orders if empty
-  localStorage.setItem('dream_cream_orders_db', JSON.stringify(MOCK_ORDERS));
-  return MOCK_ORDERS;
 };
 
-export const updateOrderStatus = (orderId, newStatus, prepTime = 0) => {
-  const orders = getOrders();
-  const updated = orders.map(order => 
-    order.id === orderId 
-      ? { ...order, status: newStatus, prepTime: prepTime > 0 ? prepTime : order.prepTime } 
-      : order
-  );
-  localStorage.setItem('dream_cream_orders_db', JSON.stringify(updated));
-  return updated;
+export const updateOrderStatus = async (id, newStatus) => {
+  try {
+    const response = await fetch(`${API_URL}/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
-// Function to simulate an incoming order
-export const simulateNewOrder = () => {
-  const orders = getOrders();
-  const newOrder = {
-    id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-    customerName: 'Guest User',
-    phone: '9999999999',
+export const simulateNewOrder = async () => {
+  // Mock order for demo purposes
+  const orderData = {
+    customerName: "Alex " + Math.floor(Math.random() * 100),
+    phone: "555-010" + Math.floor(Math.random() * 9),
+    address: "123 Main St",
+    deliveryType: "delivery",
     items: [
-      { name: 'Pistachio Delight', quantity: 1, price: 180 }
+      { name: "Classic Vanilla Bean", quantity: 2, price: 120 }
     ],
-    totalAmount: 180,
-    status: 'new',
-    timestamp: new Date().toISOString(),
-    prepTime: 0
+    totalAmount: 240,
+    paymentMethod: "UPI"
   };
-  const updated = [newOrder, ...orders];
-  localStorage.setItem('dream_cream_orders_db', JSON.stringify(updated));
-  return updated;
-};
-
-// Function to actually place a real user order
-export const addOrder = (orderData) => {
-  const orders = getOrders();
-  const newOrder = {
-    ...orderData,
-    id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-    status: 'new',
-    timestamp: new Date().toISOString(),
-    prepTime: 0
-  };
-  const updated = [newOrder, ...orders];
-  localStorage.setItem('dream_cream_orders_db', JSON.stringify(updated));
-  return newOrder;
+  return await addOrder(orderData);
 };

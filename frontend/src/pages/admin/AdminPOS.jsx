@@ -12,7 +12,11 @@ export default function AdminPOS() {
   const [lastOrder, setLastOrder] = useState(null);
   
   useEffect(() => {
-    setProducts(getProducts());
+    const fetchProducts = async () => {
+      const data = await getProducts();
+      setProducts(data);
+    };
+    fetchProducts();
   }, []);
 
   const handleProductClick = (product) => {
@@ -58,7 +62,7 @@ export default function AdminPOS() {
   const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
 
-  const handleCheckout = (method) => {
+  const handleCheckout = async (method) => {
     if (cart.length === 0) return;
     
     const orderData = {
@@ -71,15 +75,19 @@ export default function AdminPOS() {
       paymentMethod: method
     };
     
-    const newOrder = addOrder(orderData);
-    
-    setLastOrder(newOrder);
-    setCart([]);
-    
-    // Slight delay to allow React to render the hidden receipt before triggering print
-    setTimeout(() => {
-      window.print();
-    }, 100);
+    try {
+      const newOrder = await addOrder(orderData);
+      
+      setLastOrder(newOrder);
+      setCart([]);
+      
+      // Slight delay to allow React to render the hidden receipt before triggering print
+      setTimeout(() => {
+        window.print();
+      }, 100);
+    } catch (err) {
+      alert("Failed to process order.");
+    }
   };
 
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));

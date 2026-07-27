@@ -109,7 +109,18 @@ export default function Products() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    setProducts(getProducts());
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
     setCategories(['All', ...getCategories()]);
   }, []);
 

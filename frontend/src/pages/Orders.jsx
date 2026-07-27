@@ -149,7 +149,7 @@ export default function Orders() {
   const generateWhatsAppLink = async (order) => {
     if (!order) return '#';
     const { getSettings } = await import('../data/settingsStore.js');
-    const settings = getSettings();
+    const settings = await getSettings();
     const BUSINESS_PHONE = settings.whatsappNumber || "919014002314"; // Fallback
     
     const itemsText = order.items.map(i => `• ${i.name} x ${i.quantity}`).join('\n');

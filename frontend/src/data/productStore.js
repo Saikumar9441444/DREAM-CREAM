@@ -1,46 +1,48 @@
-import { STATIC_PRODUCTS } from './staticProducts';
+const API_URL = 'http://localhost:5000/api/products';
 
-const STORAGE_KEY = 'dream_cream_products_db';
-
-export const getProducts = () => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {
-      console.error('Error parsing stored products', e);
-    }
+export const getProducts = async () => {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error('Failed to fetch products');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
   }
-  // Initialize if empty
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(STATIC_PRODUCTS));
-  return STATIC_PRODUCTS;
 };
 
-export const saveProducts = (products) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-};
-
-export const addProduct = (product) => {
-  const products = getProducts();
-  const newProduct = { ...product, id: Date.now().toString() };
-  products.unshift(newProduct); // Add to top
-  saveProducts(products);
-  return products;
-};
-
-export const updateProduct = (updatedProduct) => {
-  const products = getProducts();
-  const index = products.findIndex(p => p.id === updatedProduct.id || p._id === updatedProduct._id);
-  if (index !== -1) {
-    products[index] = { ...products[index], ...updatedProduct };
-    saveProducts(products);
+export const addProduct = async (product) => {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(product)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(error);
   }
-  return products;
 };
 
-export const deleteProduct = (id) => {
-  const products = getProducts();
-  const filtered = products.filter(p => p.id !== id && p._id !== id);
-  saveProducts(filtered);
-  return filtered;
+export const updateProduct = async (id, updatedProduct) => {
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedProduct)
+    });
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const deleteProduct = async (id) => {
+  try {
+    await fetch(`${API_URL}/${id}`, {
+      method: 'DELETE'
+    });
+  } catch (error) {
+    console.error(error);
+  }
 };
