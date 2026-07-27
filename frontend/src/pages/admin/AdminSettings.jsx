@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Store, Phone, Clock } from 'lucide-react';
 import { getSettings, updateSettings } from '../../data/settingsStore';
+import { motion } from 'framer-motion';
 import './Admin.css';
 
 export default function AdminSettings() {
@@ -45,7 +46,12 @@ export default function AdminSettings() {
       <div className="admin-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
         
         {/* General Settings */}
-        <div className="admin-panel">
+        <motion.div 
+          className="admin-panel"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <div className="admin-panel-header" style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', margin: 0 }}>
               <Store size={20} className="text-primary" /> General Info
@@ -76,10 +82,15 @@ export default function AdminSettings() {
               <small style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>Include country code without + (e.g. 919014002314)</small>
             </div>
           </form>
-        </div>
+        </motion.div>
 
         {/* Operating Hours */}
-        <div className="admin-panel">
+        <motion.div 
+          className="admin-panel"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
           <div className="admin-panel-header" style={{ marginBottom: '1.5rem' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', margin: 0 }}>
               <Clock size={20} className="text-primary" /> Operating Hours
@@ -98,27 +109,26 @@ export default function AdminSettings() {
               </select>
             </div>
             
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div className="form-group" style={{ flex: 1 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
                 <label>Opening Time</label>
                 <input 
-                  type="text" 
-                  value={settings.openingTime} 
+                  type="time" 
+                  value={settings.openingTime.replace(/ (AM|PM)/, '')} 
                   onChange={e => setSettings({...settings, openingTime: e.target.value})} 
                 />
               </div>
-              <div className="form-group" style={{ flex: 1 }}>
+              <div className="form-group">
                 <label>Closing Time</label>
                 <input 
-                  type="text" 
-                  value={settings.closingTime} 
+                  type="time" 
+                  value={settings.closingTime.replace(/ (AM|PM)/, '')} 
                   onChange={e => setSettings({...settings, closingTime: e.target.value})} 
                 />
               </div>
             </div>
           </form>
-        </div>
-
+        </motion.div>
       </div>
     </div>
   );

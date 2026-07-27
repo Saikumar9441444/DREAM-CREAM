@@ -1,6 +1,7 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tags, ShoppingCart, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, Tags, ShoppingCart, Settings, LogOut, Menu } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Admin.css';
 
 const AdminSkeleton = () => (
@@ -54,16 +55,22 @@ export default function AdminLayout() {
         </div>
 
         <nav className="admin-nav">
-          {navItems.map((item) => (
-            <NavLink
+          {navItems.map((item, index) => (
+            <motion.div
               key={item.path}
-              to={item.path}
-              className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
-              title={!isSidebarOpen ? item.label : ""}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <div className="nav-icon">{item.icon}</div>
-              <span className="nav-label">{item.label}</span>
-            </NavLink>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}
+                title={!isSidebarOpen ? item.label : ""}
+              >
+                <div className="nav-icon">{item.icon}</div>
+                <span className="nav-label">{item.label}</span>
+              </NavLink>
+            </motion.div>
           ))}
         </nav>
 
@@ -84,9 +91,20 @@ export default function AdminLayout() {
         </header>
 
         <div className="admin-content">
-          <Suspense fallback={<AdminSkeleton />}>
-            <Outlet />
-          </Suspense>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              style={{ height: '100%' }}
+            >
+              <Suspense fallback={<AdminSkeleton />}>
+                <Outlet />
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

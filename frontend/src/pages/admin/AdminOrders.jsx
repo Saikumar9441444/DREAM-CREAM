@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, CheckCircle, Clock, ChefHat, Play, Check } from 'lucide-react';
 import { getOrders, updateOrderStatus, simulateNewOrder } from '../../data/orderStore';
+import { motion, AnimatePresence } from 'framer-motion';
 import './Admin.css';
 
 export default function AdminOrders() {
@@ -92,32 +93,42 @@ export default function AdminOrders() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map(order => (
-                <tr key={order.id}>
-                  <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{order.id}</td>
-                  <td style={{ fontWeight: 600 }}>{order.customerName}<br/><small style={{ color: '#999' }}>{order.phone}</small></td>
-                  <td style={{ color: 'var(--color-text-muted)' }}>{formatItems(order.items)}</td>
-                  <td style={{ fontWeight: 700 }}>₹{order.totalAmount}</td>
-                  <td style={{ color: 'var(--color-text-muted)' }}>{formatTimeAgo(order.timestamp)}</td>
-                  <td>{getStatusBadge(order.status)}</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <AnimatePresence>
+                {filteredOrders.map((order, index) => (
+                  <motion.tr 
+                    key={order.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: index * 0.05 }}
+                    style={{ borderBottom: '1px solid #eee' }}
+                  >
+                    <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{order.id}</td>
+                    <td style={{ fontWeight: 600 }}>{order.customerName}<br/><small style={{ color: '#999' }}>{order.phone}</small></td>
+                    <td style={{ color: 'var(--color-text-muted)' }}>{formatItems(order.items)}</td>
+                    <td style={{ fontWeight: 700 }}>₹{order.totalAmount}</td>
+                    <td style={{ color: '#888', fontSize: '0.85rem' }}>{formatTimeAgo(order.timestamp)}</td>
+                    <td>{getStatusBadge(order.status)}</td>
+                    <td>
                       {order.status === 'new' && (
-                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => handleStatusChange(order.id, 'preparing')}>Start Prep</button>
+                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} onClick={() => handleStatusChange(order.id || order._id, 'preparing')}>
+                          Start Preparing
+                        </button>
                       )}
                       {order.status === 'preparing' && (
-                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: '#f59e0b', color: 'white' }} onClick={() => handleStatusChange(order.id, 'ready')}>Mark Ready</button>
+                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: '#f59e0b', color: 'white' }} onClick={() => handleStatusChange(order.id || order._id, 'ready')}>
+                          Mark Ready
+                        </button>
                       )}
                       {order.status === 'ready' && (
-                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: '#16a34a', color: 'white' }} onClick={() => handleStatusChange(order.id, 'completed')}>Complete</button>
+                        <button className="btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', background: '#10b981', color: 'white' }} onClick={() => handleStatusChange(order.id || order._id, 'completed')}>
+                          <Check size={16} style={{ display: 'inline' }}/> Complete
+                        </button>
                       )}
-                      {order.status === 'completed' && (
-                         <span style={{ color: '#16a34a', fontSize: '0.9rem' }}><Check size={18} /></span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>

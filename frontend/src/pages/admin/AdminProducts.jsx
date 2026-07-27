@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, X } from 'lucide-react';
 import { getProducts, addProduct, deleteProduct, updateProduct } from '../../data/productStore';
 import { getCategories } from '../../data/categoryStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -101,87 +102,104 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map(product => (
-                <tr key={product.id}>
-                  <td>
-                    <img src={product.image} alt={product.name} className="product-img-small" />
-                  </td>
-                  <td style={{ fontWeight: 700 }}>{product.name}</td>
-                  <td><span className="status-badge" style={{ background: '#f3f4f6', color: '#4b5563' }}>{product.category}</span></td>
-                  <td>{product.price}</td>
-                  <td>
-                    <button 
-                      onClick={() => handleToggleStock(product)}
-                      style={{
-                        padding: '0.4rem 0.8rem',
-                        borderRadius: '20px',
-                        border: 'none',
-                        fontWeight: 600,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        background: product.inStock === false ? '#fee2e2' : '#dcfce7',
-                        color: product.inStock === false ? '#ef4444' : '#16a34a',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {product.inStock === false ? 'Out of Stock' : 'In Stock'}
-                    </button>
-                  </td>
-                  <td>
-                    <div className="action-btns">
-                      <button className="action-btn" onClick={() => handleOpenEdit(product)}><Edit2 size={18} /></button>
-                      <button className="action-btn" style={{ color: '#ef4444' }} onClick={() => handleDelete(product.id || product._id)}><Trash2 size={18} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              <AnimatePresence>
+                {filteredProducts.map((product, index) => (
+                  <motion.tr 
+                    key={product.id || product._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ delay: index * 0.05 }}
+                    style={{ borderBottom: '1px solid #eee' }}
+                  >
+                    <td>
+                      <img src={product.image} alt={product.name} className="product-img-small" />
+                    </td>
+                    <td style={{ fontWeight: 700 }}>{product.name}</td>
+                    <td><span className="status-badge" style={{ background: '#f3f4f6', color: '#4b5563' }}>{product.category}</span></td>
+                    <td>₹{product.price}</td>
+                    <td>
+                      <button 
+                        onClick={() => handleToggleStock(product)}
+                        style={{
+                          padding: '0.4rem 0.8rem',
+                          borderRadius: '20px',
+                          border: 'none',
+                          fontWeight: 600,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          background: product.inStock === false ? '#fee2e2' : '#dcfce7',
+                          color: product.inStock === false ? '#ef4444' : '#16a34a',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {product.inStock === false ? 'Out of Stock' : 'In Stock'}
+                      </button>
+                    </td>
+                    <td>
+                      <div className="action-btns">
+                        <button className="action-btn" onClick={() => handleOpenEdit(product)}><Edit2 size={18} /></button>
+                        <button className="action-btn" style={{ color: '#ef4444' }} onClick={() => handleDelete(product.id || product._id)}><Trash2 size={18} /></button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
       </div>
 
       {/* Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content glass-panel" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{isEditing ? 'Edit Flavor' : 'Add New Flavor'}</h3>
-              <button className="close-btn" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="admin-form">
-              <div className="form-group">
-                <label>Flavor Name</label>
-                <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Strawberry Dream" />
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="modal-content glass-panel" 
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h3>{isEditing ? 'Edit Flavor' : 'Add New Flavor'}</h3>
+                <button className="close-btn" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
               </div>
-              <div className="form-group">
-                <label>Category</label>
-                <select 
-                  required 
-                  value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Price</label>
-                <input type="text" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. ₹373" />
-              </div>
-              <div className="form-group">
-                <label>Image URL / Path</label>
-                <input type="text" required value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="/dairy.png" />
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn-outline-primary" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn-primary">{isEditing ? 'Save Changes' : 'Add Flavor'}</button>
-              </div>
-            </form>
+              <form onSubmit={handleSubmit} className="admin-form">
+                <div className="form-group">
+                  <label>Flavor Name</label>
+                  <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Strawberry Dream" />
+                </div>
+                <div className="form-group">
+                  <label>Category</label>
+                  <select 
+                    required 
+                    value={formData.category}
+                    onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Price</label>
+                  <input type="number" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 373" />
+                </div>
+                <div className="form-group">
+                  <label>Image URL / Path</label>
+                  <input type="text" required value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="/dairy.png" />
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="btn-outline-primary" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                  <button type="submit" className="btn-primary">{isEditing ? 'Save Changes' : 'Add Flavor'}</button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }

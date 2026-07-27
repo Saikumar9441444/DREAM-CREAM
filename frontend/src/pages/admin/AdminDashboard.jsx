@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, TrendingUp, Users, Package, ArrowUpRight, CheckCircle, Clock, ChefHat, Eye, Plus, Settings } from 'lucide-react';
+import { ShoppingBag, TrendingUp, Users, Package, ArrowUpRight, CheckCircle, Clock, ChefHat, Eye, Plus, Settings, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getOrders } from '../../data/orderStore';
 import { getProducts } from '../../data/productStore';
+import { motion } from 'framer-motion';
 import './Admin.css';
 
 export default function AdminDashboard() {
@@ -15,7 +16,6 @@ export default function AdminDashboard() {
   });
   
   const [recentOrders, setRecentOrders] = useState([]);
-
   const [ordersState, setOrdersState] = useState([]);
 
   useEffect(() => {
@@ -56,33 +56,46 @@ export default function AdminDashboard() {
     return `${Math.floor(minutes / 60)} hours ago`;
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+  };
+
   return (
     <div className="fade-in" style={{ paddingBottom: '2rem' }}>
       <h2 style={{ fontSize: '2rem', marginBottom: '2rem' }}>Dashboard Overview</h2>
       
       {/* 1. TOP ROW STAT CARDS (4 Cards) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div className="admin-stat-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <motion.div variants={containerVariants} initial="hidden" animate="show" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        <motion.div variants={itemVariants} className="admin-stat-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ background: '#e0f2fe', color: '#0ea5e9', padding: '8px', borderRadius: '8px', alignSelf: 'flex-start' }}><ShoppingBag size={20} /></div>
           <h2 style={{ margin: 0, fontSize: '1.8rem', lineHeight: '1' }}>{metrics.totalOrders}</h2>
           <h3 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Total Orders</h3>
-        </div>
-        <div className="admin-stat-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        </motion.div>
+        <motion.div variants={itemVariants} className="admin-stat-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ background: '#dcfce7', color: '#16a34a', padding: '8px', borderRadius: '8px', alignSelf: 'flex-start' }}><TrendingUp size={20} /></div>
           <h2 style={{ margin: 0, fontSize: '1.8rem', lineHeight: '1' }}>₹{metrics.totalRevenue.toLocaleString()}</h2>
           <h3 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Total Revenue</h3>
-        </div>
-        <div className="admin-stat-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        </motion.div>
+        <motion.div variants={itemVariants} className="admin-stat-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ background: '#f3e8ff', color: '#a855f7', padding: '8px', borderRadius: '8px', alignSelf: 'flex-start' }}><Package size={20} /></div>
           <h2 style={{ margin: 0, fontSize: '1.8rem', lineHeight: '1' }}>{metrics.activeFlavors}</h2>
           <h3 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Active Flavors</h3>
-        </div>
-        <div className="admin-stat-card" style={{ padding: '1.5rem', border: metrics.lowStock > 0 ? '1px solid #fee2e2' : '', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        </motion.div>
+        <motion.div variants={itemVariants} className="admin-stat-card" style={{ padding: '1.5rem', border: metrics.lowStock > 0 ? '1px solid #fee2e2' : '', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ background: '#fef3c7', color: '#d97706', padding: '8px', borderRadius: '8px', alignSelf: 'flex-start' }}><Users size={20} /></div>
           <h2 style={{ margin: 0, fontSize: '1.8rem', lineHeight: '1', color: metrics.lowStock > 0 ? '#ef4444' : '' }}>{metrics.lowStock}</h2>
           <h3 style={{ margin: 0, fontSize: '0.9rem', color: metrics.lowStock > 0 ? '#ef4444' : 'var(--color-text-muted)', fontWeight: 500 }}>Low Stock Alerts</h3>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginTop: '2rem' }}>
         

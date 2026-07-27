@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Minus, Trash2, Printer, Search } from 'lucide-react';
 import { getProducts } from '../../data/productStore';
 import { addOrder } from '../../data/orderStore';
+import { motion } from 'framer-motion';
 import './Admin.css';
 
 export default function AdminPOS() {
@@ -112,24 +113,33 @@ export default function AdminPOS() {
           </div>
         </div>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
-          {filteredProducts.map(product => (
-            <div 
+        <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1.5rem' }}>
+          {filteredProducts.map((product, index) => (
+            <motion.div 
               key={product.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={product.inStock !== false ? { scale: 1.05, y: -5 } : {}}
               onClick={() => handleProductClick(product)}
               style={{ 
-                background: 'white', borderRadius: '12px', padding: '1rem', cursor: product.inStock === false ? 'not-allowed' : 'pointer', 
-                opacity: product.inStock === false ? 0.5 : 1, boxShadow: '0 2px 4px rgba(0,0,0,0.05)', textAlign: 'center', transition: 'transform 0.1s' 
+                background: 'rgba(255, 255, 255, 0.8)', 
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px', 
+                padding: '1.5rem 1rem', 
+                cursor: product.inStock === false ? 'not-allowed' : 'pointer', 
+                opacity: product.inStock === false ? 0.5 : 1, 
+                boxShadow: '0 4px 15px rgba(0,0,0,0.03)', 
+                border: '1px solid rgba(255,255,255,0.5)',
+                textAlign: 'center' 
               }}
-              onMouseOver={e => e.currentTarget.style.transform = product.inStock !== false ? 'scale(1.05)' : 'scale(1)'}
-              onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--color-primary)', margin: '0 auto 0.5rem' }} />
-              <h4 style={{ margin: '0 0 0.25rem', fontSize: '0.9rem', color: '#333' }}>{product.name}</h4>
-              <p style={{ margin: 0, fontWeight: 700, color: 'var(--color-primary)' }}>₹{product.price}</p>
-            </div>
+              <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--color-primary), #FF9EBB)', margin: '0 auto 1rem', boxShadow: '0 4px 10px rgba(255,123,156,0.3)' }} />
+              <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: '#1e293b', fontWeight: 600 }}>{product.name}</h4>
+              <p style={{ margin: 0, fontWeight: 800, color: 'var(--color-primary)', fontSize: '1.1rem' }}>₹{product.price}</p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Cart Sidebar */}
