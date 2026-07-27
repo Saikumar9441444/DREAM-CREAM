@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Send } from 'lucide-react';
+import { createEnquiry } from '../data/enquiryStore';
 import './Contact.css';
 
 export default function Contact() {
@@ -18,20 +19,26 @@ export default function Contact() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate frontend-only submission delay
-    setTimeout(() => {
-      console.log('Form submitted:', formData);
-      setIsSubmitting(false);
+    try {
+      await createEnquiry({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.phone || 'General Enquiry', // mapping phone to subject since schema needs subject, or we can just say "Contact Form"
+        message: formData.message
+      });
       setIsSuccess(true);
       setFormData({ name: '', email: '', phone: '', message: '' });
-      
-      // Hide success message after 5 seconds
       setTimeout(() => setIsSuccess(false), 5000);
-    }, 1500);
+    } catch (err) {
+      console.error('Failed to submit enquiry', err);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const containerVariants = {

@@ -13,10 +13,12 @@ app.use(express.json());
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const settingRoutes = require('./routes/settingRoutes');
+const enquiryRoutes = require('./routes/enquiryRoutes');
 
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/enquiries', enquiryRoutes);
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI)
