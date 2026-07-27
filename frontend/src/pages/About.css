@@ -155,10 +155,12 @@
 .marquee-content {
   display: flex;
   animation: scrollMarquee 20s linear infinite;
-  font-family: var(--font-secondary);
-  font-size: 1.5rem;
-  letter-spacing: 4px;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  letter-spacing: 6px;
   font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-primary-light);
 }
 
 .marquee-content span {
@@ -176,11 +178,22 @@
   grid-template-columns: 1fr 1fr;
   min-height: 80vh;
   background-color: var(--color-background);
+  gap: 4rem;
+  padding: 6rem 4rem;
+  align-items: center;
 }
 
 .founder-image-wrapper {
   position: relative;
   overflow: hidden;
+  border-radius: 2rem;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+  transform: rotate(-2deg);
+  transition: transform 0.6s ease;
+}
+
+.founder-image-wrapper:hover {
+  transform: rotate(0deg) scale(1.02);
 }
 
 .founder-img {
@@ -274,18 +287,19 @@
 }
 
 .visit-card {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 123, 156, 0.1);
-  backdrop-filter: blur(12px);
-  padding: 3rem 2rem;
-  border-radius: var(--border-radius-lg);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  padding: 3.5rem 2rem;
+  border-radius: 2rem;
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: var(--shadow-glass);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
 
 .visit-card:hover {
   transform: translateY(-10px);
-  border-color: rgba(212, 175, 55, 0.5); /* Gold hover border */
+  box-shadow: 0 20px 40px rgba(255, 123, 156, 0.15), 0 0 50px rgba(72, 209, 204, 0.1);
+  border-color: rgba(255, 255, 255, 1);
 }
 
 .visit-icon {

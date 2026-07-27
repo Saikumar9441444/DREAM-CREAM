@@ -30,16 +30,17 @@ export default function SmoothScroll({ children }) {
     lenis.on('scroll', ScrollTrigger.update);
 
     // Synchronize the GSAP Ticker with Lenis
-    gsap.ticker.add((time) => {
+    const rafCallback = (time) => {
       lenis.raf(time * 1000);
-    });
+    };
+    gsap.ticker.add(rafCallback);
 
     // Disable GSAP's own smoothing to avoid conflicts
     gsap.ticker.lagSmoothing(0);
 
     return () => {
       lenis.destroy();
-      gsap.ticker.remove(() => {});
+      gsap.ticker.remove(rafCallback);
     };
   }, []);
 

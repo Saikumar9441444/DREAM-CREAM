@@ -50,7 +50,8 @@ export default function Preloader({ onComplete }) {
         if (onComplete) setTimeout(onComplete, 800);
       }, 500);
     });
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AnimatePresence>

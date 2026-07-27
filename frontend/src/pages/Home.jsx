@@ -6,13 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import FallingElements from '../components/FallingElements';
 import AntiGravityHero from '../components/AntiGravityHero';
 import { getCategoryInteraction } from '../utils/animations';
-import { Autoplay, EffectCards } from 'swiper/modules';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import 'swiper/css';
-import 'swiper/css/effect-cards';
 import heroBg from '../assets/hero_bg.png';
-import { ENDPOINTS } from '../api/config';
+
 import { STATIC_PRODUCTS } from '../data/staticProducts';
 import './Home.css';
 
@@ -23,16 +20,8 @@ export default function Home() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   
-  // 0. INITIALIZE FROM CACHE FOR INSTANT LOADING
-  const getInitialProducts = () => {
-    const cached = localStorage.getItem('dream_cream_products_cache');
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) { return []; }
-    }
-    return [];
-  };
-
-  const [products, setProducts] = useState(getInitialProducts);
+  // 0. PURE FRONTEND MODE (No Backend)
+  const [products, setProducts] = useState(STATIC_PRODUCTS);
   const [cmsContent, setCmsContent] = useState({});
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,19 +30,8 @@ export default function Home() {
   const titleRef = useRef(null);
 
   useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        const response = await fetch(ENDPOINTS.PRODUCTS);
-        if (response.ok) {
-          const data = await response.json();
-          setProducts(data);
-          localStorage.setItem('dream_cream_products_cache', JSON.stringify(data));
-        }
-      } catch (err) {
-        console.error("Home Fetch Error:", err);
-      }
-    };
-    fetchHomeData();
+    // Backend fetch disabled for pure frontend showcase
+    // Using STATIC_PRODUCTS directly.
   }, []);
 
   useEffect(() => {
@@ -185,16 +163,16 @@ export default function Home() {
         <FallingElements />
       </div>
 
-      <div className="marquee-container">
+      <div className="marquee-container luxury-marquee">
         <div className="marquee-content">
-          <span>✨ 100% Organic Ingredients</span> <span className="marquee-dot">•</span>
-          <span>Handcrafted Daily</span> <span className="marquee-dot">•</span>
-          <span>Award Winning Flavors</span> <span className="marquee-dot">•</span>
-          <span>Taste the Magic</span> <span className="marquee-dot">•</span>
-          <span>✨ 100% Organic Ingredients</span> <span className="marquee-dot">•</span>
-          <span>Handcrafted Daily</span> <span className="marquee-dot">•</span>
-          <span>Award Winning Flavors</span> <span className="marquee-dot">•</span>
-          <span>Taste the Magic</span> <span className="marquee-dot">•</span>
+          <span>✨ 100% Organic Ingredients</span> <span className="marquee-dot"></span>
+          <span>Handcrafted Daily</span> <span className="marquee-dot"></span>
+          <span>Award Winning Flavors</span> <span className="marquee-dot"></span>
+          <span>Taste the Magic</span> <span className="marquee-dot"></span>
+          <span>✨ 100% Organic Ingredients</span> <span className="marquee-dot"></span>
+          <span>Handcrafted Daily</span> <span className="marquee-dot"></span>
+          <span>Award Winning Flavors</span> <span className="marquee-dot"></span>
+          <span>Taste the Magic</span> <span className="marquee-dot"></span>
         </div>
       </div>
 
@@ -207,26 +185,18 @@ export default function Home() {
         <section className="featured-section container" key={idx} style={{ paddingTop: idx === 0 ? '2rem' : '0.5rem' }}>
           <motion.div 
             className="section-header text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 1, y: 0 }}
           >
             <h2 className="section-title">{section.title}</h2>
             <p className="section-subtitle">{section.subtitle}</p>
             <div className="section-header-accent"></div>
           </motion.div>
           
-          <motion.div 
-            className="flavors-grid"
-            variants={staggerContainer}
-            initial="show"
-            animate="show"
-          >
-            {section.items.map(flavor => (
+          <motion.div className="bento-grid">
+            {section.items.map((flavor, i) => (
               <motion.div 
-                variants={childVariant} 
                 key={flavor._id || flavor.id}
+                className="bento-item"
                 whileHover={getCategoryInteraction(flavor.category).whileHover}
                 whileTap={getCategoryInteraction(flavor.category).whileTap}
               >
@@ -235,18 +205,22 @@ export default function Home() {
                   tiltMaxAngleY={getCategoryInteraction(flavor.category).tiltMaxAngleY} 
                   scale={getCategoryInteraction(flavor.category).scale} 
                   transitionSpeed={getCategoryInteraction(flavor.category).transitionSpeed}
-                  className={`flavor-card glass-panel ${getCategoryInteraction(flavor.category).className}`}
+                  className={`flavor-card glass-panel luxury-bento-card ${getCategoryInteraction(flavor.category).className}`}
                 >
                   <div className="flavor-image-container">
                     <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="eager" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} />
-                    <span className="flavor-tag">{flavor.tag}</span>
-                    <button className="favorite-btn"><Heart size={20} /></button>
+                    <span className="flavor-tag premium-tag">{flavor.tag}</span>
                   </div>
                   <div className="flavor-info">
                     <h3>{flavor.name}</h3>
-                    <div className="flavor-rating">
-                      <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-                      <span>(120+ Reviews)</span>
+                    <div className="flavor-meta-bottom">
+                      <div className="flavor-rating">
+                        <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
+                        <span>(120+ Reviews)</span>
+                      </div>
+                      <Link to="/products" className="bento-explore-btn">
+                        <ArrowRight size={18} />
+                      </Link>
                     </div>
                   </div>
                 </Tilt>
@@ -263,7 +237,6 @@ export default function Home() {
             <motion.div 
               key={activeTestimonial}
               className="testimonial-spotlight-card glass-panel"
-              initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }}
             >
               <p className="testimonial-text">"{testimonials[activeTestimonial].text}"</p>
               <h4 className="author-name">{testimonials[activeTestimonial].name}</h4>

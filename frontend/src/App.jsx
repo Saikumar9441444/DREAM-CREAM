@@ -1,10 +1,11 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartSidebar from './components/CartSidebar';
-import Cursor from './components/Cursor';
+import { CartProvider } from './context/CartContext';
+
 import Preloader from './components/Preloader';
 import ErrorBoundary from './components/ErrorBoundary';
 import AmbientBackground from './components/AmbientBackground';
@@ -15,11 +16,18 @@ import './App.css';
 const Home = lazy(() => import('./pages/Home'));
 const Products = lazy(() => import('./pages/Products'));
 const About = lazy(() => import('./pages/About'));
-const Orders = lazy(() => import('./pages/Orders'));
-const Admin = lazy(() => import('./pages/Admin'));
-const Login = lazy(() => import('./pages/Login'));
 const Contact = lazy(() => import('./pages/Contact'));
-const Profile = lazy(() => import('./pages/Profile'));
+const Orders = lazy(() => import('./pages/Orders'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+// Admin Pages
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
+const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 
 function App() {
   const { scrollYProgress } = useScroll();
@@ -41,27 +49,18 @@ function App() {
     document.title = routeTitles[location.pathname] || 'Dream Cream';
   }, [location.pathname]);
 
-  // 🔥 Keep-alive: ping backend every 14 min so Render never sleeps
-  React.useEffect(() => {
-    const BACKEND_URL = import.meta.env.VITE_API_URL || '';
-    const ping = () => {
-      fetch(`${BACKEND_URL}/api/products?_keepalive=1`)
-        .catch(() => {}); // Silent — never shows errors to user
-    };
-    ping(); // Ping immediately on first load to wake backend
-    const interval = setInterval(ping, 14 * 60 * 1000); // Every 14 minutes
-    return () => clearInterval(interval);
-  }, []);
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <ErrorBoundary>
+      <CartProvider>
         <div className="app-layout">
-          <Navbar onOpenCart={() => setIsCartOpen(true)} />
-          <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+          {!isAdminRoute && <Navbar onOpenCart={() => setIsCartOpen(true)} />}
+          {!isAdminRoute && <CartSidebar isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
 
           <SmoothScroll>
             <AmbientBackground />
-            <Cursor />
+
             {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
             
             {/* Scroll Progress Bar */}
@@ -81,24 +80,36 @@ function App() {
                 </div>
               }>
                 <Routes location={location} key={location.pathname}>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<Navigate to="/home" replace />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/ourstory" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/testimonials" element={<Home />} />
                   <Route path="/orders" element={<Orders />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/profile" element={<Profile />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="categories" element={<AdminCategories />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                  </Route>
+
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
             </AnimatePresence>
           </main>
           
-          <Footer />
+          {!isAdminRoute && <Footer />}
         </SmoothScroll>
       </div>
+      </CartProvider>
     </ErrorBoundary>
   );
 }

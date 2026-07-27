@@ -1,12 +1,4 @@
 /* Custom Cursor Styles */
-body {
-  cursor: none; /* Hide default cursor */
-}
-
-a, button, input, textarea {
-  cursor: none !important;
-}
-
 .custom-cursor {
   position: fixed;
   top: 0;

@@ -5,8 +5,17 @@ import './Cursor.css';
 export default function Cursor() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
+    // Detect touch-only devices (no mouse pointer)
+    const isTouch = window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(pointer: fine)').matches;
+    setIsTouchDevice(isTouch);
+  }, []);
+
+  useEffect(() => {
+    if (isTouchDevice) return;
+
     const updateMousePosition = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -26,7 +35,9 @@ export default function Cursor() {
       window.removeEventListener('mousemove', updateMousePosition);
       document.removeEventListener('mouseover', handleMouseOver);
     };
-  }, []);
+  }, [isTouchDevice]);
+
+  if (isTouchDevice) return null;
 
   const variants = {
     default: {

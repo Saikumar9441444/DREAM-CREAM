@@ -5,8 +5,8 @@ import {
   Plus, Minus, Trash2, Copy, MessageSquare, Phone 
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { ENDPOINTS } from '../api/config';
+
+
 import './Orders.css';
 
 export default function Orders() {
@@ -23,15 +23,16 @@ export default function Orders() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
-
-  const { user } = useAuth();
+  
+  // TODO: Replace with actual user context when authentication is implemented
+  const user = null;
   
   const [formData, setFormData] = useState({
-    name: user?.displayName || '',
-    email: user?.email || '',
+    name: '',
     phone: '',
     address: ''
   });
+  const [paymentMethod, setPaymentMethod] = useState('cod');
 
   React.useEffect(() => {
     const saved = localStorage.getItem('dream_cream_billing_details');
@@ -65,18 +66,12 @@ export default function Orders() {
   if (cartItems.length === 0 && !submitted) {
     return (
       <div className="orders-page flex flex-col items-center justify-center p-20 text-center">
-        <h2 className="text-3xl font-bold mb-4">{!user ? 'Authentication Required' : 'Your Cart is Empty'}</h2>
-        <p className="opacity-70 mb-8">{!user ? 'Please sign in to place an order.' : "You haven't added any magic to your order yet."}</p>
-        {!user ? (
-          <Link to="/login?redirect=/orders" className="btn-primary">Sign In</Link>
-        ) : (
-          <Link to="/products" className="btn-primary">Explore Flavors</Link>
-        )}
+        <h2 className="text-3xl font-bold mb-4">Your Cart is Empty</h2>
+        <p className="opacity-70 mb-8">You haven't added any magic to your order yet.</p>
+        <Link to="/products" className="btn-primary">Explore Flavors</Link>
       </div>
     );
   }
-  const [paymentMethod, setPaymentMethod] = useState('cod');
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -118,16 +113,8 @@ export default function Orders() {
     setLoading(true);
 
     try {
-      // POST to backend
-      const response = await fetch(ENDPOINTS.ORDERS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
-
-      if (!response.ok) throw new Error('Failed to save order');
-      
-      const savedOrder = await response.json();
+      // PURE FRONTEND MODE: Simulate backend response
+      const savedOrder = { ...orderData, _id: 'mock-id-' + Date.now(), status: 'Pending' };
       setLastOrder(savedOrder);
       
       // Simulation delay for UX
@@ -272,17 +259,11 @@ export default function Orders() {
       <div className="orders-page fade-in">
         <div className="container">
           <div className="empty-cart-state text-center glass-panel">
-            <h2>{!user ? 'Authentication Required' : 'Your Cart is Empty'}</h2>
-            <p className="mt-2 mb-4">{!user ? 'Please sign in to place an order.' : "Looks like you haven't selected any flavors yet!"}</p>
-            {!user ? (
-              <Link to="/login?redirect=/orders" className="btn-primary">
-                <ChevronLeft size={20} className="mr-2" /> Sign In
-              </Link>
-            ) : (
-              <Link to="/products" className="btn-primary">
-                <ChevronLeft size={20} className="mr-2" /> Explore Flavors
-              </Link>
-            )}
+            <h2>Your Cart is Empty</h2>
+            <p className="mt-2 mb-4">Looks like you haven't selected any flavors yet!</p>
+            <Link to="/products" className="btn-primary">
+              <ChevronLeft size={20} className="mr-2" /> Explore Flavors
+            </Link>
           </div>
         </div>
       </div>

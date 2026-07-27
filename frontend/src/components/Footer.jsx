@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { IceCream2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import './Footer.css';
@@ -35,10 +36,10 @@ export default function Footer() {
         <div className="footer-links">
           <h4>Explore</h4>
           <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/products">Our Flavors</a></li>
-            <li><a href="/about">Our Story</a></li>
-            <li><a href="/orders">Order Now</a></li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/products">Our Flavors</Link></li>
+            <li><Link to="/about">Our Story</Link></li>
+            <li><Link to="/orders">Order Now</Link></li>
           </ul>
         </div>
         

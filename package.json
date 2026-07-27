@@ -2,11 +2,10 @@
   "name": "cream-dream-monorepo",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "npm run dev --prefix frontend",
     "dev:frontend": "npm run dev --prefix frontend",
-    "dev:backend": "npm run dev --prefix backend",
     "build": "npm run build --prefix frontend",
-    "install": "npm install --prefix frontend && npm install --prefix backend"
+    "install": "npm install --prefix frontend"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

@@ -4,18 +4,10 @@ import { motion } from 'framer-motion';
 import './About.css';
 
 export default function About() {
-  const [cmsContent, setCmsContent] = useState({});
-
-  useEffect(() => {
-    fetch('/api/content')
-      .then(res => res.json())
-      .then(data => {
-        const contentMap = {};
-        data.forEach(item => { contentMap[item.key] = item.value; });
-        setCmsContent(contentMap);
-      })
-      .catch(err => console.error("About CMS fetch failed:", err));
-  }, []);
+  const cmsContent = {
+    heroTitle: "Our Story",
+    heroSubtitle: "From a small cart to your favorite neighborhood creamery."
+  };
 
   const storyColumns = [
     { id: '01', total: '03', label: 'THE SOURCE', title: 'Our Ingredients', desc: 'We source the richest madagascar vanilla and the deepest organic cacao for an unparalleled pure taste.', img: '/ingredients_bg.png' },

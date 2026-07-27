@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Menu, X, User, Shield, Search } from 'lucide-react';
+import { ShoppingCart, Menu, X, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 export default function Navbar({ onOpenCart }) {
@@ -12,14 +11,13 @@ export default function Navbar({ onOpenCart }) {
   const searchInputRef = useRef(null);
   
   const { cartTotalItems } = useCart();
-  const { user, isAdmin, logout } = useAuth();
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState('');
 
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === '/' || location.pathname === '/home';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,7 +39,7 @@ export default function Navbar({ onOpenCart }) {
   }, [isSearchExpanded]);
 
   const navLinks = [
-    { path: '/', label: 'HOME' },
+    { path: '/home', label: 'HOME' },
     { path: '/products', label: 'FLAVORS' },
     { path: '/about', label: 'ABOUT US' },
     { path: '/contact', label: 'CONTACT' }
@@ -83,19 +81,6 @@ export default function Navbar({ onOpenCart }) {
               key={link.path} 
               to={link.path} 
               className={`nav-item ${location.pathname === link.path ? 'active' : ''}`}
-              onMouseEnter={() => {
-                if (link.path === '/products') {
-                  // Prefetch Component Chunk
-                  import('../pages/Products').catch(() => {});
-                  // Prefetch Data if possible (optional but good for speed)
-                  fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/products`)
-                    .then(res => res.json())
-                    .then(data => {
-                      localStorage.setItem('dream_cream_products_cache', JSON.stringify(data));
-                    })
-                    .catch(() => {});
-                }
-              }}
             >
               {link.label}
               {location.pathname === link.path && (
@@ -136,31 +121,6 @@ export default function Navbar({ onOpenCart }) {
             </form>
           </div>
 
-          {isAdmin && (
-            <Link to="/admin" className="action-btn admin-link" title="Admin Panel">
-              <Shield size={20} />
-            </Link>
-          )}
-
-          <div className="auth-group">
-            {user ? (
-              <button onClick={() => navigate('/profile')} className="user-avatar-btn" title="Profile">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-check">
-                  <path d="M2 21a8 8 0 0 1 13.292-6" />
-                  <circle cx="10" cy="8" r="5" />
-                  <path d="m16 19 2 2 4-4" />
-                </svg>
-              </button>
-            ) : (
-              <Link to="/login" className="action-btn" title="Login / Register">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </Link>
-            )}
-          </div>
-
           <button className="cart-trigger" onClick={onOpenCart}>
             <ShoppingCart size={20} />
             {cartTotalItems > 0 && (
@@ -194,14 +154,6 @@ export default function Navbar({ onOpenCart }) {
                   {link.label}
                 </Link>
               ))}
-              <div className="drawer-footer">
-                {user ? (
-                  <Link to="/profile" className="drawer-link" onClick={() => setIsMenuOpen(false)}>PROFILE</Link>
-                ) : (
-                  <Link to="/login" className="drawer-link" onClick={() => setIsMenuOpen(false)}>ACCOUNT</Link>
-                )}
-                {isAdmin && <Link to="/admin" className="drawer-link" onClick={() => setIsMenuOpen(false)}>ADMIN</Link>}
-              </div>
             </div>
           </motion.div>
         )}

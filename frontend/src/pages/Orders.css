@@ -34,8 +34,14 @@
 
 /* Cart Summary Column */
 .cart-summary {
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   padding: 2.5rem;
   border-radius: var(--border-radius-lg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 100px;
 }
 
 @media (max-width: 768px) {
@@ -185,9 +191,14 @@
 
 /* Success Progress Tracker */
 .order-tracking-section {
-  max-width: 550px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 3rem;
+  padding: 4rem 3rem;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--border-radius-lg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
 }
 
 .success-header {
@@ -355,8 +366,12 @@
 
 /* Checkout Form Column */
 .order-form-card {
-  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  padding: 3.5rem;
   border-radius: var(--border-radius-lg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
 }
 
 @media (max-width: 768px) {
@@ -395,15 +410,16 @@
 .input-group textarea,
 .input-group select {
   width: 100%;
-  padding: 1rem 1.2rem;
+  padding: 1.2rem 1.5rem;
   font-family: var(--font-family);
-  font-size: 1rem;
-  border: 1px solid rgba(44, 30, 22, 0.1);
-  border-radius: var(--border-radius-md);
-  background: white;
+  font-size: 1.05rem;
+  border: 1px solid rgba(255, 123, 156, 0.2);
+  border-radius: var(--border-radius-pill);
+  background: rgba(255, 255, 255, 0.8);
   color: var(--color-text-main);
   outline: none;
   transition: all var(--transition-fast);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
 }
 
 .input-group textarea {
@@ -420,12 +436,12 @@
 
 .input-group label {
   position: absolute;
-  left: 1.2rem;
-  top: 1rem;
+  left: 1.5rem;
+  top: 1.2rem;
   color: var(--color-text-muted);
   pointer-events: none;
   transition: all var(--transition-fast);
-  background: white;
+  background: transparent;
   padding: 0 0.5rem;
   font-size: 1rem;
 }
@@ -436,10 +452,12 @@
 .input-group textarea:not(:placeholder-shown) ~ label,
 .always-float {
   top: -0.6rem;
-  left: 0.8rem;
+  left: 1rem;
   font-size: 0.85rem;
   color: var(--color-primary);
-  font-weight: 600;
+  font-weight: 700;
+  background: white;
+  border-radius: 4px;
 }
 
 .form-section-divider {
@@ -542,6 +560,22 @@ select {
   padding: 1.2rem;
   font-size: 1.2rem;
   width: 100%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-pill);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(255, 123, 156, 0.3);
+}
+
+.submit-btn:hover {
+  background: var(--color-primary-light);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(255, 123, 156, 0.5);
 }
 
 .success-message {
