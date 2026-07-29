@@ -903,3 +903,118 @@
   }
 }
 
+/* Mobile Menu Button Style */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: var(--color-text-muted);
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-right: 1rem;
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-main);
+}
+
+/* Responsive Queries for Admin Panel */
+@media (max-width: 992px) {
+  .mobile-menu-btn {
+    display: flex; /* Show menu button on tablet/mobile header */
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 280px !important;
+    z-index: 10000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 15px 0 40px rgba(0, 0, 0, 0.1);
+    background: #ffffff !important;
+  }
+
+  .admin-sidebar.collapsed {
+    left: -280px !important; /* Hide sidebar fully off-screen when collapsed */
+  }
+
+  .admin-sidebar:not(.collapsed) {
+    left: 0 !important; /* Slide in sidebar when open */
+  }
+
+  .admin-sidebar.collapsed .brand-text,
+  .admin-sidebar.collapsed .nav-label {
+    opacity: 1;
+    width: auto;
+    visibility: visible;
+  }
+
+  .admin-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+  }
+
+  .admin-main {
+    margin-left: 0 !important; /* Content takes full screen width */
+  }
+
+  .admin-topbar {
+    padding: 0 1.5rem !important;
+    height: 70px;
+  }
+
+  .admin-content {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .dashboard-grid-pro {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+  
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard-grid-pro {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .stat-card-pink, 
+  .stat-card-purple, 
+  .stat-card-green, 
+  .stat-card-orange, 
+  .stat-card-red {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .admin-topbar-title {
+    font-size: 1.2rem;
+  }
+  
+  .admin-panel-pro {
+    padding: 1rem !important;
+  }
+  
+  .admin-table-pro th, 
+  .admin-table-pro td {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+

@@ -31,6 +31,11 @@ export default function AdminLayout() {
     } else {
       setIsAuthenticated(true);
     }
+
+    // Collapse sidebar by default on smaller screens
+    if (window.innerWidth < 992) {
+      setIsSidebarOpen(false);
+    }
   }, [location.pathname, navigate]);
 
   React.useEffect(() => {
@@ -109,7 +114,7 @@ export default function AdminLayout() {
   return (
     <div className={`admin-layout ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`}>
       {/* Sidebar Overlay for Mobile */}
-      {!isSidebarOpen && <div className="admin-sidebar-overlay"></div>}
+      {isSidebarOpen && <div className="admin-sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>}
 
       {/* Sidebar */}
       <aside className={`admin-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
@@ -171,6 +176,9 @@ export default function AdminLayout() {
       {/* Main Content Area */}
       <main className="admin-main">
         <header className="admin-topbar">
+          <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)}>
+            <Menu size={20} />
+          </button>
           <h2 className="admin-topbar-title">Admin Panel</h2>
           <div className="admin-profile">
             <span className="text-sm font-semibold text-gray-500">Hello, Admin</span>
