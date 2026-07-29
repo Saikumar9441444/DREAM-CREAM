@@ -94,3 +94,17 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+@media (max-width: 480px) {
+  .spotlight-search-container {
+    max-width: 100% !important;
+  }
+  .search-content {
+    padding: 0.4rem 0.75rem !important;
+    gap: 0.4rem !important;
+  }
+  .search-input-premium {
+    font-size: 0.85rem !important;
+    padding: 2px 0 !important;
+  }
+}
