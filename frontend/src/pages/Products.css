@@ -310,8 +310,8 @@
 
 @media (max-width: 768px) {
   .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; /* Show 2 items per row on mobile! */
-    gap: 1rem !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; /* Dynamically fits 2 columns on all standard phone screens! */
+    gap: 0.75rem !important;
   }
 
   .filters-container {
@@ -446,5 +446,11 @@
 
   .flavor-price {
     font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 350px) {
+  .products-grid {
+    grid-template-columns: 1fr !important;
   }
 }
