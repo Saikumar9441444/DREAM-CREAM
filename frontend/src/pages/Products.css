@@ -397,6 +397,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  overflow-y: auto;
 }
 
 .instant-modal-card {
@@ -408,9 +409,23 @@
   padding: 2.5rem;
   box-shadow: 0 30px 70px rgba(44, 30, 22, 0.15);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  margin: auto;
+  max-height: 90vh;
 }
 
 .instant-modal-card form {
   width: 100%;
+}
+
+@media (max-width: 480px) {
+  .premium-cart-action.dual-buttons {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .instant-modal-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: 1.5rem;
+  }
 }
