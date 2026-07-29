@@ -318,13 +318,46 @@
     flex-direction: column;
     align-items: stretch;
     border-radius: 1.5rem;
-    padding: 1rem !important;
+    padding: 1.25rem 1rem !important;
     margin-bottom: 2rem !important;
-    gap: 1rem !important;
+    gap: 1.25rem !important;
   }
 
   .category-section {
-    justify-content: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .category-filters-wrapper {
+    width: 100%;
+    padding: 0 !important;
+  }
+
+  .scroll-arrow {
+    display: none !important; /* Hide tiny scroll arrows on mobile screens */
+  }
+
+  .category-filters {
+    -webkit-overflow-scrolling: touch; /* Smooth inertia momentum scrolling on iOS */
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .category-filters::-webkit-scrollbar {
+    display: none !important; /* Hide scrollbars fully */
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  .category-label-text {
+    display: none !important; /* Hide "Select Category" label on mobile to save vertical space */
+  }
+
+  .filter-btn {
+    padding: 0.45rem 1rem !important; /* Make tabs more compact on mobile */
+    font-size: 0.82rem !important;     /* Smaller font for clean pill menu */
   }
 }
 
