@@ -332,11 +332,27 @@
 
   .category-filters-wrapper {
     width: 100%;
-    padding: 0 !important;
+    padding: 0 40px 0 0 !important; /* Make room for the floating right indicator */
+    position: relative;
   }
 
-  .scroll-arrow {
-    display: none !important; /* Hide tiny scroll arrows on mobile screens */
+  .scroll-arrow.left {
+    display: none !important; /* Hide left scroll indicator on mobile */
+  }
+
+  .scroll-arrow.right {
+    display: flex !important; /* Keep right indicator visible on mobile */
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 123, 156, 0.25) !important;
+    color: var(--color-primary) !important;
+    z-index: 10;
+    box-shadow: -10px 0 15px rgba(255, 255, 255, 0.95), 0 4px 10px rgba(0,0,0,0.05) !important;
+    width: 28px !important;
+    height: 28px !important;
   }
 
   .category-filters {
