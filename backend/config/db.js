@@ -37,7 +37,7 @@ const connectDB = async () => {
     console.log('MySQL connection has been established successfully.');
   } catch (error) {
     console.error('Unable to connect to the MySQL database:', error);
-    process.exit(1);
+    console.warn('Backend server continuing to run without active database connection.');
   }
 };
 
