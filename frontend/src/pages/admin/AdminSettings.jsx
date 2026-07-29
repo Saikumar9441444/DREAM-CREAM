@@ -33,76 +33,94 @@ export default function AdminSettings() {
   return (
     <div className="fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '2rem', margin: 0 }}>Store Settings</h2>
+        <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Store size={28} style={{ color: 'var(--color-primary)' }} /> Settings & Configuration
+        </h2>
         <button 
-          className="btn-primary"
-          style={{ padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          className="btn-pro btn-pro-primary"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           onClick={handleSave}
         >
-          <Save size={20} /> {isSaved ? 'Saved!' : 'Save Changes'}
+          <Save size={18} /> {isSaved ? 'Saved!' : 'Save Changes'}
         </button>
       </div>
 
-      <div className="admin-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
         
         {/* General Settings */}
         <motion.div 
-          className="admin-panel"
+          className="admin-panel-pro"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="admin-panel-header" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', margin: 0 }}>
-              <Store size={20} className="text-primary" /> General Info
+          <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+              <div style={{ background: '#f8fafc', padding: '0.5rem', borderRadius: '8px', color: 'var(--color-primary)' }}>
+                <Store size={20} />
+              </div>
+              General Info
             </h3>
+            <p style={{ margin: '0.5rem 0 0 3rem', color: '#64748b', fontSize: '0.9rem' }}>Basic details and contact information</p>
           </div>
           
-          <form className="admin-form">
-            <div className="form-group">
-              <label>Store Name</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Store Name</label>
               <input 
                 type="text" 
                 value={settings.storeName} 
                 onChange={e => setSettings({...settings, storeName: e.target.value})} 
+                style={{ padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', transition: 'border-color 0.2s' }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
               />
             </div>
             
-            <div className="form-group">
-              <label>WhatsApp Business Number</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>WhatsApp Business Number</label>
               <div style={{ position: 'relative' }}>
-                <Phone size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
+                <Phone size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                 <input 
                   type="text" 
                   value={settings.whatsappNumber} 
                   onChange={e => setSettings({...settings, whatsappNumber: e.target.value})} 
-                  style={{ paddingLeft: '2.5rem' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                 />
               </div>
-              <small style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>Include country code without + (e.g. 919014002314)</small>
+              <small style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Include country code without + (e.g. 919014002314)</small>
             </div>
-          </form>
+          </div>
         </motion.div>
 
         {/* Operating Hours */}
         <motion.div 
-          className="admin-panel"
+          className="admin-panel-pro"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <div className="admin-panel-header" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', margin: 0 }}>
-              <Clock size={20} className="text-primary" /> Operating Hours
+          <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+              <div style={{ background: '#f8fafc', padding: '0.5rem', borderRadius: '8px', color: 'var(--color-primary)' }}>
+                <Clock size={20} />
+              </div>
+              Operating Hours
             </h3>
+            <p style={{ margin: '0.5rem 0 0 3rem', color: '#64748b', fontSize: '0.9rem' }}>Manage store availability and timings</p>
           </div>
           
-          <form className="admin-form">
-            <div className="form-group">
-              <label>Store Status</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Store Status</label>
               <select 
                 value={settings.status}
                 onChange={e => setSettings({...settings, status: e.target.value})}
+                style={{ padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#ffffff', outline: 'none', transition: 'border-color 0.2s' }}
+                onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
               >
                 <option value="Open">Accepting Orders</option>
                 <option value="Closed">Temporarily Closed</option>
@@ -110,24 +128,30 @@ export default function AdminSettings() {
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label>Opening Time</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Opening Time</label>
                 <input 
                   type="time" 
                   value={settings.openingTime.replace(/ (AM|PM)/, '')} 
                   onChange={e => setSettings({...settings, openingTime: e.target.value})} 
+                  style={{ padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                 />
               </div>
-              <div className="form-group">
-                <label>Closing Time</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Closing Time</label>
                 <input 
                   type="time" 
                   value={settings.closingTime.replace(/ (AM|PM)/, '')} 
                   onChange={e => setSettings({...settings, closingTime: e.target.value})} 
+                  style={{ padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', transition: 'border-color 0.2s' }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                 />
               </div>
             </div>
-          </form>
+          </div>
         </motion.div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Heart, Star, Check, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Heart, Star, Check, Clock, ChevronLeft, ChevronRight, Zap, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 
@@ -11,7 +11,7 @@ import ProductShowcaseSlider from '../components/ProductShowcaseSlider';
 import './Products.css';
 
 // 1. MEMOIZED FLAVOR CARD
-const FlavorCard = memo(React.forwardRef(({ flavor, isAdded, onAdd, itemVariants, priority }, ref) => {
+const FlavorCard = memo(React.forwardRef(({ flavor, isAdded, onAdd, onInstantOrder, itemVariants, priority }, ref) => {
   return (
     <motion.div
       ref={ref}
@@ -30,7 +30,6 @@ const FlavorCard = memo(React.forwardRef(({ flavor, isAdded, onAdd, itemVariants
           loading={priority ? "eager" : "lazy"}
           style={{ 
             filter: `hue-rotate(${flavor.hue || 0}deg) ${flavor.inStock === false ? 'grayscale(100%)' : ''}`, 
-            mixBlendMode: 'multiply',
             opacity: flavor.inStock === false ? 0.5 : 1
           }}
         />
@@ -61,21 +60,36 @@ const FlavorCard = memo(React.forwardRef(({ flavor, isAdded, onAdd, itemVariants
           </div>
           <span className="flavor-price">{flavor.price}</span>
         </div>
-        <div className="premium-cart-action">
+        <div className="premium-cart-action dual-buttons">
           {flavor.inStock === false ? (
-            <button className="btn-primary add-to-cart-btn" style={{ background: '#ccc', color: '#666', cursor: 'not-allowed' }} disabled>
+            <button className="btn-primary add-to-cart-btn" style={{ background: '#ccc', color: '#666', cursor: 'not-allowed', width: '100%' }} disabled>
               Out of Stock
             </button>
           ) : (
-            <button
-              className={`btn-primary add-to-cart-btn ${isAdded ? 'added' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAdd(flavor);
-              }}
-            >
-              {isAdded ? <><Check size={18} /> Ordered</> : 'Order'}
-            </button>
+            <>
+              <button
+                className={`btn-secondary action-btn-parcel ${isAdded ? 'added' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAdd(flavor);
+                }}
+                title="Add to Parcel list"
+              >
+                {isAdded ? <Check size={16} /> : <Package size={16} />}
+                <span>Parcel</span>
+              </button>
+              <button
+                className="btn-primary action-btn-order"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onInstantOrder(flavor);
+                }}
+                title="Dine-In Instant Order"
+              >
+                <Zap size={16} />
+                <span>Order</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -108,12 +122,87 @@ export default function Products() {
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
+  const [selectedInstantProduct, setSelectedInstantProduct] = useState(null);
+  const [instantTableNumber, setInstantTableNumber] = useState(localStorage.getItem('dream_cream_table') || '');
+  const [instantOrderSuccess, setInstantOrderSuccess] = useState(false);
+  const [instantOrderLoading, setInstantOrderLoading] = useState(false);
+
+  const handleOpenInstantOrder = useCallback((product) => {
+    setSelectedInstantProduct(product);
+    setInstantOrderSuccess(false);
+    setInstantOrderLoading(false);
+    
+    // Refresh table number from storage in case it changed
+    const currentTable = localStorage.getItem('dream_cream_table') || '';
+    setInstantTableNumber(currentTable);
+  }, []);
+
+  const handleConfirmInstantOrder = async (e) => {
+    e.preventDefault();
+    if (!selectedInstantProduct) return;
+    if (!instantTableNumber.trim()) return;
+
+    setInstantOrderLoading(true);
+
+    // Save table number to local storage
+    localStorage.setItem('dream_cream_table', instantTableNumber.trim());
+
+    // Calculate dynamic totals matching the order summary formula:
+    // price + 5% GST + restaurant charges (₹15)
+    const rawPrice = typeof selectedInstantProduct.price === 'string'
+      ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, ''))
+      : selectedInstantProduct.price;
+
+    const gst = rawPrice * 0.05;
+    const charges = 15;
+    const finalTotal = rawPrice + gst + charges;
+
+    const orderData = {
+      customerName: 'Dine-In Guest',
+      phone: 'N/A',
+      address: `Dine-In (Table ${instantTableNumber.trim()})`,
+      tableNumber: instantTableNumber.trim(),
+      deliveryType: 'Dine-In',
+      items: [{
+        name: selectedInstantProduct.name,
+        quantity: 1,
+        price: rawPrice
+      }],
+      totalAmount: finalTotal,
+      paymentMethod: 'cod', // Pay later
+      status: 'Waiting Approval' // Requires admin approval!
+    };
+
+    try {
+      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const res = await fetch(`${socketUrl}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!res.ok) throw new Error('Failed to submit order');
+
+      setInstantOrderSuccess(true);
+      setTimeout(() => {
+        setSelectedInstantProduct(null);
+        setInstantOrderSuccess(false);
+      }, 2000);
+    } catch (err) {
+      alert('Error placing order: ' + err.message);
+    } finally {
+      setInstantOrderLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
         const data = await getProducts();
         setProducts(data);
+        const cats = await getCategories();
+        setCategories(['All', ...cats]);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -121,7 +210,6 @@ export default function Products() {
       }
     };
     fetchProducts();
-    setCategories(['All', ...getCategories()]);
   }, []);
 
   useEffect(() => {
@@ -238,11 +326,12 @@ export default function Products() {
               [...Array(8)].map((_, i) => <SkeletonCard key={`skel-${i}`} />)
             ) : filteredProducts.length > 0 ? (
               filteredProducts.map((flavor, index) => (
-                <FlavorCard
+                 <FlavorCard
                   key={flavor._id || flavor.id}
                   flavor={flavor}
                   isAdded={!!addedItems[flavor._id || flavor.id]}
                   onAdd={handleAddToCart}
+                  onInstantOrder={handleOpenInstantOrder}
                   itemVariants={itemVariants}
                   priority={index < 4}
                 />
@@ -255,6 +344,90 @@ export default function Products() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Instant Order Modal */}
+      <AnimatePresence>
+        {selectedInstantProduct && (
+          <div className="instant-modal-overlay flex-center" onClick={() => setSelectedInstantProduct(null)}>
+            <motion.div 
+              className="instant-modal-card glass-panel"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {instantOrderSuccess ? (
+                <div className="instant-success flex-center" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem 0' }}>
+                  <div className="success-badge" style={{ background: '#dcfce7', color: '#16a34a', padding: '1rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Check size={36} />
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Order Submitted!</h3>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>Waiting for manager approval...</p>
+                </div>
+              ) : (
+                <form onSubmit={handleConfirmInstantOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#1e293b' }}>Dine-In Instant Order</h3>
+                  <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                    You are ordering <strong>{selectedInstantProduct.name}</strong> instantly to your table.
+                  </p>
+                  
+                  <div className="input-group">
+                    <input 
+                      type="text" 
+                      id="modalTableNumber" 
+                      value={instantTableNumber} 
+                      onChange={(e) => setInstantTableNumber(e.target.value)} 
+                      required 
+                      placeholder=" " 
+                      disabled={instantOrderLoading}
+                    />
+                    <label htmlFor="modalTableNumber">Table Number</label>
+                  </div>
+
+                  <div className="modal-price-breakdown" style={{ background: '#f8fafc', padding: '1rem', borderRadius: '1rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748b' }}>
+                      <span>{selectedInstantProduct.name}</span>
+                      <span>₹{(typeof selectedInstantProduct.price === 'string' ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, '')) : selectedInstantProduct.price).toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748b' }}>
+                      <span>GST (5%)</span>
+                      <span>₹{((typeof selectedInstantProduct.price === 'string' ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, '')) : selectedInstantProduct.price) * 0.05).toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: '#64748b' }}>
+                      <span>Service Charges</span>
+                      <span>₹15.00</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 'bold', color: '#1e293b', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
+                      <span>Total to Pay Later</span>
+                      <span>₹{((typeof selectedInstantProduct.price === 'string' ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, '')) : selectedInstantProduct.price) * 1.05 + 15).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="modal-actions" style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ flex: 1, padding: '0.85rem' }}
+                      onClick={() => setSelectedInstantProduct(null)}
+                      disabled={instantOrderLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="btn-primary" 
+                      style={{ flex: 1, padding: '0.85rem' }}
+                      disabled={instantOrderLoading}
+                    >
+                      {instantOrderLoading ? 'Sending...' : 'Confirm Order'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

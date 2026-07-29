@@ -35,81 +35,95 @@ export default function AdminEnquiries() {
   return (
     <div className="fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '2rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <MessageSquare size={28} className="text-primary" /> Enquiries
+        <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <MessageSquare size={28} style={{ color: 'var(--color-primary)' }} /> Customer Enquiries
         </h2>
       </div>
 
-      <div className="admin-panel">
-        <div className="admin-panel-header" style={{ borderBottom: '1px solid #eee', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
-          <div style={{ position: 'relative', width: '300px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
+      <div className="admin-panel-pro" style={{ padding: '0', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)', minHeight: '600px', overflow: 'hidden' }}>
+        <div style={{ padding: '1.5rem', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: '16px 16px 0 0' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b', fontWeight: 700 }}>Inbox</h3>
+          <div style={{ position: 'relative', width: '350px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
             <input 
               type="text" 
-              placeholder="Search messages..." 
+              placeholder="Search by sender or content..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', padding: '0.8rem 1rem 0.8rem 2.5rem', borderRadius: '8px', border: '1px solid #ddd' }}
+              style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#ffffff', outline: 'none' }}
+              onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+              onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
             />
           </div>
         </div>
 
-        <div className="admin-table-container">
+        <div style={{ flex: 1, overflowY: 'auto', background: '#ffffff' }}>
           {filteredEnquiries.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-              <Mail size={48} style={{ color: 'var(--color-primary)', opacity: 0.5, margin: '0 auto 1rem' }} />
-              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>No Messages Yet</h3>
-              <p style={{ color: 'var(--color-text-muted)' }}>When customers use the contact form, messages will appear here.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8', gap: '1rem' }}>
+              <Mail size={48} style={{ opacity: 0.5 }} />
+              <p style={{ margin: 0, fontSize: '1.1rem' }}>Inbox is empty</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               <AnimatePresence>
                 {filteredEnquiries.map((enquiry) => (
                   <motion.div 
                     key={enquiry._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                     style={{ 
                       padding: '1.5rem', 
-                      background: enquiry.status === 'unread' ? '#f0f9ff' : '#f8fafc', 
+                      background: enquiry.status === 'unread' ? '#f0f9ff' : '#ffffff', 
                       borderLeft: enquiry.status === 'unread' ? '4px solid var(--color-primary)' : '4px solid transparent',
-                      borderRadius: '8px',
+                      borderBottom: '1px solid #f1f5f9',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '1rem'
+                      gap: '1rem',
+                      transition: 'background 0.2s',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      if(enquiry.status !== 'unread') e.currentTarget.style.background = '#f8fafc';
+                    }}
+                    onMouseLeave={(e) => {
+                      if(enquiry.status !== 'unread') e.currentTarget.style.background = '#ffffff';
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <h3 style={{ margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {enquiry.name} 
-                          {enquiry.status === 'unread' && <span style={{ fontSize: '0.7rem', background: 'var(--color-primary)', color: 'white', padding: '2px 6px', borderRadius: '12px' }}>New</span>}
-                        </h3>
-                        <a href={`mailto:${enquiry.email}`} style={{ color: '#64748b', fontSize: '0.9rem', textDecoration: 'none' }}>{enquiry.email}</a>
+                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: enquiry.status === 'unread' ? 'var(--color-primary)' : '#e2e8f0', color: enquiry.status === 'unread' ? 'white' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                          {enquiry.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <h3 style={{ margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1e293b', fontSize: '1.1rem' }}>
+                            {enquiry.name}
+                            {enquiry.status === 'unread' && <span className="badge-pro primary" style={{ fontSize: '0.7rem' }}>New</span>}
+                          </h3>
+                          <a href={`mailto:${enquiry.email}`} style={{ color: '#64748b', fontSize: '0.9rem', textDecoration: 'none', display: 'block', marginBottom: '0.5rem' }}>{enquiry.email}</a>
+                        </div>
                       </div>
-                      <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>
                         {new Date(enquiry.timestamp).toLocaleString()}
                       </span>
                     </div>
                     
-                    <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#334155', lineHeight: '1.5' }}>
-                      <p style={{ margin: 0 }}><strong>Phone/Subject:</strong> {enquiry.subject}</p>
-                      <hr style={{ border: 0, borderTop: '1px solid #e2e8f0', margin: '0.5rem 0' }} />
-                      <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{enquiry.message}</p>
+                    <div style={{ marginLeft: '56px', background: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', color: '#334155', lineHeight: '1.6' }}>
+                      <p style={{ margin: 0, fontWeight: 700, color: '#0f172a' }}>{enquiry.subject || 'Enquiry'}</p>
+                      <p style={{ margin: '0.5rem 0 0 0', whiteSpace: 'pre-wrap', color: '#475569' }}>{enquiry.message}</p>
                     </div>
 
-                    {enquiry.status === 'unread' && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button 
-                          className="btn-outline-primary" 
-                          onClick={() => handleMarkAsRead(enquiry._id)}
-                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                        >
-                          <Check size={16} /> Mark as Read
-                        </button>
-                      </div>
-                    )}
+                    <div style={{ marginLeft: '56px', display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+                       {enquiry.status === 'unread' && (
+                         <button 
+                           onClick={() => handleMarkAsRead(enquiry._id)}
+                           className="btn-pro"
+                           style={{ background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
+                         >
+                           <Check size={16} /> Mark as Read
+                         </button>
+                       )}
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>

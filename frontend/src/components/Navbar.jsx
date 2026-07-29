@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Menu, X, Search } from 'lucide-react';
+import { Package, Menu, X, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import './Navbar.css';
 
@@ -121,8 +121,8 @@ export default function Navbar({ onOpenCart }) {
             </form>
           </div>
 
-          <button className="cart-trigger" onClick={onOpenCart}>
-            <ShoppingCart size={20} />
+          <button className="cart-trigger" onClick={onOpenCart} aria-label="Open Parcel">
+            <Package size={20} />
             {cartTotalItems > 0 && (
               <span className="cart-indicator">{cartTotalItems}</span>
             )}

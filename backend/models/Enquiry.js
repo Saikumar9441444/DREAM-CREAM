@@ -1,12 +1,31 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const enquirySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true },
-  subject: { type: String, required: true },
-  message: { type: String, required: true },
-  status: { type: String, enum: ['unread', 'read', 'replied'], default: 'unread' },
-  timestamp: { type: Date, default: Date.now }
+const Enquiry = sequelize.define('Enquiry', {
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  subject: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  message: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  status: {
+    type: DataTypes.ENUM('unread', 'read', 'replied'),
+    defaultValue: 'unread'
+  },
+  timestamp: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
 });
 
-module.exports = mongoose.model('Enquiry', enquirySchema);
+module.exports = Enquiry;

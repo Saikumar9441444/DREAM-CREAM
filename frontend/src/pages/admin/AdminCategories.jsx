@@ -8,15 +8,19 @@ export default function AdminCategories() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setCategories(getCategories());
+    const fetchCats = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCats();
   }, []);
 
-  const handleAddCategory = (e) => {
+  const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
 
     try {
-      const updated = addCategory(newCategoryName.trim());
+      const updated = await addCategory(newCategoryName.trim());
       setCategories(updated);
       setNewCategoryName('');
       setError('');
@@ -25,10 +29,10 @@ export default function AdminCategories() {
     }
   };
 
-  const handleDeleteCategory = (categoryName) => {
+  const handleDeleteCategory = async (categoryName) => {
     if (window.confirm(`Are you sure you want to delete the category "${categoryName}"? Products in this category will not be deleted, but they may not display correctly.`)) {
       try {
-        const updated = deleteCategory(categoryName);
+        const updated = await deleteCategory(categoryName);
         setCategories(updated);
       } catch (err) {
         alert(err.message);
@@ -39,66 +43,67 @@ export default function AdminCategories() {
   return (
     <div className="fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '2rem', margin: 0 }}>Category Management</h2>
+        <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: 800, color: '#1e293b' }}>Category Management</h2>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
         
         {/* Add Category Form */}
-        <div className="admin-panel" style={{ height: 'fit-content' }}>
-          <div className="admin-panel-header" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Plus size={18} /> Add Category
+        <div className="admin-panel-pro" style={{ height: 'fit-content', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+              <Plus size={20} color="var(--color-primary)" /> Add Category
             </h3>
           </div>
           
-          <form className="admin-form" onSubmit={handleAddCategory}>
-            <div className="form-group">
-              <label>Category Name</label>
+          <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#475569' }}>Category Name</label>
               <input 
                 type="text" 
                 required 
                 value={newCategoryName} 
                 onChange={(e) => setNewCategoryName(e.target.value)} 
                 placeholder="e.g. Smoothies" 
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', outline: 'none' }}
               />
             </div>
-            {error && <small style={{ color: '#ef4444', display: 'block', marginTop: '-0.5rem', marginBottom: '1rem' }}>{error}</small>}
-            <button type="submit" className="btn-primary" style={{ width: '100%' }}>Create Category</button>
+            {error && <small style={{ color: '#ef4444', display: 'block' }}>{error}</small>}
+            <button type="submit" className="btn-pro btn-pro-primary" style={{ width: '100%' }}>Create Category</button>
           </form>
         </div>
 
         {/* Categories List */}
-        <div className="admin-panel">
-          <div className="admin-panel-header" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Tags size={18} /> Existing Categories
+        <div className="admin-panel-pro" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>
+              <Tags size={20} color="var(--color-primary)" /> Existing Categories
             </h3>
           </div>
 
-          <div className="admin-table-container">
-            <table className="admin-table">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="admin-table-pro">
               <thead>
                 <tr>
                   <th>Category Name</th>
-                  <th style={{ width: '100px', textAlign: 'center' }}>Actions</th>
+                  <th style={{ width: '100px', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {categories.map((category) => (
                   <tr key={category}>
-                    <td style={{ fontWeight: 600 }}>{category}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ fontWeight: 600, color: '#1e293b' }}>{category}</td>
+                    <td style={{ textAlign: 'right' }}>
                       {category !== 'All Flavors' ? (
                         <button 
-                          className="action-btn" 
-                          style={{ color: '#ef4444' }} 
+                          className="btn-pro" 
+                          style={{ padding: '0.4rem', background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca' }} 
                           onClick={() => handleDeleteCategory(category)}
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       ) : (
-                        <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Default</span>
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Default</span>
                       )}
                     </td>
                   </tr>
@@ -107,7 +112,6 @@ export default function AdminCategories() {
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );

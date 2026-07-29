@@ -22,19 +22,20 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Admin Pages
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
-const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
+const AdminAddons = lazy(() => import('./pages/admin/AdminAddons'));
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
-const AdminPOS = lazy(() => import('./pages/admin/AdminPOS'));
 const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'));
 const AdminSubscriptions = lazy(() => import('./pages/admin/AdminSubscriptions'));
 const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminEnquiries = lazy(() => import('./pages/admin/AdminEnquiries'));
 const AdminTestimonials = lazy(() => import('./pages/admin/AdminTestimonials'));
+const AdminKitchen = lazy(() => import('./pages/admin/AdminKitchen'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 
 function App() {
   const { scrollYProgress } = useScroll();
@@ -45,16 +46,30 @@ function App() {
   // Dynamic Page Title Management
   React.useEffect(() => {
     const routeTitles = {
-      '/': 'Cream Dream',
-      '/products': 'Cream Dream',
-      '/about': 'Cream Dream',
-      '/orders': 'Cream Dream',
-      '/admin': 'Cream Dream',
-      '/login': 'Cream Dream',
-      '/contact': 'Cream Dream'
+      '/': 'Cream Dream | Premium Ice Cream Parlor',
+      '/home': 'Cream Dream | Premium Ice Cream Parlor',
+      '/products': 'Cream Dream | Explore Flavors',
+      '/about': 'Cream Dream | Our Story',
+      '/contact': 'Cream Dream | Get In Touch',
+      '/orders': 'Cream Dream | Your Parcel',
+      '/admin/login': 'Cream Dream | Admin Login'
     };
-    document.title = routeTitles[location.pathname] || 'Dream Cream';
+    
+    if (location.pathname.startsWith('/admin') && location.pathname !== '/admin/login') {
+      document.title = 'Cream Dream | Admin Dashboard';
+    } else {
+      document.title = routeTitles[location.pathname] || 'Cream Dream | Premium Ice Cream';
+    }
   }, [location.pathname]);
+
+  // Detect QR code table number
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const table = params.get('table');
+    if (table) {
+      localStorage.setItem('dream_cream_table', table);
+    }
+  }, [location.search]);
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -69,61 +84,70 @@ function App() {
             <AmbientBackground />
 
             {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
-            
+
             {/* Scroll Progress Bar */}
             <motion.div
               className="scroll-progress-bar"
               style={{ scaleX: scrollYProgress }}
             />
 
-          <main className="main-content">
-            <AnimatePresence mode="wait">
-              <Suspense fallback={
-                <div className="loading-fallback">
-                  <div className="loader-orbit">
-                    <div className="loader-planet"></div>
+            <main className="main-content">
+              <AnimatePresence mode="wait">
+                <Suspense fallback={
+                  <div className="loading-fallback">
+                    <div className="loader-orbit">
+                      <div className="loader-planet"></div>
+                    </div>
+                    <p>Preparing Freshness...</p>
                   </div>
-                  <p>Preparing Freshness...</p>
-                </div>
-              }>
-                <Routes location={location} key={location.pathname}>
-                  <Route path="/" element={<Navigate to="/home" replace />} />
-                  <Route path="/home" element={<Home />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/ourstory" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/testimonials" element={<Home />} />
-                  <Route path="/orders" element={<Orders />} />
-                  
-                  {/* Admin Routes */}
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin" element={<AdminLayout />}>
-                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                    <Route path="dashboard" element={<AdminDashboard />} />
-                    <Route path="menu" element={<AdminProducts />} />
-                    <Route path="products" element={<AdminProducts />} />
-                    <Route path="categories" element={<AdminCategories />} />
-                    <Route path="orders" element={<AdminOrders />} />
-                    <Route path="pos" element={<AdminPOS />} />
-                    <Route path="inventory" element={<AdminInventory />} />
-                    <Route path="subscriptions" element={<AdminSubscriptions />} />
-                    <Route path="customers" element={<AdminCustomers />} />
-                    <Route path="analytics" element={<AdminAnalytics />} />
-                    <Route path="enquiries" element={<AdminEnquiries />} />
-                    <Route path="testimonials" element={<AdminTestimonials />} />
-                    <Route path="settings" element={<AdminSettings />} />
-                  </Route>
+                }>
+                  <Routes location={location} key={location.pathname}>
+                    <Route 
+                      path="/" 
+                      element={
+                        location.search.includes('table=') 
+                          ? <Navigate to={`/products${location.search}`} replace /> 
+                          : <Navigate to="/home" replace />
+                      } 
+                    />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/menu" element={<Navigate to="/products" replace />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/ourstory" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/testimonials" element={<Home />} />
+                    <Route path="/orders" element={<Orders />} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
 
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </AnimatePresence>
-          </main>
-          
-          {!isAdminRoute && <Footer />}
-        </SmoothScroll>
-      </div>
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                      <Route path="dashboard" element={<AdminDashboard />} />
+                      <Route path="menu" element={<AdminProducts />} />
+                      <Route path="products" element={<AdminProducts />} />
+                      <Route path="addons" element={<AdminAddons />} />
+                      <Route path="categories" element={<AdminCategories />} />
+                      <Route path="orders" element={<AdminOrders />} />
+                      <Route path="inventory" element={<AdminInventory />} />
+                      <Route path="subscriptions" element={<AdminSubscriptions />} />
+                      <Route path="customers" element={<AdminCustomers />} />
+                      <Route path="analytics" element={<AdminAnalytics />} />
+                      <Route path="enquiries" element={<AdminEnquiries />} />
+                      <Route path="testimonials" element={<AdminTestimonials />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                      <Route path="kitchen" element={<AdminKitchen />} />
+                    </Route>
+
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </AnimatePresence>
+            </main>
+
+            {!isAdminRoute && <Footer />}
+          </SmoothScroll>
+        </div>
       </CartProvider>
     </ErrorBoundary>
   );

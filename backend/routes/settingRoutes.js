@@ -20,14 +20,14 @@ router.put('/', async (req, res) => {
   try {
     let settings = await Settings.findOne();
     if (!settings) {
-      settings = new Settings(req.body);
-      await settings.save();
+      settings = await Settings.create(req.body);
     } else {
-      settings.storeName = req.body.storeName || settings.storeName;
-      settings.whatsappNumber = req.body.whatsappNumber || settings.whatsappNumber;
-      settings.openingHours = req.body.openingHours || settings.openingHours;
-      settings.currency = req.body.currency || settings.currency;
-      await settings.save();
+      await settings.update({
+        storeName: req.body.storeName || settings.storeName,
+        whatsappNumber: req.body.whatsappNumber || settings.whatsappNumber,
+        openingHours: req.body.openingHours || settings.openingHours,
+        currency: req.body.currency || settings.currency
+      });
     }
     res.json(settings);
   } catch (err) {

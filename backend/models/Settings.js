@@ -1,24 +1,25 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const settingsSchema = new mongoose.Schema({
+const Settings = sequelize.define('Settings', {
   storeName: {
-    type: String,
-    required: true,
-    default: 'Cream Dream'
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'Cream Dream'
   },
   whatsappNumber: {
-    type: String,
-    required: true,
-    default: '919014002314'
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: '919014002314'
   },
   openingHours: {
-    type: String,
-    default: '10:00 AM - 11:00 PM'
+    type: DataTypes.STRING,
+    defaultValue: '10:00 AM - 11:00 PM'
   },
   currency: {
-    type: String,
-    default: '₹'
+    type: DataTypes.STRING,
+    defaultValue: '₹'
   }
 });
 
-module.exports = mongoose.model('Settings', settingsSchema);
+module.exports = Settings;

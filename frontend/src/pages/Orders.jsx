@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Send, CheckCircle2, ChevronLeft, ChevronRight, 
-  Plus, Minus, Trash2, Copy, MessageSquare, Phone 
+  Send, CheckCircle2, ChevronLeft,
+  Plus, Minus, Trash2, Copy, Star
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
-
+import { io } from 'socket.io-client';
 import './Orders.css';
 
 export default function Orders() {
@@ -23,9 +22,12 @@ export default function Orders() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [rated, setRated] = useState(false);
   
-  // TODO: Replace with actual user context when authentication is implemented
-  const user = null;
+  const tableNumber = localStorage.getItem('dream_cream_table');
+  const isDineIn = !!tableNumber;
   
   const [formData, setFormData] = useState({
     name: '',
@@ -33,8 +35,9 @@ export default function Orders() {
     address: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [deliveryOption, setDeliveryOption] = useState(isDineIn ? 'dinein' : 'pickup');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const saved = localStorage.getItem('dream_cream_billing_details');
     if (saved) {
       try {
@@ -42,94 +45,97 @@ export default function Orders() {
         setFormData(prev => ({
           ...prev,
           name: parsed.name || prev.name,
-          email: parsed.email || prev.email,
           phone: parsed.phone || prev.phone,
           address: parsed.address || prev.address
         }));
       } catch (e) {
         console.error("Failed to parse billing details", e);
       }
-    } else if (user) {
-      setFormData(prev => ({
-        ...prev,
-        name: user.displayName || '',
-        email: user.email || ''
-      }));
     }
-  }, [user]);
+  }, []);
+
+  // Socket.io for live tracking
+  useEffect(() => {
+    if (submitted && lastOrder) {
+      const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+      setSocket(newSocket);
+
+      newSocket.on('order-updated', (updatedOrder) => {
+        if (updatedOrder.id === lastOrder.id || updatedOrder._id === lastOrder._id || updatedOrder.id === lastOrder._id) {
+          setLastOrder(updatedOrder);
+        }
+      });
+
+      return () => newSocket.close();
+    }
+  }, [submitted, lastOrder?.id, lastOrder?._id]);
 
   const handleInputChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Fallback: If cart is empty and not just submitted, redirect back to flavors
-  if (cartItems.length === 0 && !submitted) {
-    return (
-      <div className="orders-page flex flex-col items-center justify-center p-20 text-center">
-        <h2 className="text-3xl font-bold mb-4">Your Cart is Empty</h2>
-        <p className="opacity-70 mb-8">You haven't added any magic to your order yet.</p>
-        <Link to="/products" className="btn-primary">Explore Flavors</Link>
-      </div>
-    );
-  }
+  const TAX_RATE = 0.05; // 5% GST
+  const GST_AMOUNT = cartTotalPrice * TAX_RATE;
+  const DELIVERY_FEE = deliveryOption === 'delivery' ? 35 : 0;
+  const PLATFORM_FEE = deliveryOption === 'delivery' ? 5 : 0;
+  const RESTAURANT_CHARGES = 15;
+  
+  const finalTotal = cartTotalPrice + GST_AMOUNT + DELIVERY_FEE + PLATFORM_FEE + RESTAURANT_CHARGES;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Save billing details for future
-    const billingDetails = {
-      name: e.target.name.value,
-      email: e.target.email.value,
-      phone: e.target.phone.value,
-      address: e.target.address.value,
-    };
-    localStorage.setItem('dream_cream_billing_details', JSON.stringify(billingDetails));
+    let finalAddress = 'Dine-In';
+    let finalDeliveryType = 'Dine-In';
 
-    // Capture order data from form
+    if (deliveryOption === 'dinein') {
+      finalDeliveryType = 'Dine-In';
+      finalAddress = `Dine-In (Table ${tableNumber})`;
+    } else if (deliveryOption === 'parcel') {
+      finalDeliveryType = 'Parcel';
+      finalAddress = isDineIn ? `Takeaway/Parcel (Table ${tableNumber})` : 'Store Pickup (Parcel)';
+    } else if (deliveryOption === 'pickup') {
+      finalDeliveryType = 'Parcel';
+      finalAddress = 'Store Pickup (Parcel)';
+    } else if (deliveryOption === 'delivery') {
+      finalDeliveryType = 'Delivery';
+      finalAddress = formData.address;
+    }
+
+    if (deliveryOption === 'delivery') {
+      const billingDetails = {
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+      };
+      localStorage.setItem('dream_cream_billing_details', JSON.stringify(billingDetails));
+    }
+
     const orderData = {
-      customerName: billingDetails.name,
-      customerEmail: billingDetails.email,
-      phone: billingDetails.phone,
-      address: billingDetails.address,
-      deliveryType: e.target.type.value,
-      deliveryTime: e.target.datetime.value,
-      items: cartItems.map(item => {
-        let numericPrice = 0;
-        if (typeof item.price === 'string') {
-          numericPrice = parseFloat(item.price.replace(/[^\d.]/g, ''));
-        } else if (typeof item.price === 'number') {
-          numericPrice = item.price;
-        }
-        return {
-          name: item.name,
-          quantity: item.quantity,
-          price: numericPrice
-        };
-      }),
+      customerName: formData.name || 'Guest',
+      phone: formData.phone || 'N/A',
+      address: finalAddress,
+      tableNumber: tableNumber || null,
+      deliveryType: finalDeliveryType,
+      items: cartItems.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: typeof item.price === 'string' ? parseFloat(item.price.replace(/[^\d.]/g, '')) : item.price
+      })),
       totalAmount: finalTotal,
-      paymentMethod: paymentMethod
+      paymentMethod: paymentMethod,
+      status: 'Order Placed'
     };
 
     setLoading(true);
 
     try {
-      // Import the addOrder function dynamically or at the top
-      // Wait, we can just import at the top of the file
-      // I will add the imports at the top
       const { addOrder } = await import('../data/orderStore.js');
-      const savedOrder = addOrder(orderData);
+      const savedOrder = await addOrder(orderData);
       
       setLastOrder(savedOrder);
-      
-      // Simulation delay for UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setSubmitted(true);
       clearCart();
-      
-      // Auto-open WhatsApp link
-      const waLink = await generateWhatsAppLink(savedOrder);
-      window.open(waLink, '_blank');
-
     } catch (err) {
       console.error("Order processing failed:", err);
       alert("Order processing failed. Please try again.");
@@ -138,51 +144,24 @@ export default function Orders() {
     }
   };
 
-  const TAX_RATE = 0.05; // 5% GST
-  const GST_AMOUNT = cartTotalPrice * TAX_RATE;
-  const DELIVERY_FEE = 35;
-  const PLATFORM_FEE = 5;
-  const RESTAURANT_CHARGES = 15;
-  
-  const finalTotal = cartTotalPrice + GST_AMOUNT + DELIVERY_FEE + PLATFORM_FEE + RESTAURANT_CHARGES;
+  if (cartItems.length === 0 && !submitted) {
+    return (
+      <div className="orders-page flex-center p-20 text-center">
+        <h2 className="text-3xl font-bold mb-4">Your Cart is Empty</h2>
+        <p className="opacity-70 mb-8">You haven't added any magic to your order yet.</p>
+        <Link to="/products" className="btn-primary">Explore Flavors</Link>
+      </div>
+    );
+  }
 
-  const generateWhatsAppLink = async (order) => {
-    if (!order) return '#';
-    const { getSettings } = await import('../data/settingsStore.js');
-    const settings = await getSettings();
-    const BUSINESS_PHONE = settings.whatsappNumber || "919014002314"; // Fallback
+  const getStepClass = (stepName) => {
+    if (!lastOrder) return '';
+    const s = lastOrder.status;
+    const orderIndex = ['Order Placed', 'Waiting Approval', 'Preparing', 'Served', 'Paid'].indexOf(s);
+    const stepIndex = ['Order Placed', 'Waiting Approval', 'Preparing', 'Served', 'Paid'].indexOf(stepName);
     
-    const itemsText = order.items.map(i => `• ${i.name} x ${i.quantity}`).join('\n');
-    
-    const message = `🍦 *NEW CREAM DREAM ORDER* 🍦\n` +
-                    `--------------------------------\n` +
-                    `*Customer:* ${order.customerName}\n` +
-                    `*Phone Number:* ${order.phone}\n` +
-                    `*Type:* ${order.deliveryType?.toUpperCase() || 'PICKUP'}\n` +
-                    `*Address:* ${order.address || 'N/A'}\n\n` +
-                    `*ORDER DETAILS:*\n${itemsText}\n\n` +
-                    `*TOTAL PAYABLE:* ₹${order.totalAmount.toFixed(2)}\n` +
-                    `*PAYMENT:* ${order.paymentMethod?.toUpperCase() || 'COD'}\n` +
-                    `--------------------------------\n` +
-                    `Thanks for ordering in CREAM DREAM! 🍦✨`;
-    
-    return `https://wa.me/${BUSINESS_PHONE}?text=${encodeURIComponent(message)}`;
-  };
-
-  const generateSMSLink = (order) => {
-    if (!order) return '#';
-    // Simplified for SMS length limits
-    const itemsText = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
-    const message = `Cream Dream Order: Total ₹${order.total.toFixed(2)}. Items: ${itemsText}. Thank you!`;
-    return `sms:${order.customerPhone}?body=${encodeURIComponent(message)}`;
-  };
-
-  const copySlipToClipboard = (order) => {
-    if (!order) return;
-    const itemsText = order.items.map(i => `- ${i.name} x ${i.quantity}`).join('\n');
-    const text = `🍦 Cream Dream Order Slip 🍦\nCustomer: ${order.customerName}\nTotal: ₹${order.total.toFixed(2)}\nItems:\n${itemsText}`;
-    navigator.clipboard.writeText(text);
-    alert("Slip copied to clipboard!");
+    if (orderIndex >= stepIndex) return 'active';
+    return '';
   };
 
   if (submitted) {
@@ -197,79 +176,63 @@ export default function Orders() {
                 </div>
                 <div>
                   <h2 className="text-left">Order Confirmed</h2>
-                  <p className="text-left text-sm opacity-70">Your scoops are on the way!</p>
+                  <p className="text-left text-sm opacity-70">
+                    {isDineIn ? `Table ${tableNumber} - We're on it!` : 'Your scoops are on the way!'}
+                  </p>
                 </div>
               </div>
 
               <div className="live-tracker mt-8">
                 <div className="tracker-line"></div>
-                <div className="tracker-steps">
-                  <div className="tracker-step active">
+                <div className="tracker-steps" style={{ flexDirection: isDineIn ? 'column' : 'row', gap: '1rem' }}>
+                  <div className={`tracker-step ${getStepClass('Order Placed')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">Order Received</span>
+                    <span className="step-label">✔ Order Placed</span>
                   </div>
-                  <div className="tracker-step active animate-pulse-soft">
+                  <div className={`tracker-step ${getStepClass('Waiting Approval')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">Preparing Your Order</span>
+                    <span className="step-label">🟡 Waiting Approval</span>
                   </div>
-                  <div className="tracker-step">
+                  <div className={`tracker-step ${getStepClass('Preparing')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">Out for Delivery</span>
+                    <span className="step-label">🟡 Preparing</span>
                   </div>
-                  <div className="tracker-step">
+                  <div className={`tracker-step ${getStepClass('Served')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">Arrived</span>
+                    <span className="step-label">🟡 Served</span>
+                  </div>
+                  <div className={`tracker-step ${getStepClass('Paid')}`}>
+                    <div className="step-dot"></div>
+                    <span className="step-label">✔ Paid</span>
                   </div>
                 </div>
               </div>
 
-              <div className="delivery-partner-card mt-8">
-                <div className="partner-info">
-                  <div className="partner-avatar">🛵</div>
-                  <div className="partner-details">
-                    <p className="partner-name">Rahul is on his way</p>
-                    <p className="partner-sub">Your delivery partner</p>
+              {lastOrder?.status === 'Paid' && (
+                <div className="rating-section mt-8 text-center" style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px' }}>
+                  <h3 style={{ marginBottom: '1rem' }}>Rate your experience</h3>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star 
+                        key={star} 
+                        size={32} 
+                        color={star <= rating ? '#f59e0b' : '#475569'}
+                        fill={star <= rating ? '#f59e0b' : 'none'}
+                        style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                        onClick={() => { setRating(star); setRated(true); }}
+                      />
+                    ))}
                   </div>
+                  {rated && <p style={{ color: '#22c55e', fontWeight: 'bold' }}>Thank you for your feedback!</p>}
                 </div>
-                <div className="partner-actions">
-                  <button className="action-icn"><Phone size={18} /></button>
-                  <button className="action-icn"><MessageSquare size={18} /></button>
-                </div>
-              </div>
+              )}
               
-              <div className="whatsapp-slip-section mt-8">
-                <p className="text-xs font-bold opacity-50 mb-4 tracking-widest uppercase">Official Slip</p>
-                <div className="flex flex-col gap-3">
-                  <a href={generateWhatsAppLink(lastOrder)} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
-                    <Send size={18} /> WhatsApp Order Slip
-                  </a>
-                  <div className="flex gap-2">
-                    <button onClick={() => copySlipToClipboard(lastOrder)} className="btn-action-outline flex-1">
-                      <Copy size={16} /> Copy
-                    </button>
-                    <Link to="/products" onClick={() => setSubmitted(false)} className="btn-action-outline flex-1">
-                      Shop More
-                    </Link>
-                  </div>
-                </div>
+              <div className="mt-8 text-center">
+                <Link to="/products" onClick={() => {setSubmitted(false); setLastOrder(null);}} className="btn-primary">
+                  Order More
+                </Link>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (cartItems.length === 0) {
-    return (
-      <div className="orders-page fade-in">
-        <div className="container">
-          <div className="empty-cart-state text-center glass-panel">
-            <h2>Your Cart is Empty</h2>
-            <p className="mt-2 mb-4">Looks like you haven't selected any flavors yet!</p>
-            <Link to="/products" className="btn-primary">
-              <ChevronLeft size={20} className="mr-2" /> Explore Flavors
-            </Link>
           </div>
         </div>
       </div>
@@ -281,59 +244,44 @@ export default function Orders() {
       <div className="container checkout-container">
         <header className="page-header text-center checkout-header">
           <h1 className="page-title">Secure Checkout</h1>
-          <p className="page-subtitle">You're just a few steps away from your sweet escape.</p>
+          <p className="page-subtitle">
+            {isDineIn ? `Dine-In Order for Table ${tableNumber}` : "You're just a few steps away from your sweet escape."}
+          </p>
         </header>
 
         <div className="checkout-grid">
-          {/* Cart Summary Column */}
+          {/* Cart Summary */}
           <div className="cart-summary glass-panel">
             <h2 className="summary-title">Order Summary ({cartTotalItems} items)</h2>
-            
             <div className="cart-items-list">
               {cartItems.map((item) => (
                 <div key={item._id || item.id} className="cart-item">
-                  <img src={item.image} alt={item.name} className="cart-item-image" loading="lazy" style={{ filter: `hue-rotate(${item.hue || 0}deg)` }} />
                   <div className="cart-item-details">
                     <h3>{item.name}</h3>
                     <span className="cart-item-price">{item.price}</span>
                   </div>
                   <div className="cart-item-actions">
                     <div className="quantity-controls">
-                      <button type="button" onClick={() => removeFromCart(item._id || item.id)}>
-                        <Minus size={14} />
-                      </button>
+                      <button type="button" onClick={() => removeFromCart(item._id || item.id)}><Minus size={14} /></button>
                       <span>{item.quantity}</span>
-                      <button type="button" onClick={() => addToCart(item)}>
-                        <Plus size={14} />
-                      </button>
+                      <button type="button" onClick={() => addToCart(item)}><Plus size={14} /></button>
                     </div>
-                    <button 
-                      type="button" 
-                      className="remove-btn" 
-                      onClick={() => clearItemFromCart(item._id || item.id)}
-                      aria-label="Remove item"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="cart-totals bill-details">
-              <h3 className="bill-title">Bill Details</h3>
               <div className="bill-row">
                 <span>Item Total</span>
                 <span>₹{cartTotalPrice.toFixed(2)}</span>
               </div>
-              <div className="bill-row">
-                <span>Delivery Partner Fee</span>
-                <span>₹{DELIVERY_FEE.toFixed(2)}</span>
-              </div>
-              <div className="bill-row">
-                <span>Platform Fee</span>
-                <span>₹{PLATFORM_FEE.toFixed(2)}</span>
-              </div>
+              {!isDineIn && (
+                <>
+                  <div className="bill-row"><span>Delivery Partner Fee</span><span>₹{DELIVERY_FEE.toFixed(2)}</span></div>
+                  <div className="bill-row"><span>Platform Fee</span><span>₹{PLATFORM_FEE.toFixed(2)}</span></div>
+                </>
+              )}
               <div className="bill-row">
                 <span>GST & Restaurant Charges</span>
                 <span>₹{(GST_AMOUNT + RESTAURANT_CHARGES).toFixed(2)}</span>
@@ -346,48 +294,78 @@ export default function Orders() {
             </div>
           </div>
 
-          {/* Checkout Form Column */}
+          {/* Checkout Form */}
           <div className="glass-panel order-form-card">
-            <h2 className="form-title">Billing & Delivery</h2>
+            <h2 className="form-title">Details</h2>
             <form onSubmit={handleSubmit} className="custom-form">
               <div className="form-row">
                 <div className="input-group">
-                  <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder=" " />
-                  <label htmlFor="name">Full Name</label>
+                  <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required={!isDineIn} placeholder=" " />
+                  <label htmlFor="name">Full Name {isDineIn && '(Optional)'}</label>
                 </div>
                 <div className="input-group">
-                  <input type="email" id="email" name="email" value={formData.email} onChange={handleInputChange} required placeholder=" " />
-                  <label htmlFor="email">Email Address</label>
+                  <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} required={!isDineIn} placeholder=" " />
+                  <label htmlFor="phone">Phone Number {isDineIn && '(Optional)'}</label>
                 </div>
               </div>
 
-              <div className="input-group">
-                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} required placeholder=" " />
-                <label htmlFor="phone">Phone Number</label>
-              </div>
-
-              <div className="form-section-divider">Delivery Options</div>
-
-              <div className="form-row">
-                <div className="input-group">
-                  <select id="type" name="type" required defaultValue="pickup">
-                    <option value="pickup">Store Pickup (Free)</option>
-                    <option value="delivery">Local Delivery (₹50)</option>
-                  </select>
-                </div>
-                <div className="input-group">
-                  <input type="datetime-local" id="datetime" name="datetime" required className="filled" />
-                  <label htmlFor="datetime" className="always-float">Time</label>
-                </div>
-              </div>
-              
-              <div className="input-group">
-                <textarea id="address" name="address" rows="2" value={formData.address} onChange={handleInputChange} placeholder=" "></textarea>
-                <label htmlFor="address">Delivery / Billing Address</label>
-              </div>
+              {isDineIn ? (
+                <>
+                  <div className="form-section-divider">How will you enjoy your order?</div>
+                  <div className="payment-methods" style={{ marginBottom: '1rem' }}>
+                    <label className={`payment-option ${deliveryOption === 'dinein' ? 'selected' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="deliveryOption" 
+                        value="dinein" 
+                        checked={deliveryOption === 'dinein'}
+                        onChange={() => setDeliveryOption('dinein')}
+                      />
+                      <div className="payment-details">
+                        <span className="payment-name">Eat Here (Dine-In)</span>
+                        <span className="payment-desc">We will serve it fresh at Table {tableNumber}</span>
+                      </div>
+                    </label>
+                    <label className={`payment-option ${deliveryOption === 'parcel' ? 'selected' : ''}`}>
+                      <input 
+                        type="radio" 
+                        name="deliveryOption" 
+                        value="parcel" 
+                        checked={deliveryOption === 'parcel'}
+                        onChange={() => setDeliveryOption('parcel')}
+                      />
+                      <div className="payment-details">
+                        <span className="payment-name">Takeaway (Parcel)</span>
+                        <span className="payment-desc">We will pack it nicely for you to carry</span>
+                      </div>
+                    </label>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="form-section-divider">Delivery Options</div>
+                  <div className="input-group">
+                    <select 
+                      id="type" 
+                      name="type" 
+                      required 
+                      value={deliveryOption === 'delivery' ? 'delivery' : 'pickup'} 
+                      onChange={(e) => setDeliveryOption(e.target.value)}
+                    >
+                      <option value="pickup">Store Pickup (Parcel) (Free)</option>
+                      <option value="delivery">Local Delivery (₹35)</option>
+                    </select>
+                  </div>
+                  {deliveryOption === 'delivery' && (
+                    <div className="input-group">
+                      <textarea id="address" name="address" rows="2" value={formData.address} onChange={handleInputChange} placeholder=" " required></textarea>
+                      <label htmlFor="address">Delivery / Billing Address</label>
+                    </div>
+                  )}
+                </>
+              )}
 
               <div className="form-section-divider">Payment Method</div>
-              
               <div className="payment-methods">
                 <label className={`payment-option ${paymentMethod === 'cod' ? 'selected' : ''}`}>
                   <input 
@@ -398,15 +376,27 @@ export default function Orders() {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                   />
                   <div className="payment-details">
-                    <span className="payment-name">Cash on Delivery</span>
-                    <span className="payment-desc">Pay with cash or card at the door/counter.</span>
+                    <span className="payment-name">{isDineIn ? 'Pay Later (Cash/Card)' : 'Cash on Delivery'}</span>
                   </div>
-                  <div className="radio-circle"></div>
                 </label>
+                {isDineIn && (
+                  <label className={`payment-option ${paymentMethod === 'online' ? 'selected' : ''}`}>
+                    <input 
+                      type="radio" 
+                      name="payment" 
+                      value="online" 
+                      checked={paymentMethod === 'online'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <div className="payment-details">
+                      <span className="payment-name">Pay Now (Online)</span>
+                    </div>
+                  </label>
+                )}
               </div>
 
-              <button type="submit" className="btn-primary submit-btn">
-                Confirm Order - ₹{finalTotal.toFixed(2)} <Send size={18} />
+              <button type="submit" className="btn-primary submit-btn mt-4" disabled={loading}>
+                {loading ? 'Processing...' : `Place Order - ₹${finalTotal.toFixed(2)}`} <Send size={18} />
               </button>
             </form>
           </div>

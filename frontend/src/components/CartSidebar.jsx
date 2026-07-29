@@ -36,7 +36,7 @@ export default function CartSidebar({ isOpen, onClose }) {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           >
             <div className="cart-header">
-              <h2>Your Cart ({cartTotalItems})</h2>
+              <h2>Your Parcel ({cartTotalItems})</h2>
               <button className="close-cart-btn" onClick={onClose}>
                 <X size={24} />
               </button>
@@ -45,8 +45,8 @@ export default function CartSidebar({ isOpen, onClose }) {
             <div className="cart-content">
               {cartItems.length === 0 ? (
                 <div className="empty-cart flex-center">
-                  <p>Your cart is empty.</p>
-                  <button className="btn-secondary mt-4" onClick={onClose}>Continue Shopping</button>
+                  <p>Your parcel is empty.</p>
+                  <button className="btn-secondary mt-4" onClick={onClose}>Continue Exploring</button>
                 </div>
               ) : (
                 <div className="cart-items-list">

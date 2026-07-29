@@ -203,38 +203,31 @@ export default function Home() {
             <div className="section-header-accent"></div>
           </motion.div>
           
-          <motion.div className="bento-grid">
+          <motion.div className="flavors-grid">
             {section.items.map((flavor, i) => (
               <motion.div 
                 key={flavor._id || flavor.id}
-                className="bento-item"
-                whileHover={getCategoryInteraction(flavor.category).whileHover}
-                whileTap={getCategoryInteraction(flavor.category).whileTap}
+                className={`flavor-card premium-card ${flavor.category === 'Specialty' ? 'specialty' : ''}`}
+                whileHover={{ y: -6, transition: { duration: 0.25, ease: 'easeOut' } }}
+                whileTap={{ scale: 0.97 }}
               >
-                <Tilt 
-                  tiltMaxAngleX={getCategoryInteraction(flavor.category).tiltMaxAngleX} 
-                  tiltMaxAngleY={getCategoryInteraction(flavor.category).tiltMaxAngleY} 
-                  scale={getCategoryInteraction(flavor.category).scale} 
-                  transitionSpeed={getCategoryInteraction(flavor.category).transitionSpeed}
-                  className={`flavor-card glass-panel luxury-bento-card ${getCategoryInteraction(flavor.category).className}`}
-                >
-                  <div className="flavor-image-container">
-                    <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="eager" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)`, mixBlendMode: 'multiply' }} />
-                    <span className="flavor-tag premium-tag">{flavor.tag}</span>
-                  </div>
-                  <div className="flavor-info">
-                    <h3>{flavor.name}</h3>
-                    <div className="flavor-meta-bottom">
-                      <div className="flavor-rating">
-                        <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
-                        <span>(120+ Reviews)</span>
-                      </div>
-                      <Link to="/products" className="bento-explore-btn">
-                        <ArrowRight size={18} />
-                      </Link>
+                <div className="flavor-image-container">
+                  <img src={flavor.image} alt={flavor.name} className="flavor-img" loading="eager" style={{ filter: `hue-rotate(${flavor.hue || 0}deg)` }} />
+                  <div className="flavor-img-overlay" />
+                  <span className="flavor-tag premium-tag">{flavor.tag}</span>
+                </div>
+                <div className="flavor-info">
+                  <h3>{flavor.name}</h3>
+                  <div className="flavor-meta-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                    <div className="flavor-rating" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Star size={16} fill="var(--color-accent)" color="var(--color-accent)" />
+                      <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>(120+ Reviews)</span>
                     </div>
+                    <Link to="/products" className="btn-primary" style={{ padding: '0.6rem 1rem', borderRadius: '50px', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                      Order <ArrowRight size={14} />
+                    </Link>
                   </div>
-                </Tilt>
+                </div>
               </motion.div>
             ))}
           </motion.div>

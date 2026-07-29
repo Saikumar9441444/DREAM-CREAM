@@ -1,32 +1,46 @@
-const API_URL = 'http://localhost:5000/api/orders';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${BASE_URL}/api/orders`;
+
+// Local fallback data
+let localOrders = [];
+
+let useLocal = false;
 
 export const getOrders = async () => {
+  if (useLocal) return [...localOrders];
+
   try {
     const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Failed to fetch orders');
-    return await response.json();
+    if (!response.ok) throw new Error('API failed');
+    const data = await response.json();
+    if (data.length === 0) return [];
+    return data;
   } catch (error) {
-    console.error(error);
-    return [];
+    console.warn('Backend unavailable, using local orders:', error.message);
+    useLocal = true;
+    return [...localOrders];
   }
 };
 
 export const addOrder = async (orderData) => {
+  const newOrder = {
+    ...orderData,
+    id: orderData.id || `ORD-${Math.floor(Math.random() * 100000)}`,
+    timestamp: new Date().toISOString()
+  };
+
   try {
-    // Generate a quick ID on frontend for optimistic UI if needed, but backend will handle real ID
-    const newOrder = {
-      ...orderData,
-      id: `ORD-${Math.floor(Math.random() * 100000)}`
-    };
-    
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newOrder)
     });
-    return await response.json();
+    if (response.ok) return await response.json();
+    throw new Error('API failed');
   } catch (error) {
-    console.error(error);
+    console.warn('Backend add failed, using local store:', error.message);
+    localOrders = [newOrder, ...localOrders];
+    return newOrder;
   }
 };
 
@@ -37,24 +51,27 @@ export const updateOrderStatus = async (id, newStatus) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus })
     });
-    return await response.json();
+    if (response.ok) return await response.json();
+    throw new Error('API failed');
   } catch (error) {
-    console.error(error);
+    console.warn('Backend update failed, using local store:', error.message);
+    localOrders = localOrders.map(o => o.id === id ? { ...o, status: newStatus } : o);
+    return localOrders.find(o => o.id === id);
   }
 };
 
 export const simulateNewOrder = async () => {
-  // Mock order for demo purposes
   const orderData = {
-    customerName: "Alex " + Math.floor(Math.random() * 100),
-    phone: "555-010" + Math.floor(Math.random() * 9),
-    address: "123 Main St",
-    deliveryType: "delivery",
+    customerName: 'Demo Customer ' + Math.floor(Math.random() * 100),
+    phone: '555-010' + Math.floor(Math.random() * 9),
+    address: '123 Test St',
+    deliveryType: 'delivery',
     items: [
-      { name: "Classic Vanilla Bean", quantity: 2, price: 120 }
+      { name: 'Classic Vanilla Bean', quantity: 2, price: 120 }
     ],
     totalAmount: 240,
-    paymentMethod: "UPI"
+    paymentMethod: 'UPI',
+    status: 'new'
   };
   return await addOrder(orderData);
 };
