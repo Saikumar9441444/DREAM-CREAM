@@ -7,6 +7,8 @@ const user = process.env.DB_USER || 'root';
 const password = process.env.DB_PASSWORD || '';
 const database = process.env.DB_NAME || 'creamdream';
 
+const isLocal = host === '127.0.0.1' || host === 'localhost';
+
 const sequelize = new Sequelize(
   database,
   user,
@@ -16,6 +18,11 @@ const sequelize = new Sequelize(
     port,
     dialect: 'mysql',
     logging: false,
+    dialectOptions: isLocal ? {} : {
+      ssl: {
+        rejectUnauthorized: false
+      }
+    },
     pool: {
       max: 5,
       min: 0,
@@ -27,8 +34,14 @@ const sequelize = new Sequelize(
 
 const connectDB = async () => {
   try {
-    // Auto-create database if it doesn't exist
-    const connection = await mysql.createConnection({ host, port, user, password });
+    // Auto-create database if it doesn't exist (with conditional SSL for Aiven)
+    const connectionOptions = { host, port, user, password };
+    if (!isLocal) {
+      connectionOptions.ssl = {
+        rejectUnauthorized: false
+      };
+    }
+    const connection = await mysql.createConnection(connectionOptions);
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\`;`);
     await connection.end();
     console.log(`Database '${database}' verified/created successfully.`);
@@ -42,3 +55,4 @@ const connectDB = async () => {
 };
 
 module.exports = { sequelize, connectDB };
+
