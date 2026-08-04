@@ -124,29 +124,28 @@ export default function Products() {
   const { addToCart } = useCart();
 
   const [selectedInstantProduct, setSelectedInstantProduct] = useState(null);
-  const [instantTableNumber, setInstantTableNumber] = useState(localStorage.getItem('dream_cream_table') || '');
+  const [instantCustomerName, setInstantCustomerName] = useState('');
+  const [instantTableNumber, setInstantTableNumber] = useState(localStorage.getItem('dream_cream_table') || '1');
   const [instantOrderSuccess, setInstantOrderSuccess] = useState(false);
   const [instantOrderLoading, setInstantOrderLoading] = useState(false);
 
   const handleOpenInstantOrder = useCallback((product) => {
     setSelectedInstantProduct(product);
+    setInstantCustomerName('');
     setInstantOrderSuccess(false);
     setInstantOrderLoading(false);
     
     // Refresh table number from storage in case it changed
-    const currentTable = localStorage.getItem('dream_cream_table') || '';
+    const currentTable = localStorage.getItem('dream_cream_table') || '1';
     setInstantTableNumber(currentTable);
   }, []);
 
   const handleConfirmInstantOrder = async (e) => {
     e.preventDefault();
     if (!selectedInstantProduct) return;
-    if (!instantTableNumber.trim()) return;
+    if (!instantCustomerName.trim()) return;
 
     setInstantOrderLoading(true);
-
-    // Save table number to local storage
-    localStorage.setItem('dream_cream_table', instantTableNumber.trim());
 
     // Calculate dynamic totals matching the order summary formula:
     // price + 5% GST + restaurant charges (₹15)
@@ -159,7 +158,7 @@ export default function Products() {
     const finalTotal = rawPrice + gst + charges;
 
     const orderData = {
-      customerName: 'Dine-In Guest',
+      customerName: instantCustomerName.trim(),
       phone: 'N/A',
       address: `Dine-In (Table ${instantTableNumber.trim()})`,
       tableNumber: instantTableNumber.trim(),
@@ -375,14 +374,14 @@ export default function Products() {
                   <div className="input-group">
                     <input 
                       type="text" 
-                      id="modalTableNumber" 
-                      value={instantTableNumber} 
-                      onChange={(e) => setInstantTableNumber(e.target.value)} 
+                      id="modalCustomerName" 
+                      value={instantCustomerName} 
+                      onChange={(e) => setInstantCustomerName(e.target.value)} 
                       required 
                       placeholder=" " 
                       disabled={instantOrderLoading}
                     />
-                    <label htmlFor="modalTableNumber">Table Number</label>
+                    <label htmlFor="modalCustomerName">Your Name</label>
                   </div>
 
                   <div className="modal-price-breakdown" style={{ background: '#f8fafc', padding: '1rem', borderRadius: '1rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
