@@ -8,6 +8,7 @@ import { getProducts } from '../data/productStore';
 import { getCategories } from '../data/categoryStore';
 import SpotlightSearch from '../components/SpotlightSearch';
 import ProductShowcaseSlider from '../components/ProductShowcaseSlider';
+import { BACKEND_URL } from '../utils/apiConfig';
 import './Products.css';
 
 // 1. MEMOIZED FLAVOR CARD
@@ -174,7 +175,7 @@ export default function Products() {
     };
 
     try {
-      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const socketUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
       const res = await fetch(`${socketUrl}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

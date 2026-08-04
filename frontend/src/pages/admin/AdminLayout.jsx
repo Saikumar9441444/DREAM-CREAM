@@ -3,6 +3,7 @@ import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-do
 import { LayoutDashboard, Package, Tags, ShoppingCart, Settings, LogOut, Menu, Users, BarChart2, MessageSquare, Star, Archive, Repeat, ClipboardList, Zap, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
+import { BACKEND_URL } from '../../utils/apiConfig';
 import './Admin.css';
 
 const AdminSkeleton = () => (
@@ -40,7 +41,7 @@ export default function AdminLayout() {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const socketUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
       const socketConn = io(socketUrl);
 
       socketConn.on('new-order', (order) => {
@@ -64,7 +65,7 @@ export default function AdminLayout() {
   const handleApprove = async () => {
     if (!pendingApprovalOrder) return;
     try {
-      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const socketUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
       const res = await fetch(`${socketUrl}/api/orders/${pendingApprovalOrder.id || pendingApprovalOrder._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +82,7 @@ export default function AdminLayout() {
   const handleReject = async () => {
     if (!pendingApprovalOrder) return;
     try {
-      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const socketUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
       const res = await fetch(`${socketUrl}/api/orders/${pendingApprovalOrder.id || pendingApprovalOrder._id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

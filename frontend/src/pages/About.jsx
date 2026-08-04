@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, Phone, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubscriptions } from '../data/subscriptionStore';
+import { BACKEND_URL } from '../utils/apiConfig';
 import './About.css';
 
 export default function About() {
@@ -53,7 +54,7 @@ export default function About() {
     };
 
     try {
-      const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const socketUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
       const res = await fetch(`${socketUrl}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
