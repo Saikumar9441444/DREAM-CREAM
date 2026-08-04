@@ -147,21 +147,20 @@ export default function Products() {
 
     setInstantOrderLoading(true);
 
-    // Calculate dynamic totals matching the order summary formula:
-    // price + 5% GST + restaurant charges (₹15)
     const rawPrice = typeof selectedInstantProduct.price === 'string'
       ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, ''))
       : selectedInstantProduct.price;
 
     const gst = rawPrice * 0.05;
     const charges = 15;
-    const finalTotal = rawPrice + gst + charges;
+    const finalTotal = Math.round(rawPrice + gst + charges);
+    const tableNum = (instantTableNumber || '1').trim();
 
     const orderData = {
       customerName: instantCustomerName.trim(),
       phone: 'N/A',
-      address: `Dine-In (Table ${instantTableNumber.trim()})`,
-      tableNumber: instantTableNumber.trim(),
+      address: `Dine-In (Table ${tableNum})`,
+      tableNumber: tableNum,
       deliveryType: 'Dine-In',
       items: [{
         name: selectedInstantProduct.name,
@@ -365,23 +364,44 @@ export default function Products() {
                   <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>Waiting for manager approval...</p>
                 </div>
               ) : (
-                <form onSubmit={handleConfirmInstantOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: '#1e293b' }}>Dine-In Instant Order</h3>
+                <form onSubmit={handleConfirmInstantOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: '#1e293b' }}>Dine-In Instant Order</h3>
                   <p style={{ margin: 0, color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
                     You are ordering <strong>{selectedInstantProduct.name}</strong> instantly to your table.
                   </p>
                   
-                  <div className="input-group">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                    <label htmlFor="modalCustomerName" style={{ fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>Please enter your Name to place order:</label>
                     <input 
                       type="text" 
                       id="modalCustomerName" 
                       value={instantCustomerName} 
                       onChange={(e) => setInstantCustomerName(e.target.value)} 
                       required 
-                      placeholder=" " 
+                      placeholder="Enter Full Name" 
                       disabled={instantOrderLoading}
+                      style={{
+                        width: '100%',
+                        maxWidth: '320px',
+                        padding: '0.85rem 1rem',
+                        fontSize: '1.1rem',
+                        textAlign: 'center',
+                        borderRadius: '12px',
+                        border: '2px solid #cbd5e1',
+                        background: '#f8fafc',
+                        outline: 'none',
+                        transition: 'all 0.2s',
+                        fontWeight: '600'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--color-primary)';
+                        e.target.style.boxShadow = '0 0 0 4px rgba(255, 74, 121, 0.15)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = '#cbd5e1';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
-                    <label htmlFor="modalCustomerName">Your Name</label>
                   </div>
 
                   <div className="modal-price-breakdown" style={{ background: '#f8fafc', padding: '1rem', borderRadius: '1rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

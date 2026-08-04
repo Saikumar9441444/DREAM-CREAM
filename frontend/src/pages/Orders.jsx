@@ -196,7 +196,7 @@ export default function Orders() {
         quantity: item.quantity,
         price: typeof item.price === 'string' ? parseFloat(item.price.replace(/[^\d.]/g, '')) : item.price
       })),
-      totalAmount: finalTotal,
+      totalAmount: Math.round(finalTotal),
       paymentMethod: paymentMethod,
       status: 'Order Placed'
     };
