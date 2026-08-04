@@ -3,8 +3,8 @@ const router = express.Router();
 const Order = require('../models/Order');
 
 // ─── WhatsApp Notification via CallMeBot (free) ───────────────────────────────
-const sendWhatsAppAlert = async (message) => {
-  const phone = process.env.WHATSAPP_PHONE || '919014002314';
+const sendWhatsAppAlert = async (message, targetPhone = null) => {
+  let phone = targetPhone || process.env.WHATSAPP_PHONE || '919014002314';
   const apiKey = process.env.WHATSAPP_API_KEY;
 
   if (!apiKey) {
@@ -12,17 +12,24 @@ const sendWhatsAppAlert = async (message) => {
     return;
   }
 
+  // Auto-format phone: If 10 digits, prepend 91 (India country code)
+  if (phone && phone.replace(/\D/g, '').length === 10) {
+    phone = '91' + phone.replace(/\D/g, '');
+  } else if (phone) {
+    phone = phone.replace(/\D/g, ''); // strip any + or spaces
+  }
+
   try {
     const encoded = encodeURIComponent(message);
     const url = `https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${encoded}&apikey=${apiKey}`;
     const response = await fetch(url);
     if (response.ok) {
-      console.log('[WhatsApp] Notification sent successfully.');
+      console.log(`[WhatsApp] Notification sent to ${phone} successfully.`);
     } else {
-      console.warn('[WhatsApp] Failed to send. Status:', response.status);
+      console.warn(`[WhatsApp] Failed to send to ${phone}. Status:`, response.status);
     }
   } catch (err) {
-    console.warn('[WhatsApp] Error sending notification:', err.message);
+    console.warn(`[WhatsApp] Error sending notification to ${phone}:`, err.message);
   }
 };
 
@@ -100,6 +107,36 @@ router.put('/:id/approve', async (req, res) => {
       io.emit('order-updated', order);
     }
 
+    // Send customer WhatsApp confirmation alert
+    if (order.phone && order.phone !== 'N/A') {
+      try {
+        let itemsList = '';
+        if (Array.isArray(order.items)) {
+          itemsList = order.items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+        } else if (typeof order.items === 'string') {
+          try {
+            const parsedItems = JSON.parse(order.items);
+            itemsList = parsedItems.map(item => `${item.quantity}x ${item.name}`).join(', ');
+          } catch (e) {
+            itemsList = order.items;
+          }
+        }
+
+        const customerMessage = 
+          `🍦 *Cream Dream Confirmation*\n` +
+          `Welcome to Cream Dream, ${order.customerName}! Thank you for your order.\n\n` +
+          `Order ID: ${order.id}\n` +
+          `Items: ${itemsList}\n` +
+          `Estimated Prep Time: ~${estimatedMinutes} mins\n` +
+          `Total Amount: ₹${order.totalAmount}\n\n` +
+          `We will alert you as soon as it is ready! ✨`;
+
+        sendWhatsAppAlert(customerMessage, order.phone);
+      } catch (err) {
+        console.warn('[WhatsApp Customer Confirmation] Error:', err.message);
+      }
+    }
+
     res.json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -149,6 +186,21 @@ router.put('/:id/status', async (req, res) => {
     res.json(order);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// ─── Clear all orders (fresh reset) ──────────────────────────────────────────
+router.post('/clear', async (req, res) => {
+  try {
+    await Order.destroy({ truncate: true, cascade: true });
+    // Emit event to update all open admin dashboards instantly
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('order-updated', {});
+    }
+    res.json({ message: 'All orders cleared successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

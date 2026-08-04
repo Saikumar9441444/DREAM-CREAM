@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Store, Phone, Clock } from 'lucide-react';
+import { Save, Store, Phone, Clock, Trash2 } from 'lucide-react';
 import { getSettings, updateSettings } from '../../data/settingsStore';
+import { clearOrders } from '../../data/orderStore';
 import { motion } from 'framer-motion';
 import './Admin.css';
 
@@ -30,19 +31,39 @@ export default function AdminSettings() {
     setTimeout(() => setIsSaved(false), 3000);
   };
 
+  const handleResetOrders = async () => {
+    if (window.confirm("⚠️ WARNING: This will permanently delete all orders from the database. Are you sure you want to reset everything to 0?")) {
+      try {
+        await clearOrders();
+        alert("✨ All orders successfully cleared! Admin dashboard is now fresh at 0.");
+      } catch (err) {
+        alert("Failed to reset database: " + err.message);
+      }
+    }
+  };
+
   return (
     <div className="fade-in">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2 style={{ fontSize: '2.2rem', margin: 0, fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Store size={28} style={{ color: 'var(--color-primary)' }} /> Settings & Configuration
         </h2>
-        <button 
-          className="btn-pro btn-pro-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          onClick={handleSave}
-        >
-          <Save size={18} /> {isSaved ? 'Saved!' : 'Save Changes'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button 
+            className="btn-pro"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fee2e2', color: '#ef4444', border: '1px solid #fca5a5' }}
+            onClick={handleResetOrders}
+          >
+            <Trash2 size={18} /> Reset Database (0)
+          </button>
+          <button 
+            className="btn-pro btn-pro-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            onClick={handleSave}
+          >
+            <Save size={18} /> {isSaved ? 'Saved!' : 'Save Changes'}
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>

@@ -40,6 +40,23 @@ export const addOrder = async (orderData) => {
   throw new Error(errData.message || 'Server returned error status');
 };
 
+export const clearOrders = async () => {
+  try {
+    const response = await fetch(`${API_URL}/clear`, {
+      method: 'POST'
+    });
+    if (response.ok) {
+      localOrders = [];
+      return await response.json();
+    }
+    throw new Error('API clear failed');
+  } catch (error) {
+    console.warn('Backend clear failed:', error.message);
+    localOrders = [];
+    return { message: 'Cleared local memory' };
+  }
+};
+
 export const updateOrderStatus = async (id, newStatus) => {
   try {
     const response = await fetch(`${API_URL}/${id}/status`, {
