@@ -1,8 +1,8 @@
-// Dynamic API configurations based on environment
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const localHosts = ['localhost', '127.0.0.1', '192.168.1.7'];
+const isLocal = localHosts.includes(window.location.hostname);
 
 export const BACKEND_URL = isLocal 
-  ? 'http://localhost:5000' 
+  ? 'http://192.168.1.7:5000' 
   : 'https://dream-cream-s.onrender.com';
 
 console.log('[API Config] Selected backend URL:', BACKEND_URL);
