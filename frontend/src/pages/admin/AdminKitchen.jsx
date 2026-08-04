@@ -135,8 +135,8 @@ export default function AdminKitchen() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: '#1e293b' }}>
-                        {order.tableNumber ? `🪑 Table ${order.tableNumber}` : '🥡 Takeaway/Delivery'}
+                      <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)' }}>
+                        👤 {order.customerName}
                       </h2>
                       {order.deliveryType === 'Parcel' && (
                         <span style={{ background: '#fef3c7', color: '#d97706', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, border: '1px solid #fde68a' }}>
@@ -144,7 +144,10 @@ export default function AdminKitchen() {
                         </span>
                       )}
                     </div>
-                    <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 600, display: 'block', marginTop: '0.2rem' }}>
+                      {order.tableNumber ? `🪑 Table ${order.tableNumber}` : `🥡 ${order.deliveryType}`}
+                    </span>
+                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', display: 'block' }}>
                       #{(order.id || '').slice(-6)} · {getElapsedTime(order.timestamp)}
                     </span>
                   </div>

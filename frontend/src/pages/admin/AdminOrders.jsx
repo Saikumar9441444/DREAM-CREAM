@@ -36,7 +36,7 @@ const ETA_OPTIONS = [5, 10, 15, 20, 30];
 const STATUS_COLORS = {
   'Order Placed':    { bg: '#e0f2fe', color: '#0369a1', label: 'New Order' },
   'Approved':        { bg: '#dcfce7', color: '#16a34a', label: 'Approved' },
-  'Preparing':       { bg: '#fef3c7', color: '#d97706', label: 'Preparing' },
+  'Preparing':       { bg: '#fee2e2', color: '#ef4444', label: 'Preparing (Kitchen)' },
   'Ready':           { bg: '#d1fae5', color: '#059669', label: 'Ready 🍦' },
   'Served':          { bg: '#dcfce7', color: '#16a34a', label: 'Served' },
   'Paid':            { bg: '#f0fdf4', color: '#166534', label: 'Paid ✓' },
@@ -387,7 +387,7 @@ export default function AdminOrders() {
                             </button>
                           )}
                           {['Preparing', 'preparing'].includes(order.status) && (
-                            <span style={{ fontSize: '0.82rem', color: '#d97706' }}>Kitchen...</span>
+                            <span style={{ fontSize: '0.82rem', color: '#ef4444', fontWeight: 'bold' }}>🍳 In Kitchen</span>
                           )}
                           {order.status === 'Ready' && (
                             <button className="btn-pro" style={{ padding: '0.4rem 0.75rem', fontSize: '0.82rem', background: '#dcfce7', color: '#16a34a', whiteSpace: 'nowrap' }}

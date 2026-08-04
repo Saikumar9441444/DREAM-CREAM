@@ -125,6 +125,7 @@ export default function Products() {
 
   const [selectedInstantProduct, setSelectedInstantProduct] = useState(null);
   const [instantCustomerName, setInstantCustomerName] = useState('');
+  const [instantCustomerPhone, setInstantCustomerPhone] = useState('');
   const [instantTableNumber, setInstantTableNumber] = useState(localStorage.getItem('dream_cream_table') || '1');
   const [instantOrderSuccess, setInstantOrderSuccess] = useState(false);
   const [instantOrderLoading, setInstantOrderLoading] = useState(false);
@@ -132,6 +133,7 @@ export default function Products() {
   const handleOpenInstantOrder = useCallback((product) => {
     setSelectedInstantProduct(product);
     setInstantCustomerName('');
+    setInstantCustomerPhone('');
     setInstantOrderSuccess(false);
     setInstantOrderLoading(false);
     
@@ -143,7 +145,7 @@ export default function Products() {
   const handleConfirmInstantOrder = async (e) => {
     e.preventDefault();
     if (!selectedInstantProduct) return;
-    if (!instantCustomerName.trim()) return;
+    if (!instantCustomerName.trim() || !instantCustomerPhone.trim()) return;
 
     setInstantOrderLoading(true);
 
@@ -158,7 +160,7 @@ export default function Products() {
 
     const orderData = {
       customerName: instantCustomerName.trim(),
-      phone: 'N/A',
+      phone: instantCustomerPhone.trim(),
       address: `Dine-In (Table ${tableNum})`,
       tableNumber: tableNum,
       deliveryType: 'Dine-In',
@@ -373,38 +375,58 @@ export default function Products() {
                     You are ordering <strong>{selectedInstantProduct.name}</strong> instantly to your table.
                   </p>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                    <label htmlFor="modalCustomerName" style={{ fontSize: '0.9rem', fontWeight: 700, color: '#475569' }}>Please enter your Name to place order:</label>
-                    <input 
-                      type="text" 
-                      id="modalCustomerName" 
-                      value={instantCustomerName} 
-                      onChange={(e) => setInstantCustomerName(e.target.value)} 
-                      required 
-                      placeholder="Enter Full Name" 
-                      disabled={instantOrderLoading}
-                      style={{
-                        width: '100%',
-                        maxWidth: '320px',
-                        padding: '0.85rem 1rem',
-                        fontSize: '1.1rem',
-                        textAlign: 'center',
-                        borderRadius: '12px',
-                        border: '2px solid #cbd5e1',
-                        background: '#f8fafc',
-                        outline: 'none',
-                        transition: 'all 0.2s',
-                        fontWeight: '600'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--color-primary)';
-                        e.target.style.boxShadow = '0 0 0 4px rgba(255, 74, 121, 0.15)';
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = '#cbd5e1';
-                        e.target.style.boxShadow = 'none';
-                      }}
-                    />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ width: '100%', maxWidth: '320px', textAlign: 'left' }}>
+                      <label htmlFor="modalCustomerName" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.3rem' }}>Your Name *</label>
+                      <input 
+                        type="text" 
+                        id="modalCustomerName" 
+                        value={instantCustomerName} 
+                        onChange={(e) => setInstantCustomerName(e.target.value)} 
+                        required 
+                        placeholder="Enter Full Name" 
+                        disabled={instantOrderLoading}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem 1rem',
+                          fontSize: '1rem',
+                          borderRadius: '10px',
+                          border: '2px solid #cbd5e1',
+                          background: '#f8fafc',
+                          outline: 'none',
+                          transition: 'all 0.2s',
+                          fontWeight: '600'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                        onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                      />
+                    </div>
+                    
+                    <div style={{ width: '100%', maxWidth: '320px', textAlign: 'left' }}>
+                      <label htmlFor="modalCustomerPhone" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.3rem' }}>Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        id="modalCustomerPhone" 
+                        value={instantCustomerPhone} 
+                        onChange={(e) => setInstantCustomerPhone(e.target.value)} 
+                        required 
+                        placeholder="Enter Phone Number" 
+                        disabled={instantOrderLoading}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem 1rem',
+                          fontSize: '1rem',
+                          borderRadius: '10px',
+                          border: '2px solid #cbd5e1',
+                          background: '#f8fafc',
+                          outline: 'none',
+                          transition: 'all 0.2s',
+                          fontWeight: '600'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
+                        onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                      />
+                    </div>
                   </div>
 
                   <div className="modal-price-breakdown" style={{ background: '#f8fafc', padding: '1rem', borderRadius: '1rem', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
