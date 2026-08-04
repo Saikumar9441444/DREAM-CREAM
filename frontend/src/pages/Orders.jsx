@@ -492,8 +492,8 @@ export default function Orders() {
             <form onSubmit={handleSubmit} className="custom-form">
               <div className="form-row">
                 <div className="input-group">
-                  <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required={!isDineIn} placeholder=" " />
-                  <label htmlFor="name">Full Name {isDineIn && '(Optional)'}</label>
+                  <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required placeholder=" " />
+                  <label htmlFor="name">Full Name</label>
                 </div>
                 <div className="input-group">
                   <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} required={!isDineIn} placeholder=" " />
