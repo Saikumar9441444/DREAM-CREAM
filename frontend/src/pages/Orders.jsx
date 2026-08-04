@@ -2,11 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Send, CheckCircle2, ChevronLeft,
-  Plus, Minus, Trash2, Copy, Star
+  Plus, Minus, Trash2, Copy, Star, Clock, BellRing, Sparkles
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { io } from 'socket.io-client';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BACKEND_URL } from '../utils/apiConfig';
 import './Orders.css';
+
+// ─── Sound FX for Customer Popups ───────────────────────────────────────────
+const playPopupSound = (type) => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const playBeep = (freq, start, duration, vol = 0.5) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(vol, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + duration);
+    };
+
+    if (type === 'approved') {
+      playBeep(523.25, 0, 0.2, 0.4); // C5
+      playBeep(659.25, 0.15, 0.25, 0.4); // E5
+    } else if (type === 'ready') {
+      playBeep(587.33, 0, 0.15, 0.4); // D5
+      playBeep(880, 0.12, 0.15, 0.4); // A5
+      playBeep(1046.5, 0.24, 0.3, 0.4); // C6
+    }
+  } catch (e) {
+    console.log('Audio not available');
+  }
+};
 
 export default function Orders() {
   const { 
@@ -25,6 +57,10 @@ export default function Orders() {
   const [socket, setSocket] = useState(null);
   const [rating, setRating] = useState(0);
   const [rated, setRated] = useState(false);
+
+  // Popups state
+  const [approvalPopup, setApprovalPopup] = useState(null);
+  const [readyPopup, setReadyPopup] = useState(null);
   
   const tableNumber = localStorage.getItem('dream_cream_table');
   const isDineIn = !!tableNumber;
@@ -54,15 +90,48 @@ export default function Orders() {
     }
   }, []);
 
-  // Socket.io for live tracking
+  // Socket.io for live tracking & customer alerts
   useEffect(() => {
     if (submitted && lastOrder) {
-      const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+      const newSocket = io(import.meta.env.VITE_API_URL || BACKEND_URL);
       setSocket(newSocket);
 
       newSocket.on('order-updated', (updatedOrder) => {
-        if (updatedOrder.id === lastOrder.id || updatedOrder._id === lastOrder._id || updatedOrder.id === lastOrder._id) {
+        const orderId = lastOrder.id || lastOrder._id;
+        if (updatedOrder.id === orderId || updatedOrder._id === orderId) {
           setLastOrder(updatedOrder);
+        }
+      });
+
+      newSocket.on('order-approved', (data) => {
+        const orderId = lastOrder.id || lastOrder._id;
+        if (data.id === orderId) {
+          playPopupSound('approved');
+          setApprovalPopup({ estimatedMinutes: data.estimatedMinutes });
+
+          // Browser Push Notification if page in background
+          if (Notification.permission === 'granted') {
+            new Notification('🍦 Order Approved — Cream Dream', {
+              body: `Your order is accepted and will be ready in ~${data.estimatedMinutes} minutes!`,
+              icon: '/favicon.ico'
+            });
+          }
+        }
+      });
+
+      newSocket.on('order-ready', (data) => {
+        const orderId = lastOrder.id || lastOrder._id;
+        if (data.id === orderId) {
+          playPopupSound('ready');
+          setReadyPopup(true);
+
+          // Browser Push Notification if page in background
+          if (Notification.permission === 'granted') {
+            new Notification('🎉 Scoop Ready! — Cream Dream', {
+              body: `Your delicious ice cream order is prepared and ready!`,
+              icon: '/favicon.ico'
+            });
+          }
         }
       });
 
@@ -78,12 +147,17 @@ export default function Orders() {
   const GST_AMOUNT = cartTotalPrice * TAX_RATE;
   const DELIVERY_FEE = deliveryOption === 'delivery' ? 35 : 0;
   const PLATFORM_FEE = deliveryOption === 'delivery' ? 5 : 0;
-  const RESTAURANT_CHARGES = 15;
+  const RESTAURANT_CHARGES = isDineIn ? 0 : 15; // Only apply packaging/restaurant fee for delivery/parcel
   
   const finalTotal = cartTotalPrice + GST_AMOUNT + DELIVERY_FEE + PLATFORM_FEE + RESTAURANT_CHARGES;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Ask for push notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
     
     let finalAddress = 'Dine-In';
     let finalDeliveryType = 'Dine-In';
@@ -154,19 +228,119 @@ export default function Orders() {
     );
   }
 
+  // Modernized Order Status Class Generator
   const getStepClass = (stepName) => {
     if (!lastOrder) return '';
-    const s = lastOrder.status;
-    const orderIndex = ['Order Placed', 'Waiting Approval', 'Preparing', 'Served', 'Paid'].indexOf(s);
-    const stepIndex = ['Order Placed', 'Waiting Approval', 'Preparing', 'Served', 'Paid'].indexOf(stepName);
-    
-    if (orderIndex >= stepIndex) return 'active';
+    const currentStatus = lastOrder.status;
+
+    const sequence = ['Order Placed', 'Approved', 'Preparing', 'Ready', 'Paid'];
+    const currentIndex = sequence.indexOf(currentStatus);
+    const stepIndex = sequence.indexOf(stepName);
+
+    if (currentIndex >= stepIndex) return 'active';
     return '';
   };
 
   if (submitted) {
     return (
-      <div className="orders-page fade-in">
+      <div className="orders-page fade-in" style={{ position: 'relative' }}>
+        
+        {/* ── Approval Animated Popup ────────────────────────────────────────── */}
+        <AnimatePresence>
+          {approvalPopup && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, y: 50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 50 }}
+              className="glass-panel"
+              style={{
+                position: 'fixed',
+                bottom: '30px',
+                left: '20px',
+                right: '20px',
+                zIndex: 9999,
+                padding: '1.5rem',
+                border: '2px dashed #22c55e',
+                background: 'rgba(15, 23, 42, 0.95)',
+                color: 'white',
+                borderRadius: '16px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                maxWidth: '500px',
+                margin: '0 auto'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ background: 'rgba(34,197,94,0.15)', padding: '0.75rem', borderRadius: '12px' }}>
+                  <Sparkles size={24} color="#22c55e" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, color: '#22c55e', fontWeight: 800 }}>Order Accepted!</h3>
+                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#cbd5e1' }}>
+                    Your order is approved. Estimated prep time: <strong style={{ color: 'white' }}>~{approvalPopup.estimatedMinutes} minutes</strong>.
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setApprovalPopup(null)}
+                style={{
+                  position: 'absolute', top: '10px', right: '10px', background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.2rem', cursor: 'pointer'
+                }}
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Ready Animated Popup ───────────────────────────────────────────── */}
+        <AnimatePresence>
+          {readyPopup && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8, y: 50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 50 }}
+              className="glass-panel"
+              style={{
+                position: 'fixed',
+                bottom: '30px',
+                left: '20px',
+                right: '20px',
+                zIndex: 9999,
+                padding: '1.5rem',
+                border: '2px solid #22c55e',
+                background: 'rgba(21, 128, 61, 0.95)',
+                color: 'white',
+                borderRadius: '16px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                maxWidth: '500px',
+                margin: '0 auto'
+              }}
+            >
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '0.75rem', borderRadius: '12px' }}>
+                  <BellRing size={24} color="white" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, color: 'white', fontWeight: 800 }}>Your Scoop is Ready! 🎉</h3>
+                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#f0fdf4' }}>
+                    {isDineIn 
+                      ? "We're serving it at your table right now! Sit back and enjoy." 
+                      : "Your package is ready at the counter. Come grab your treats!"}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setReadyPopup(false)}
+                style={{
+                  position: 'absolute', top: '10px', right: '10px', background: 'transparent', border: 'none', color: '#f0fdf4', fontSize: '1.2rem', cursor: 'pointer'
+                }}
+              >
+                ✕
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="container">
           <div className="order-container">
             <div className="order-tracking-section glass-panel fade-in">
@@ -182,28 +356,38 @@ export default function Orders() {
                 </div>
               </div>
 
+              {lastOrder?.estimatedMinutes && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.75rem 1rem', borderRadius: '8px', margin: '1.5rem 0' }}>
+                  <Clock size={16} color="var(--color-primary)" />
+                  <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                    Estimated prep time: ~{lastOrder.estimatedMinutes} minutes
+                  </span>
+                </div>
+              )}
+
+              {/* Progress Tracker Tracker */}
               <div className="live-tracker mt-8">
                 <div className="tracker-line"></div>
-                <div className="tracker-steps" style={{ flexDirection: isDineIn ? 'column' : 'row', gap: '1rem' }}>
+                <div className="tracker-steps" style={{ flexDirection: 'column', gap: '1.25rem' }}>
                   <div className={`tracker-step ${getStepClass('Order Placed')}`}>
                     <div className="step-dot"></div>
                     <span className="step-label">✔ Order Placed</span>
                   </div>
-                  <div className={`tracker-step ${getStepClass('Waiting Approval')}`}>
+                  <div className={`tracker-step ${getStepClass('Approved')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">🟡 Waiting Approval</span>
+                    <span className="step-label">✔ Order Approved</span>
                   </div>
                   <div className={`tracker-step ${getStepClass('Preparing')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">🟡 Preparing</span>
+                    <span className="step-label">🟡 Preparing Scoop</span>
                   </div>
-                  <div className={`tracker-step ${getStepClass('Served')}`}>
+                  <div className={`tracker-step ${getStepClass('Ready')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">🟡 Served</span>
+                    <span className="step-label">✨ Ready for Collection / Serving</span>
                   </div>
                   <div className={`tracker-step ${getStepClass('Paid')}`}>
                     <div className="step-dot"></div>
-                    <span className="step-label">✔ Paid</span>
+                    <span className="step-label">✔ Paid & Finished</span>
                   </div>
                 </div>
               </div>
@@ -282,10 +466,18 @@ export default function Orders() {
                   <div className="bill-row"><span>Platform Fee</span><span>₹{PLATFORM_FEE.toFixed(2)}</span></div>
                 </>
               )}
-              <div className="bill-row">
-                <span>GST & Restaurant Charges</span>
-                <span>₹{(GST_AMOUNT + RESTAURANT_CHARGES).toFixed(2)}</span>
-              </div>
+              {RESTAURANT_CHARGES > 0 && (
+                <div className="bill-row">
+                  <span>GST & Packaging Charges</span>
+                  <span>₹{(GST_AMOUNT + RESTAURANT_CHARGES).toFixed(2)}</span>
+                </div>
+              )}
+              {RESTAURANT_CHARGES === 0 && (
+                <div className="bill-row">
+                  <span>GST (5%)</span>
+                  <span>₹{GST_AMOUNT.toFixed(2)}</span>
+                </div>
+              )}
               <div className="divider"></div>
               <div className="bill-row grand-total">
                 <span>Total Payable</span>

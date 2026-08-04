@@ -42,6 +42,10 @@ const Order = sequelize.define('Order', {
     type: DataTypes.STRING,
     defaultValue: 'Order Placed'
   },
+  estimatedMinutes: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   timestamp: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

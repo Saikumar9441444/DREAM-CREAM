@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { BACKEND_URL } from '../utils/apiConfig';
+const BASE_URL = import.meta.env.VITE_API_URL || BACKEND_URL;
 const API_URL = `${BASE_URL}/api/orders`;
 
 // Local fallback data
@@ -56,6 +57,37 @@ export const updateOrderStatus = async (id, newStatus) => {
   } catch (error) {
     console.warn('Backend update failed, using local store:', error.message);
     localOrders = localOrders.map(o => o.id === id ? { ...o, status: newStatus } : o);
+    return localOrders.find(o => o.id === id);
+  }
+};
+
+export const approveOrder = async (id, estimatedMinutes) => {
+  try {
+    const response = await fetch(`${API_URL}/${id}/approve`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estimatedMinutes })
+    });
+    if (response.ok) return await response.json();
+    throw new Error('API failed');
+  } catch (error) {
+    console.warn('Backend approve failed, using local store:', error.message);
+    localOrders = localOrders.map(o => o.id === id ? { ...o, status: 'Approved', estimatedMinutes } : o);
+    return localOrders.find(o => o.id === id);
+  }
+};
+
+export const markOrderReady = async (id) => {
+  try {
+    const response = await fetch(`${API_URL}/${id}/ready`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (response.ok) return await response.json();
+    throw new Error('API failed');
+  } catch (error) {
+    console.warn('Backend ready failed, using local store:', error.message);
+    localOrders = localOrders.map(o => o.id === id ? { ...o, status: 'Ready' } : o);
     return localOrders.find(o => o.id === id);
   }
 };

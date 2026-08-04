@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { BACKEND_URL } from '../utils/apiConfig';
+const BASE_URL = import.meta.env.VITE_API_URL || BACKEND_URL;
 const API_URL = `${BASE_URL}/api/subscriptions`;
 
 const DEFAULT_PLANS = [
