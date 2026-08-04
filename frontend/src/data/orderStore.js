@@ -30,19 +30,14 @@ export const addOrder = async (orderData) => {
     timestamp: new Date().toISOString()
   };
 
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newOrder)
-    });
-    if (response.ok) return await response.json();
-    throw new Error('API failed');
-  } catch (error) {
-    console.warn('Backend add failed, using local store:', error.message);
-    localOrders = [newOrder, ...localOrders];
-    return newOrder;
-  }
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newOrder)
+  });
+  if (response.ok) return await response.json();
+  const errData = await response.json().catch(() => ({}));
+  throw new Error(errData.message || 'Server returned error status');
 };
 
 export const updateOrderStatus = async (id, newStatus) => {

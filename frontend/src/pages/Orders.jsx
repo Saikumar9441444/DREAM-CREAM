@@ -212,7 +212,7 @@ export default function Orders() {
       clearCart();
     } catch (err) {
       console.error("Order processing failed:", err);
-      alert("Order processing failed. Please try again.");
+      alert("Order processing failed: " + err.message);
     } finally {
       setLoading(false);
     }

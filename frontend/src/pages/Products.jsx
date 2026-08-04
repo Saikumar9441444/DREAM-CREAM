@@ -180,7 +180,10 @@ export default function Products() {
         body: JSON.stringify(orderData)
       });
 
-      if (!res.ok) throw new Error('Failed to submit order');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Failed to submit order');
+      }
 
       setInstantOrderSuccess(true);
       setTimeout(() => {
