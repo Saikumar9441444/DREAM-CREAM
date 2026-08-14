@@ -444,7 +444,7 @@ export default function Products() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 'bold', color: '#1e293b', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
                       <span>Total to Pay Later</span>
-                      <span>₹{((typeof selectedInstantProduct.price === 'string' ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, '')) : selectedInstantProduct.price) * 1.05 + 15).toFixed(2)}</span>
+                      <span>₹{Math.round((typeof selectedInstantProduct.price === 'string' ? parseFloat(selectedInstantProduct.price.replace(/[^\d.]/g, '')) : selectedInstantProduct.price) * 1.05 + 15).toFixed(2)}</span>
                     </div>
                   </div>
 

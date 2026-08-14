@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Send, CheckCircle2, ChevronLeft,
-  Plus, Minus, Trash2, Copy, Star, Clock, BellRing, Sparkles
+  Send, CheckCircle2,
+  Plus, Minus, Star, Clock, BellRing, Sparkles
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { io } from 'socket.io-client';

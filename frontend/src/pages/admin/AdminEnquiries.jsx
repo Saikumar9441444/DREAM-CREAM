@@ -68,7 +68,7 @@ export default function AdminEnquiries() {
               <AnimatePresence>
                 {filteredEnquiries.map((enquiry) => (
                   <motion.div 
-                    key={enquiry._id}
+                    key={enquiry._id || enquiry.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -116,7 +116,7 @@ export default function AdminEnquiries() {
                     <div style={{ marginLeft: '56px', display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
                        {enquiry.status === 'unread' && (
                          <button 
-                           onClick={() => handleMarkAsRead(enquiry._id)}
+                           onClick={() => handleMarkAsRead(enquiry._id || enquiry.id)}
                            className="btn-pro"
                            style={{ background: '#dcfce7', color: '#16a34a', border: '1px solid #bbf7d0', padding: '0.4rem 1rem', fontSize: '0.85rem' }}
                          >

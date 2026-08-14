@@ -323,17 +323,15 @@ export default function AdminOrders() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence>
                 {filteredOrders.length === 0 ? (
                   <tr><td colSpan="8" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No orders found.</td></tr>
                 ) : filteredOrders.map((order, index) => {
                   const st = getStatusStyle(order.status);
                   return (
                     <motion.tr
-                      key={order.id}
+                      key={order.id || order._id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ delay: index * 0.04 }}
                     >
                       <td style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{order.id}</td>
@@ -409,7 +407,6 @@ export default function AdminOrders() {
                     </motion.tr>
                   );
                 })}
-              </AnimatePresence>
             </tbody>
           </table>
         </div>

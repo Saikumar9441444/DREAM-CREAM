@@ -9,8 +9,7 @@ export default function AdminSettings() {
   const [settings, setSettings] = useState({
     storeName: 'Cream Dream',
     whatsappNumber: '919014002314',
-    openingTime: '10:00 AM',
-    closingTime: '10:00 PM',
+    openingHours: '10:00 AM - 11:00 PM',
     status: 'Open'
   });
 
@@ -148,30 +147,19 @@ export default function AdminSettings() {
               </select>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Opening Time</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Opening Hours</label>
                 <input 
-                  type="time" 
-                  value={settings.openingTime.replace(/ (AM|PM)/, '')} 
-                  onChange={e => setSettings({...settings, openingTime: e.target.value})} 
+                  type="text" 
+                  value={settings.openingHours || ''} 
+                  onChange={e => setSettings({...settings, openingHours: e.target.value})} 
+                  placeholder="e.g. 10:00 AM - 11:00 PM"
                   style={{ padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', transition: 'border-color 0.2s' }}
                   onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
                   onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                 />
+                <small style={{ color: '#94a3b8', fontSize: '0.8rem' }}>e.g. 10:00 AM - 11:00 PM</small>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>Closing Time</label>
-                <input 
-                  type="time" 
-                  value={settings.closingTime.replace(/ (AM|PM)/, '')} 
-                  onChange={e => setSettings({...settings, closingTime: e.target.value})} 
-                  style={{ padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', transition: 'border-color 0.2s' }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--color-primary)'}
-                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
-                />
-              </div>
-            </div>
           </div>
         </motion.div>
       </div>

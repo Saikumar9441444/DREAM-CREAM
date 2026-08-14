@@ -66,10 +66,10 @@ export default function AdminLayout() {
     if (!pendingApprovalOrder) return;
     try {
       const socketUrl = import.meta.env.VITE_API_URL || BACKEND_URL;
-      const res = await fetch(`${socketUrl}/api/orders/${pendingApprovalOrder.id || pendingApprovalOrder._id}/status`, {
+      const res = await fetch(`${socketUrl}/api/orders/${pendingApprovalOrder.id || pendingApprovalOrder._id}/approve`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Preparing' })
+        body: JSON.stringify({ estimatedMinutes: 15 })
       });
       if (res.ok) {
         setPendingApprovalOrder(null);

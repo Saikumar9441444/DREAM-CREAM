@@ -98,17 +98,15 @@ export default function AdminCustomers() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence>
-                {filteredCustomers.length === 0 ? (
-                   <tr><td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No customers found.</td></tr>
-                ) : filteredCustomers.map((customer, index) => (
-                  <motion.tr 
-                    key={customer.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
+              {filteredCustomers.length === 0 ? (
+                 <tr><td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No customers found.</td></tr>
+              ) : filteredCustomers.map((customer, index) => (
+                <motion.tr 
+                  key={customer.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,123,156,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--color-primary)', fontSize: '1.1rem' }}>
@@ -150,8 +148,7 @@ export default function AdminCustomers() {
                       {customer.joinDate}
                     </td>
                   </motion.tr>
-                ))}
-              </AnimatePresence>
+              ))}
             </tbody>
           </table>
         </div>

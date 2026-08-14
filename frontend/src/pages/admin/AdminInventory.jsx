@@ -66,17 +66,15 @@ export default function AdminInventory() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence>
-                {filteredProducts.length === 0 ? (
-                  <tr><td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No items found.</td></tr>
-                ) : filteredProducts.map((product, index) => (
-                  <motion.tr 
-                    key={product.id || product._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
+              {filteredProducts.length === 0 ? (
+                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No items found.</td></tr>
+              ) : filteredProducts.map((product, index) => (
+                <motion.tr 
+                  key={product.id || product._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
@@ -115,8 +113,7 @@ export default function AdminInventory() {
                       </button>
                     </td>
                   </motion.tr>
-                ))}
-              </AnimatePresence>
+              ))}
             </tbody>
           </table>
         </div>

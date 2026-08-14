@@ -107,15 +107,15 @@ export const markOrderReady = async (id) => {
 export const simulateNewOrder = async () => {
   const orderData = {
     customerName: 'Demo Customer ' + Math.floor(Math.random() * 100),
-    phone: '555-010' + Math.floor(Math.random() * 9),
+    phone: '9876543210',
     address: '123 Test St',
-    deliveryType: 'delivery',
+    deliveryType: 'Delivery',
     items: [
       { name: 'Classic Vanilla Bean', quantity: 2, price: 120 }
     ],
     totalAmount: 240,
     paymentMethod: 'UPI',
-    status: 'new'
+    status: 'Order Placed'
   };
   return await addOrder(orderData);
 };
