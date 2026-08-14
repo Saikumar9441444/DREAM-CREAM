@@ -119,10 +119,10 @@ export default function AdminProducts() {
   };
 
   // Commit Category
-  const commitCategory = () => {
+  const commitCategory = async () => {
     if (!catName.trim()) return;
     try {
-      const updated = addCategory(catName.trim());
+      const updated = await addCategory(catName.trim());
       setCategories(updated);
       setCatName('');
       setCatError('');
@@ -160,10 +160,10 @@ export default function AdminProducts() {
     }
   };
 
-  const handleDeleteCategory = (name) => {
+  const handleDeleteCategory = async (name) => {
     if(window.confirm(`Delete category "${name}"?`)) {
       try {
-        const updated = deleteCategory(name);
+        const updated = await deleteCategory(name);
         setCategories(updated);
       } catch(err) { alert(err.message); }
     }
@@ -467,17 +467,15 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence>
-                {filteredProducts.length === 0 ? (
-                  <tr><td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No products found.</td></tr>
-                ) : filteredProducts.map((product, index) => (
-                  <motion.tr
-                    key={product.id || product._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
+              {filteredProducts.length === 0 ? (
+                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>No products found.</td></tr>
+              ) : filteredProducts.map((product, index) => (
+                <motion.tr
+                  key={product.id || product._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
                     <td>
                       <div style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyItems: 'center' }}>
                         <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -507,8 +505,7 @@ export default function AdminProducts() {
                       </div>
                     </td>
                   </motion.tr>
-                ))}
-              </AnimatePresence>
+              ))}
             </tbody>
           </table>
         </div>
